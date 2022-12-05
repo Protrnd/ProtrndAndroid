@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.auth.VerifyOTPFragment"
+    android:orientation="vertical"
+    android:paddingBottom="100dp">
+
+    <TextView
+        android:id="@+id/details_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#2D264B"
+        android:textSize="30sp"
+        android:text="@string/verify_otp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:fontFamily="@font/dmsans_bold"
+        android:layout_marginTop="30dp"/>
+
+    <TextView
+        android:id="@+id/enter_otp_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/enter_the_one_time_password_sent_to_your_email_to_verify_your_account"
+        android:textColor="#2D264B"
+        android:textSize="16sp"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="50dp">
+
+        <EditText
+            android:id="@+id/input1"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_margin="@dimen/padding_10"
+            android:background="@drawable/verify_otp_round"
+            android:elevation="@dimen/padding_10"
+            android:focusable="true"
+            android:gravity="center"
+            android:inputType="numberDecimal"
+            android:maxLength="1"
+            android:tag="otp1"
+            android:textCursorDrawable="@null"
+            android:importantForAutofill="no"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/input2"
+            tools:ignore="LabelFor" />
+        <EditText
+            android:id="@+id/input2"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_margin="@dimen/padding_10"
+            android:background="@drawable/verify_otp_round"
+            android:elevation="@dimen/padding_10"
+            android:focusable="true"
+            android:gravity="center"
+            android:inputType="numberDecimal"
+            android:maxLength="1"
+            android:textCursorDrawable="@null"
+            android:tag="otp2"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/input1"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/input3"
+            android:importantForAutofill="no"
+            tools:ignore="LabelFor" />
+        <EditText
+            android:id="@+id/input3"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_margin="@dimen/padding_10"
+            android:background="@drawable/verify_otp_round"
+            android:elevation="@dimen/padding_10"
+            android:focusable="true"
+            android:gravity="center"
+            android:inputType="numberDecimal"
+            android:maxLength="1"
+            android:tag="otp3"
+            android:textCursorDrawable="@null"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/input2"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/input4"
+            android:importantForAutofill="no"
+            tools:ignore="LabelFor" />
+        <EditText
+            android:id="@+id/input4"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_margin="@dimen/padding_10"
+            android:background="@drawable/verify_otp_round"
+            android:elevation="@dimen/padding_10"
+            android:focusable="true"
+            android:textCursorDrawable="@null"
+            android:gravity="center"
+            android:tag="otp4"
+            android:inputType="numberDecimal"
+            android:maxLength="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/input3"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:importantForAutofill="no"
+            tools:ignore="LabelFor" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/continue_btn"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/button_elevation"
+        android:text="@string/continue_text"
+        tools:ignore="DuplicateSpeakableTextCheck" />
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="30dp"
+        android:indeterminateTint="#E02A45"
+        android:indeterminate="true"
+        android:indeterminateTintMode="src_atop"
+        android:visibility="gone"/>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

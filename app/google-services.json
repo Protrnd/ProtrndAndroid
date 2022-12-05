@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "265805322238",
+    "project_id": "protrnd-ng",
+    "storage_bucket": "protrnd-ng.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:265805322238:android:704332a7f2f7c3be9452af",
+        "android_client_info": {
+          "package_name": "protrnd.com"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "265805322238-ke6sc219g25usn2hf499oaps4msj45ku.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvWXeFuG6lGb3RYJJeQMZLzftj3mhaVAE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "265805322238-ke6sc219g25usn2hf499oaps4msj45ku.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

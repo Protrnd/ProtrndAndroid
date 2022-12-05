@@ -1,0 +1,27 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.Protrnd" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/shimmer_color</item>
+        <item name="colorPrimaryVariant">@color/white</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/app_blue</item>
+        <item name="colorSecondaryVariant">@color/app_blue</item>
+        <item name="colorOnSecondary">@color/pink_light</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+        <item name="android:textViewStyle">@style/DMSansTextViewStyle</item>
+        <item name="buttonStyle">@style/DMSansButtonStyle</item>
+        <item name="android:windowLightStatusBar" tools:ignore="NewApi">true</item>
+    </style>
+
+    <style name="DMSansTextViewStyle" parent="android:Widget.TextView">
+        <item name="android:fontFamily">@font/dmsans_regular</item>
+    </style>
+
+    <style name="DMSansButtonStyle" parent="android:Widget.Holo.Button">
+        <item name="android:fontFamily">@font/dmsans_regular</item>
+    </style>
+</resources>

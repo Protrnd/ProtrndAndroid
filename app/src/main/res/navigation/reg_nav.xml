@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/reg_nav"
+    app:startDestination="@id/selectAccountTypeFragment">
+
+    <fragment
+        android:id="@+id/selectAccountTypeFragment"
+        android:name="protrnd.com.ui.auth.SelectAccountTypeFragment"
+        android:label="fragment_select_account_type"
+        tools:layout="@layout/fragment_select_account_type" >
+        <action
+            android:id="@+id/action_selectAccountTypeFragment_to_inputProfileDetailsFragment"
+            app:destination="@id/inputProfileDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/inputProfileDetailsFragment"
+        android:name="protrnd.com.ui.auth.InputProfileDetailsFragment"
+        android:label="fragment_input_profile_details"
+        tools:layout="@layout/fragment_input_profile_details" >
+        <action
+            android:id="@+id/action_inputProfileDetailsFragment_to_verifyOTPFragment"
+            app:destination="@id/verifyOTPFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/verifyOTPFragment"
+        android:name="protrnd.com.ui.auth.VerifyOTPFragment"
+        android:label="fragment_verify_otp"
+        tools:layout="@layout/fragment_verify_otp" />
+</navigation>
