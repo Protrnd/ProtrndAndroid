@@ -15,11 +15,8 @@ import protrnd.com.data.network.AuthApi
 import protrnd.com.data.network.Resource
 import protrnd.com.data.repository.AuthRepository
 import protrnd.com.databinding.FragmentInputProfileDetailsBinding
+import protrnd.com.ui.*
 import protrnd.com.ui.base.BaseFragment
-import protrnd.com.ui.enable
-import protrnd.com.ui.setSpannableColor
-import protrnd.com.ui.snackbar
-import protrnd.com.ui.visible
 
 class InputProfileDetailsFragment :
     BaseFragment<AuthViewModel, FragmentInputProfileDetailsBinding, AuthRepository>() {
@@ -65,11 +62,7 @@ class InputProfileDetailsFragment :
                     binding.continueBtn.enable(false)
                 }
                 is Resource.Failure -> {
-                    if (it.isNetworkError) {
-                        binding.root.snackbar("Network error occurred...please wait while we try again") { lifecycleScope.launch { register() } }
-                    } else {
-                        binding.root.snackbar("Internal server error occurred")
-                    }
+                    this.handleAPIError(it){ lifecycleScope.launch { register() } }
                 }
             }
         }

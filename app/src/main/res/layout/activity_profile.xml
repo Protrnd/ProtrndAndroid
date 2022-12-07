@@ -113,12 +113,12 @@
 
                 <ImageView
                     android:id="@+id/profile_image"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
                     android:layout_alignParentBottom="true"
                     android:layout_centerHorizontal="true"
                     android:contentDescription="@string/profile_image"
-                    android:src="@drawable/no_profile_ic" />
+                    android:src="@drawable/default_profile_ic" />
             </RelativeLayout>
 
             <TextView

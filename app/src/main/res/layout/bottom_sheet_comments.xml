@@ -9,7 +9,7 @@
         android:layout_width="50dp"
         android:layout_height="5dp"
         app:cardCornerRadius="50dp"
-        app:cardBackgroundColor="@color/app_background"
+        app:cardBackgroundColor="@color/app_blue"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="15dp"/>
 
@@ -46,7 +46,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="5dp">
+        android:paddingBottom="@dimen/padding_10">
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_field"
             android:layout_width="0dp"
@@ -62,7 +62,7 @@
             app:boxStrokeWidth="1.5dp"
             app:boxBackgroundMode="outline"
             android:backgroundTint="@color/focused_state_edittext_background"
-            app:hintEnabled="true"
+            app:hintEnabled="false"
             style="@style/TextInputLayoutStyle">
             <EditText
                 android:id="@+id/comment_input"

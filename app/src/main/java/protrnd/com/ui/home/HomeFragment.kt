@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.flow.first
@@ -26,7 +27,7 @@ import protrnd.com.databinding.LocationPickerBinding
 import protrnd.com.ui.adapter.PostsAdapter
 import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.enable
-import protrnd.com.ui.snackbar
+import protrnd.com.ui.handleAPIError
 import protrnd.com.ui.visible
 
 class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeRepository>() {
@@ -83,33 +84,43 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
                     locationPickerBinding.saveBtn.enable(false)
                 }
                 is Resource.Failure -> {
-                    if (resource.isNetworkError)
-                        binding.root.snackbar("Error loading locations...please wait while we try again") { lifecycleScope.launch { loadLocations() } }
-                    else
-                        binding.root.snackbar("User is unauthorized")
+                    this.handleAPIError(resource) { lifecycleScope.launch { loadLocations() } }
                 }
             }
         }
 
+        var state = ""
+        var city = ""
         locationPickerBinding.statePicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
+            city = ""
             locationPickerBinding.cityPicker.clearSelectedItem()
+            state = newItem
             locationPickerBinding.cityPicker.setItems(locationHash[newItem]!!)
         }
 
+        locationPickerBinding.cityPicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
+            city = newItem
+        }
+
         locationPickerBinding.saveBtn.setOnClickListener {
-            viewModel.updateProfile(
-                ProfileDTO(
-                    profileImage = profile.profileimg,
-                    backgroundImageUrl = profile.bgimg,
-                    phone = profile.phone!!,
-                    accountType = profile.acctype,
-                    location = profile.location!!,
-                    email = profile.email,
-                    fullName = profile.fullname,
-                    userName = profile.username
+            if (state.isEmpty() || city.isEmpty())
+                Toast.makeText(requireContext(), "Please select a state and city", Toast.LENGTH_SHORT).show()
+            else {
+                profile.location = "$state,$city"
+                viewModel.updateProfile(
+                    ProfileDTO(
+                        profileImage = profile.profileimg,
+                        backgroundImageUrl = profile.bgimg,
+                        phone = profile.phone!!,
+                        accountType = profile.acctype,
+                        location = profile.location!!,
+                        email = profile.email,
+                        fullName = profile.fullname,
+                        userName = profile.username
+                    )
                 )
-            )
-            dialog.dismiss()
+                dialog.dismiss()
+            }
         }
 
         binding.root.setOnScrollChangeListener { _, _, _, _, _ ->
@@ -148,11 +159,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
                     loadMoreItems(true)
                 }
                 is Resource.Failure -> {
-                    if (it.isNetworkError) {
-                        binding.root.snackbar("Please check your network connection", action = { loadPage() })
-                    } else {
-                        binding.root.snackbar("User is unauthorized")
-                    }
+                    this.handleAPIError(it) { lifecycleScope.launch { loadPage() } }
                 }
             }
         }
@@ -182,11 +189,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
                     }
                     is Resource.Failure -> {
                         isLoading = false
-                        if (it.isNetworkError) {
-                            binding.root.snackbar("Error occurred") { loadMoreItems(isFirstPage) }
-                        } else {
-                            binding.root.snackbar("Internal server error occurred!")
-                        }
+                        this@HomeFragment.handleAPIError(it) { lifecycleScope.launch { loadMoreItems(isFirstPage) } }
                     }
                 }
             }

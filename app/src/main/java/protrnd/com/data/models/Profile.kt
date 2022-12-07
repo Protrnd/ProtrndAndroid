@@ -8,7 +8,7 @@ data class Profile(
     val fullname: String = "",
     val id: String = "",
     val identifier: String = "",
-    val location: String? = "",
+    var location: String? = "",
     val phone: String? = "",
     val profileimg: String = "",
     val regdate: String = "",

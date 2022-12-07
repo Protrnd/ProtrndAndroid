@@ -8,54 +8,58 @@
     android:orientation="vertical"
     android:clipToPadding="false">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:elevation="20dp"
-        android:background="@color/white">
-
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:id="@+id/nav_back_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/padding_10"
-            android:background="@drawable/profile_click_background"
-            android:orientation="horizontal"
-            android:paddingStart="5dp"
-            android:paddingTop="5dp"
-            android:paddingEnd="@dimen/padding_10"
-            android:paddingBottom="5dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageButton
+        app:cardElevation="20dp">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/white">
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/nav_back_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginEnd="@dimen/padding_10"
-                android:background="@android:color/transparent"
-                android:contentDescription="@string/close_button"
-                android:src="@drawable/arrow_back_ic"
-                app:tint="#2D264B"
-                tools:ignore="TouchTargetSizeCheck" />
-
-            <ImageView
-                android:id="@+id/nav_image"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:contentDescription="@string/profile_image"
-                android:src="@drawable/default_profile_ic" />
-
-            <TextView
-                android:id="@+id/nav_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
                 android:layout_marginStart="@dimen/padding_10"
-                android:textColor="#2D264B" />
-        </androidx.appcompat.widget.LinearLayoutCompat>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                android:background="@drawable/profile_click_background"
+                android:orientation="horizontal"
+                android:paddingStart="5dp"
+                android:paddingTop="5dp"
+                android:paddingEnd="@dimen/padding_10"
+                android:paddingBottom="5dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="@dimen/padding_10"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/close_button"
+                    android:src="@drawable/arrow_back_ic"
+                    app:tint="#2D264B"
+                    tools:ignore="TouchTargetSizeCheck" />
+
+                <ImageView
+                    android:id="@+id/nav_image"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:contentDescription="@string/profile_image"
+                    android:src="@drawable/default_profile_ic" />
+
+                <TextView
+                    android:id="@+id/nav_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="@dimen/padding_10"
+                    android:textColor="#2D264B" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
 
     <com.facebook.shimmer.ShimmerFrameLayout
         android:id="@+id/shimmer_layout"
@@ -74,7 +78,7 @@
             android:id="@+id/post_result"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="10dp"
+            android:paddingTop="20dp"
             android:visibility="visible"
             android:paddingStart="@dimen/padding_10"
             android:paddingEnd="@dimen/padding_10">
@@ -174,13 +178,14 @@
                     android:id="@+id/tab_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
                     android:layout_gravity="bottom"
+                    android:background="@android:color/transparent"
                     app:tabBackground="@drawable/tab_selector"
                     app:tabGravity="center"
-                    android:background="@android:color/transparent"
                     app:tabIndicatorHeight="0dp"
                     app:tabMaxWidth="15dp"
-                    android:layout_alignParentBottom="true"/>
+                    tools:ignore="SpeakableTextPresentCheck" />
             </RelativeLayout>
 
             <GridLayout
@@ -196,11 +201,12 @@
 
                 <androidx.appcompat.widget.AppCompatToggleButton
                     android:id="@+id/like_toggle"
+                    android:layout_width="26dp"
+                    android:layout_height="24dp"
                     android:background="@drawable/heart_state"
                     android:button="@android:color/transparent"
                     android:textColor="@android:color/transparent"
-                    android:layout_width="26dp"
-                    android:layout_height="24dp"/>
+                    tools:ignore="TouchTargetSizeCheck" />
 
                 <ImageView
                     android:id="@+id/comment_btn"

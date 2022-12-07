@@ -32,6 +32,7 @@ import protrnd.com.data.network.ProfileApi
 import protrnd.com.data.network.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.FragmentProfileBinding
+import protrnd.com.databinding.LoadingLayoutBinding
 import protrnd.com.databinding.SelectImageDialogBinding
 import protrnd.com.ui.*
 import protrnd.com.ui.adapter.ImageThumbnailPostAdapter
@@ -44,10 +45,9 @@ import java.util.*
 
 class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, HomeRepository>() {
 
-    private var bgImageUri: Uri = Uri.EMPTY
-    private var profileImageUri: Uri = Uri.EMPTY
     private var profile: Profile? = null
     private var profileMap: HashMap<String, Profile> = HashMap()
+    private lateinit var loadingDialog : Dialog
 
     private val getProfileImageContent =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -59,18 +59,75 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         }
 
     private val cropProfileImage = registerForActivityResult(cropImagePicker(1f, 1f, 1080)) { uri ->
-        if (uri != null) {
-            profileImageUri = uri
-            binding.uploadBtn.visible(true)
+        if (uri != null && uri != Uri.EMPTY) {
+            Glide.with(requireContext()).load(uri).into(binding.profileImage)
+            loadingDialog.show()
+
+            autoDisposeScope.launch {
+                val uploadResult = viewModel.uploadImage(
+                    uri,
+                    profile?.username.toString(),
+                    requireActivity().getFileTypes(listOf(uri))[0]
+                )
+                withContext(Dispatchers.Main) {
+                    uploadResult.observe(viewLifecycleOwner) { url ->
+                        if (url.isEmpty()) {
+                            binding.root.snackbar("Error")
+                        } else {
+                            viewModel.updateProfile(
+                                ProfileDTO(
+                                    profileImage = url,
+                                    backgroundImageUrl = profile!!.bgimg,
+                                    phone = profile!!.phone!!,
+                                    accountType = profile?.acctype!!,
+                                    location = profile!!.location!!,
+                                    email = profile!!.email,
+                                    fullName = profile!!.fullname,
+                                    userName = profile!!.username
+                                )
+                            )
+                        }
+                    }
+                    loadingDialog.dismiss()
+                }
+            }
+
             Glide.with(requireContext()).load(uri).circleCrop().into(binding.profileImage)
         }
     }
 
     private val cropBannerImage = registerForActivityResult(cropImagePicker(16f, 9f, 1920)) { uri ->
-        if (uri != null) {
-            bgImageUri = uri
-            binding.uploadBtn.visible(true)
+        if (uri != null && uri != Uri.EMPTY) {
+            loadingDialog.show()
             Glide.with(requireContext()).load(uri).into(binding.bgImage)
+            autoDisposeScope.launch {
+                val result = viewModel.uploadImage(
+                    uri,
+                    profile?.username.toString(),
+                    requireActivity().getFileTypes(listOf(uri))[0]
+                )
+                withContext(Dispatchers.Main) {
+                    result.observe(viewLifecycleOwner) { url ->
+                        if (url.isEmpty()) {
+                            binding.root.snackbar("Error")
+                        } else {
+                            viewModel.updateProfile(
+                                ProfileDTO(
+                                    profileImage = profile!!.profileimg,
+                                    backgroundImageUrl = url,
+                                    phone = profile!!.phone!!,
+                                    accountType = profile?.acctype!!,
+                                    location = profile!!.location!!,
+                                    email = profile!!.email,
+                                    fullName = profile!!.fullname,
+                                    userName = profile!!.username
+                                )
+                            )
+                        }
+                    }
+                    loadingDialog.dismiss()
+                }
+            }
         }
     }
 
@@ -106,6 +163,19 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        loadingDialog = Dialog(requireContext())
+        loadingDialog.setCanceledOnTouchOutside(false)
+        val loadingLayoutBinding = LoadingLayoutBinding.inflate(layoutInflater)
+        loadingDialog.setContentView(loadingLayoutBinding.root)
+        val loadingWindow: Window = loadingDialog.window!!
+        loadingWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        loadingWindow.setLayout(
+            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        requireActivity().checkStoragePermissions()
+
         loadPage()
         viewModel.profile.observe(viewLifecycleOwner) {
             when (it) {
@@ -119,7 +189,6 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
                         .load(profile?.profileimg).circleCrop().into(binding.profileImage)
                     if (profile?.bgimg!!.isNotEmpty()) Glide.with(this).load(profile?.bgimg)
                         .into(binding.bgImage)
-                    binding.uploadBtn.visible(false)
 
                     lifecycleScope.launch {
                         binding.followersCount.showFollowersCount(viewModel, profile!!)
@@ -174,73 +243,6 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
                 dialog.dismiss()
             }
             dialog.show()
-        }
-
-        binding.uploadBtn.setOnClickListener {
-            var profileImage = profile?.profileimg!!
-            var bgImage = profile?.bgimg!!
-            binding.uploadBtn.visible(false)
-            if (profileImageUri != Uri.EMPTY) {
-                autoDisposeScope.launch {
-                    val uploadResult = viewModel.uploadImage(
-                        profileImageUri,
-                        profile?.username.toString(),
-                        requireActivity().getFileTypes(listOf(profileImageUri))[0]
-                    )
-                    withContext(Dispatchers.Main) {
-                        uploadResult.observe(viewLifecycleOwner) { url ->
-                            if (url.isEmpty()) {
-                                binding.root.snackbar("Error")
-                            } else {
-                                profileImage = url
-                                viewModel.updateProfile(
-                                    ProfileDTO(
-                                        profileImage = profileImage,
-                                        backgroundImageUrl = bgImage,
-                                        phone = profile!!.phone!!,
-                                        accountType = profile?.acctype!!,
-                                        location = profile!!.location!!,
-                                        email = profile!!.email,
-                                        fullName = profile!!.fullname,
-                                        userName = profile!!.username
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (bgImageUri != Uri.EMPTY) {
-                autoDisposeScope.launch {
-                    val result = viewModel.uploadImage(
-                        bgImageUri,
-                        profile?.username.toString(),
-                        requireActivity().getFileTypes(listOf(bgImageUri))[0]
-                    )
-                    withContext(Dispatchers.Main) {
-                        result.observe(viewLifecycleOwner) { url ->
-                            if (url.isEmpty()) {
-                                binding.root.snackbar("Error")
-                            } else {
-                                bgImage = url
-                                viewModel.updateProfile(
-                                    ProfileDTO(
-                                        profileImage = profileImage,
-                                        backgroundImageUrl = bgImage,
-                                        phone = profile!!.phone!!,
-                                        accountType = profile?.acctype!!,
-                                        location = profile!!.location!!,
-                                        email = profile!!.email,
-                                        fullName = profile!!.fullname,
-                                        userName = profile!!.username
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 

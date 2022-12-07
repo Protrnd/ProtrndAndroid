@@ -108,10 +108,10 @@ class PostsAdapter(
         holder.view.likeToggle.setOnClickListener {
             val liked = holder.view.likeToggle.isChecked
             var likesResult = holder.view.likesCount.text.toString()
-            likesResult = if (likesResult.contains("like"))
-                likesResult.replace(" like", "")
-            else
+            likesResult = if (likesResult.contains("likes"))
                 likesResult.replace(" likes", "")
+            else
+                likesResult.replace(" like", "")
             var count = likesResult.toInt()
             holder.itemView.autoDisposeScope.launch {
                 if (liked) {
@@ -137,9 +137,11 @@ class PostsAdapter(
         holder.itemView.autoDisposeScope.launch {
             when (val likesCount = viewModel.getLikesCount(postData.id)) {
                 is Resource.Success -> {
+                    withContext(Dispatchers.Main) {
                     val count = likesCount.value.data as Double
                     val likes = if (count > 1) "${count.toInt()} likes" else "${count.toInt()} like"
                     holder.view.likesCount.text = likes
+                    }
                 }
                 else -> {}
             }

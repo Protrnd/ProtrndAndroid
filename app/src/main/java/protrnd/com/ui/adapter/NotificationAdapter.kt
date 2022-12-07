@@ -11,6 +11,7 @@ import protrnd.com.data.models.Notification
 import protrnd.com.databinding.NotificationRvItemBinding
 import protrnd.com.ui.notification.NotificationViewModel
 import protrnd.com.ui.post.PostActivity
+import protrnd.com.ui.profile.ProfileActivity
 import protrnd.com.ui.viewholder.NotificationsViewHolder
 
 class NotificationAdapter(
@@ -41,14 +42,18 @@ class NotificationAdapter(
     override fun onBindViewHolder(holder: NotificationsViewHolder, position: Int) {
         holder.bind(notifications[position], viewModel)
         holder.itemView.setOnClickListener {
-            if (notifications[position].type == "Post") {
-                holder.itemView.autoDisposeScope.launch {
-                    when (viewModel.setNotificationViewed(notifications[position].id)) {
-                        else -> {}
-                    }
+            holder.itemView.autoDisposeScope.launch {
+                when (viewModel.setNotificationViewed(notifications[position].id)) {
+                    else -> {}
                 }
+            }
+            if (notifications[position].type == "Post") {
                 it.context.startActivity(Intent(it.context, PostActivity::class.java).apply {
                     this.putExtra("post_id", notifications[position].item_id)
+                })
+            } else if (notifications[position].type == "Profile") {
+                it.context.startActivity(Intent(it.context, ProfileActivity::class.java).apply {
+                    this.putExtra("profile_id", notifications[position].senderid)
                 })
             }
         }

@@ -121,6 +121,8 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
 
+        this.checkStoragePermissions()
+
         binding.cancelButton.setOnClickListener {
             if (postUriList.isNotEmpty())
                 showConfirmationDialog(
