@@ -38,6 +38,7 @@ import androidx.viewpager2.widget.CompositePageTransformer
 import androidx.viewpager2.widget.MarginPageTransformer
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -127,6 +128,7 @@ fun ViewBinding.bindPostDetails(
         Glide.with(this.root)
             .load(postOwnerProfile.profileimg)
             .circleCrop()
+            .transition(DrawableTransitionOptions.withCrossFade())
             .into(profileImage)
     }
 
@@ -238,7 +240,7 @@ fun View.snackbar(message: String, action: (() -> Unit)? = null) {
     snackbar.setBackgroundTint(Color.RED)
     action.let {
         if (it != null) {
-            it()
+             it()
         }
     }
     val textView =
@@ -363,10 +365,15 @@ fun String.formatNumber(): String {
 fun String.getAgo(): CharSequence {
     val pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
     val sdf = SimpleDateFormat(pattern, Locale.ENGLISH)
-    sdf.timeZone = TimeZone.getTimeZone("GMT+1")
+    sdf.timeZone = TimeZone.getTimeZone(TimeZone.getDefault().toZoneId())
     return try {
         val now = System.currentTimeMillis()
         val time: Long = sdf.parse(this)?.time ?: now
+        val millis = now - time
+        val mins = millis/(1000*60) % 60
+        val hours = millis/ (1000*60*60)
+        if (mins < 59 && (hours - 1) < 1)
+             return "$mins min"
         val ago = DateUtils.getRelativeTimeSpanString(
             time,
             now,

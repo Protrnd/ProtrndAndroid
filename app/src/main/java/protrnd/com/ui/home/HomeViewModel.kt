@@ -19,17 +19,9 @@ class HomeViewModel(
     val profile: LiveData<Resource<ProfileResponseBody>>
         get() = _profile
 
-    private val _postsPage: MutableLiveData<Resource<GetPostsResponseBody>> = MutableLiveData()
-    val postPage: LiveData<Resource<GetPostsResponseBody>>
-        get() = _postsPage
-
     private val _locations: MutableLiveData<Resource<GetLocationResponseBody>> = MutableLiveData()
     val locations: LiveData<Resource<GetLocationResponseBody>>
         get() = _locations
-
-    private val _cities: MutableLiveData<Resource<GetLocationResponseBody>> = MutableLiveData()
-    val cities: LiveData<Resource<GetLocationResponseBody>>
-        get() = _cities
 
     private val _isFollowing: MutableLiveData<Resource<BasicResponseBody>> = MutableLiveData()
     val isFollowing: LiveData<Resource<BasicResponseBody>>
@@ -49,7 +41,7 @@ class HomeViewModel(
         _profile.value = repository.updateProfile(profileDTO)
     }
 
-    fun getPostsPage(page: Int) = viewModelScope.launch{ _postsPage.value = repository.getPostsPage(page) }
+    suspend fun getPostByPage(page: Int) = repository.getPostsPage(page)
 
     suspend fun getPost(id: String) = repository.getPost(id)
 

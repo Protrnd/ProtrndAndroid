@@ -1,6 +1,5 @@
 package protrnd.com.ui.adapter
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -18,16 +17,28 @@ class NotificationAdapter(
     private var notifications: MutableList<Notification> = ArrayList(),
     val viewModel: NotificationViewModel
 ) : RecyclerView.Adapter<NotificationsViewHolder>() {
+
     fun addAll(result: List<Notification>) {
         val lastIndex = notifications.size - 1
         notifications.addAll(result)
-        notifyItemRangeInserted(lastIndex, result.size)
+        notifyInsertChange(lastIndex,result.size,notifications.size)
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     fun setList(result: MutableList<Notification>) {
-        notifications = result
-        notifyDataSetChanged()
+        if (notifications.isEmpty()) {
+            notifications = result
+        } else {
+            val previousSize = notifications.size
+            notifications = result
+            notifyItemRangeRemoved(0,previousSize)
+            notifyItemRangeChanged(0,previousSize)
+        }
+        notifyInsertChange(0,result.size,result.size)
+    }
+
+    private fun notifyInsertChange(insertStart: Int, insertSize: Int, changedSize: Int) {
+        notifyItemRangeInserted(insertStart, insertSize)
+        notifyItemRangeChanged(0, changedSize)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = NotificationsViewHolder(

@@ -83,10 +83,10 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
         binding.likeToggle.setOnClickListener {
             val liked = binding.likeToggle.isChecked
             var likesResult = binding.likesCount.text.toString()
-            likesResult = if (likesResult.contains("like"))
-                likesResult.replace(" like", "")
-            else
+            likesResult = if (likesResult.contains("likes"))
                 likesResult.replace(" likes", "")
+            else
+                likesResult.replace(" like", "")
             var count = likesResult.toInt()
             lifecycleScope.launch {
                 if (liked) {

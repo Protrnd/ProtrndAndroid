@@ -72,4 +72,6 @@
     <string name="signup">Sign Up</string>
     <string name="video_player_closer">Video player closer</string>
     <string name="support">Support</string>
+    <string name="receive">Receive</string>
+    <string name="send_or_receive">Want to send or receive money with ease?</string>
 </resources>

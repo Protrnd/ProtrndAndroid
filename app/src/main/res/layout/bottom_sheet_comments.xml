@@ -24,9 +24,9 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="0.5dp"
+        android:layout_height="1dp"
         android:layout_marginTop="15dp"
-        android:background="@color/app_background"/>
+        android:background="@color/shimmer_color"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/comment_section"

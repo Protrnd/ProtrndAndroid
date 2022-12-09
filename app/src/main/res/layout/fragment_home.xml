@@ -57,10 +57,7 @@
                         android:layout_height="match_parent"
                         android:orientation="vertical"
                         android:paddingStart="15dp"
-                        android:paddingEnd="15dp"
-                        app:stackFromEnd="true"
-                        app:reverseLayout="true"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                        android:paddingEnd="15dp"/>
                 </LinearLayout>
             </androidx.appcompat.widget.LinearLayoutCompat>
         </androidx.core.widget.NestedScrollView>

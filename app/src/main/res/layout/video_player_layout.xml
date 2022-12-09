@@ -9,7 +9,12 @@
         android:id="@+id/video_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:backgroundTint="@color/black"/>
+        android:backgroundTint="@color/black"
+        android:fitsSystemWindows="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <ImageButton
         android:id="@+id/close_video"
@@ -19,7 +24,7 @@
         android:src="@drawable/cancel_ic"
         android:padding="5dp"
         android:elevation="50dp"
-        android:alpha="0.3"
+        android:alpha="0.1"
         android:contentDescription="@string/video_player_closer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

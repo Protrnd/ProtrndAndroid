@@ -2,6 +2,9 @@ package protrnd.com.ui.home
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -9,12 +12,14 @@ import android.view.MenuItem
 import androidx.activity.OnBackPressedCallback
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import protrnd.com.R
 import protrnd.com.data.network.PostApi
 import protrnd.com.data.network.ProfileApi
 import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityHomeBinding
+import protrnd.com.databinding.SelectPaymentActionBinding
 import protrnd.com.ui.REQUEST_PERMISSION_CODE
 import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.checkStoragePermissions
@@ -25,7 +30,7 @@ import protrnd.com.ui.snackbar
 
 class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeRepository>() {
 
-    lateinit var navController: NavController
+    private lateinit var navController: NavController
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
@@ -97,6 +102,14 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
         when(item.itemId) {
             R.id.notification_btn -> {
                 startActivity(Intent(this,NotificationActivity::class.java))
+            }
+            R.id.scan_btn -> {
+                val dialog = BottomSheetDialog(this,R.style.BottomSheetTheme)
+                val qrBinding = SelectPaymentActionBinding.inflate(layoutInflater)
+                dialog.setContentView(qrBinding.root)
+                dialog.show()
+                dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                dialog.behavior.peekHeight = Resources.getSystem().displayMetrics.heightPixels
             }
         }
         return true

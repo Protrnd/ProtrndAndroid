@@ -37,13 +37,15 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     private var isLoading: Boolean = false
     private var page = 1
     private lateinit var dialog: Dialog
-    private val locationHash = HashMap<String,List<String>>()
-    private val profileHash = HashMap<String,Profile>()
+    private val locationHash = HashMap<String, List<String>>()
+    private val profileHash = HashMap<String, Profile>()
     lateinit var profile: Profile
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        postsLayoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.VERTICAL, true)
+        postsLayoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        binding.postsRv.layoutManager = postsLayoutManager
 
         loadPage()
 
@@ -62,7 +64,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
         val locationPickerBinding = LocationPickerBinding.inflate(layoutInflater)
         dialog.setCanceledOnTouchOutside(false)
         viewModel.locations.observe(viewLifecycleOwner) { resource ->
-            when(resource) {
+            when (resource) {
                 is Resource.Success -> {
                     val locations: List<Location> = resource.value.data
                     dialog.setContentView(locationPickerBinding.root)
@@ -104,7 +106,11 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
 
         locationPickerBinding.saveBtn.setOnClickListener {
             if (state.isEmpty() || city.isEmpty())
-                Toast.makeText(requireContext(), "Please select a state and city", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Please select a state and city",
+                    Toast.LENGTH_SHORT
+                ).show()
             else {
                 profile.location = "$state,$city"
                 viewModel.updateProfile(
@@ -123,21 +129,11 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
             }
         }
 
-        binding.root.setOnScrollChangeListener { _, _, _, _, _ ->
-            // number of visible items
-            val visibleItemCount = postsLayoutManager.childCount
-            // number of items in layout
-            val totalItemCount = postsLayoutManager.itemCount
-            // the position of first visible item
-            val firstVisibleItemPosition = postsLayoutManager.findFirstVisibleItemPosition()
-            val isAtLastItem = firstVisibleItemPosition + visibleItemCount >= totalItemCount
-            // validate non negative values
-            val isValidFirstItem = firstVisibleItemPosition >= 0
-            // validate total items are more than possible visible items
-            val totalIsMoreThanVisible = totalItemCount >= 10
-            // flag to know whether to load more
-            val shouldLoadMore = isValidFirstItem && isAtLastItem && totalIsMoreThanVisible
-            if (shouldLoadMore) loadMoreItems(false)
+        binding.postsRv.setOnScrollChangeListener { _, _, _, _, _ ->
+            if (!isLoading) {
+                loadMoreItems(false)
+                isLoading = true
+            }
         }
     }
 
@@ -154,8 +150,13 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
                     if (profile.location == null || profile.location!!.isEmpty())
                         loadLocations()
                     val profile = it.value.data
-                    adapter = PostsAdapter(viewModel=viewModel, lifecycleOwner = viewLifecycleOwner, currentProfile = profile)
+                    adapter = PostsAdapter(
+                        viewModel = viewModel,
+                        lifecycleOwner = viewLifecycleOwner,
+                        currentProfile = profile
+                    )
                     //Load first page
+                    setupRecyclerView()
                     loadMoreItems(true)
                 }
                 is Resource.Failure -> {
@@ -168,28 +169,30 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     private fun loadMoreItems(isFirstPage: Boolean) {
         if (!isFirstPage)
             page += 1
-        viewModel.getPostsPage(page)
-        viewModel.postPage.observe(viewLifecycleOwner) {
-            viewLifecycleOwner.lifecycleScope.launch {
-                when(it) {
-                    is Resource.Success -> {
-                        val result = it.value.data
-                        if (result.isEmpty())
-                            return@launch
-                        else if (!isFirstPage) adapter.addAll(result)
-                        else adapter.setList(result as MutableList<Post>)
-                        binding.shimmerLayout.stopShimmerAnimation()
-                        binding.shimmerLayout.visible(false)
-                        setupRecyclerView()
-                        isLoading = false
-                    }
-                    is Resource.Loading -> {
-                        isLoading = true
-                        binding.postsRv.visible(false)
-                    }
-                    is Resource.Failure -> {
-                        isLoading = false
-                        this@HomeFragment.handleAPIError(it) { lifecycleScope.launch { loadMoreItems(isFirstPage) } }
+        viewLifecycleOwner.lifecycleScope.launch {
+            when (val posts = viewModel.getPostByPage(page)) {
+                is Resource.Success -> {
+                    val result = posts.value.data
+                    if (result.isEmpty())
+                        return@launch
+                    if (!isFirstPage) adapter.addAll(result)
+                    else adapter.setList(result as MutableList<Post>)
+                    binding.shimmerLayout.stopShimmerAnimation()
+                    binding.shimmerLayout.visible(false)
+                    isLoading = false
+                }
+                is Resource.Loading -> {
+                    isLoading = true
+                    binding.postsRv.visible(false)
+                }
+                is Resource.Failure -> {
+                    isLoading = false
+                    this@HomeFragment.handleAPIError(posts) {
+                        lifecycleScope.launch {
+                            loadMoreItems(
+                                isFirstPage
+                            )
+                        }
                     }
                 }
             }
@@ -230,7 +233,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     override fun onDestroy() {
         binding.shimmerLayout.stopShimmerAnimation()
         super.onDestroy()
-        if (dialog.isShowing){
+        if (dialog.isShowing) {
             dialog.cancel()
         }
     }

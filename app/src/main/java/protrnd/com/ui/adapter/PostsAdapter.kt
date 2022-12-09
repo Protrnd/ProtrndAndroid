@@ -1,6 +1,5 @@
 package protrnd.com.ui.adapter
 
-import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -36,13 +35,24 @@ class PostsAdapter(
     fun addAll(result: List<Post>) {
         val lastIndex = posts.size - 1
         posts.addAll(result)
-        notifyItemRangeInserted(lastIndex, result.size)
+        notifyInsertChange(lastIndex,result.size,posts.size)
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     fun setList(result: MutableList<Post>) {
-        posts = result
-        notifyDataSetChanged()
+        if (posts.isEmpty()) {
+            posts = result
+        } else {
+            val previousSize = posts.size
+            posts = result
+            notifyItemRangeRemoved(0,previousSize)
+            notifyItemRangeChanged(0,previousSize)
+        }
+        notifyInsertChange(0,result.size,result.size)
+    }
+
+    private fun notifyInsertChange(insertStart: Int, insertSize: Int, changedSize: Int) {
+        notifyItemRangeInserted(insertStart, insertSize)
+        notifyItemRangeChanged(0, changedSize)
     }
 
     override fun getItemCount(): Int = posts.size
@@ -52,12 +62,13 @@ class PostsAdapter(
 
         holder.view.commentBtn.setOnClickListener {
             val bottomSheet = BottomSheetDialog(holder.itemView.context, R.style.BottomSheetTheme)
-            val binding = BottomSheetCommentsBinding.inflate(LayoutInflater.from(holder.itemView.context))
+            val binding =
+                BottomSheetCommentsBinding.inflate(LayoutInflater.from(holder.itemView.context))
             bottomSheet.setContentView(binding.root)
             binding.commentSection.layoutManager = LinearLayoutManager(holder.itemView.context)
             viewModel.getComments(postData.identifier)
             viewModel.comments.observe(lifecycleOwner) { comments ->
-                when(comments) {
+                when (comments) {
                     is Resource.Success -> {
                         if (comments.value.data.isNotEmpty()) {
                             binding.commentSection.visible(true)
@@ -78,25 +89,25 @@ class PostsAdapter(
             binding.sendComment.setOnClickListener {
                 val commentContent = binding.commentInput.text.toString().trim()
                 if (commentContent.isNotEmpty()) {
-                val comment = CommentDTO(comment = commentContent, postid = postData.identifier)
-                holder.itemView.autoDisposeScope.launch {
-                    when (val result = viewModel.addComment(comment)) {
-                        is Resource.Success -> {
-                            binding.sendComment.enable(true)
-                            if (result.value.successful) {
-                                binding.commentInput.text.clear()
-                                viewModel.getComments(postData.identifier)
+                    val comment = CommentDTO(comment = commentContent, postid = postData.identifier)
+                    holder.itemView.autoDisposeScope.launch {
+                        when (val result = viewModel.addComment(comment)) {
+                            is Resource.Success -> {
+                                binding.sendComment.enable(true)
+                                if (result.value.successful) {
+                                    binding.commentInput.text.clear()
+                                    viewModel.getComments(postData.identifier)
+                                }
+                            }
+                            is Resource.Loading -> {
+                                binding.sendComment.enable(false)
+                            }
+                            is Resource.Failure -> {
+                                binding.sendComment.enable(true)
                             }
                         }
-                        is Resource.Loading -> {
-                            binding.sendComment.enable(false)
-                        }
-                        is Resource.Failure -> {
-                            binding.sendComment.enable(true)
-                        }
                     }
-                }
-                } else{
+                } else {
                     binding.inputField.error = "This field cannot be empty"
                 }
             }
@@ -112,7 +123,7 @@ class PostsAdapter(
                 likesResult.replace(" likes", "")
             else
                 likesResult.replace(" like", "")
-            var count = likesResult.toInt()
+            var count = if (likesResult.isNotEmpty()) likesResult.toInt() else 0
             holder.itemView.autoDisposeScope.launch {
                 if (liked) {
                     count += 1
@@ -138,9 +149,10 @@ class PostsAdapter(
             when (val likesCount = viewModel.getLikesCount(postData.id)) {
                 is Resource.Success -> {
                     withContext(Dispatchers.Main) {
-                    val count = likesCount.value.data as Double
-                    val likes = if (count > 1) "${count.toInt()} likes" else "${count.toInt()} like"
-                    holder.view.likesCount.text = likes
+                        val count = likesCount.value.data as Double
+                        val likes =
+                            if (count > 1) "${count.toInt()} likes" else "${count.toInt()} like"
+                        holder.view.likesCount.text = likes
                     }
                 }
                 else -> {}

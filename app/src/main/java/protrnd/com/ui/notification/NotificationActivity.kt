@@ -30,7 +30,6 @@ class NotificationActivity : BaseActivity<ActivityNotificationBinding,Notificati
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
-
         setSupportActionBar(binding.appToolbar)
         val actionBar = supportActionBar!!
         actionBar.title = "Notifications"
@@ -38,24 +37,16 @@ class NotificationActivity : BaseActivity<ActivityNotificationBinding,Notificati
         binding.appToolbar.contentInsetStartWithNavigation = 0
         actionBar.setHomeAsUpIndicator(R.drawable.arrow_back_ic)
 
-        notificationLayoutManager = LinearLayoutManager(this,LinearLayoutManager.VERTICAL, true)
+        notificationLayoutManager = LinearLayoutManager(this,LinearLayoutManager.VERTICAL, false)
+        notificationAdapter = NotificationAdapter(viewModel=viewModel)
+        setupRecyclerView()
         loadMoreItems(true)
 
         binding.nestedScroll.setOnScrollChangeListener { _, _, _, _, _ ->
-            // number of visible items
-            val visibleItemCount = notificationLayoutManager.childCount
-            // number of items in layout
-            val totalItemCount = notificationLayoutManager.itemCount
-            // the position of first visible item
-            val firstVisibleItemPosition = notificationLayoutManager.findFirstVisibleItemPosition()
-            val isAtLastItem = firstVisibleItemPosition + visibleItemCount >= totalItemCount
-            // validate non negative values
-            val isValidFirstItem = firstVisibleItemPosition >= 0
-            // validate total items are more than possible visible items
-            val totalIsMoreThanVisible = totalItemCount >= 20
-            // flag to know whether to load more
-            val shouldLoadMore = isValidFirstItem && isAtLastItem && totalIsMoreThanVisible
-            if (shouldLoadMore) loadMoreItems(false)
+            if (!isLoading) {
+                loadMoreItems(false)
+                isLoading = true
+            }
         }
     }
 
@@ -72,29 +63,28 @@ class NotificationActivity : BaseActivity<ActivityNotificationBinding,Notificati
     private fun loadMoreItems(isFirstPage: Boolean) {
         if (!isFirstPage)
             page += 1
-        viewModel.getNotificationsPage(page)
-        viewModel.notifications.observe(this) {
-            lifecycleScope.launch {
-                when(it) {
-                    is Resource.Success -> {
-                        val result = it.value.data
-                        notificationAdapter = NotificationAdapter(viewModel=viewModel)
-                        if (result.isEmpty())
-                            return@launch
-                        else if (!isFirstPage) notificationAdapter.addAll(result)
-                        else notificationAdapter.setList(result as MutableList<Notification>)
-                        setupRecyclerView()
-                        isLoading = false
-                    }
-                    is Resource.Loading -> {
-                        isLoading = true
-                        binding.progressBar.visible(true)
-                    }
-                    is Resource.Failure -> {
-                        isLoading = true
-                        binding.progressBar.visible(true)
-                        binding.root.snackbar("Error loading notifications", action = {loadMoreItems(true)})
-                    }
+        lifecycleScope.launch {
+            when (val notification = viewModel.getNotificationsPage(page)) {
+                is Resource.Success -> {
+                    val result = notification.value.data
+                    if (result.isEmpty())
+                        return@launch
+                    if (!isFirstPage)
+                        notificationAdapter.addAll(result)
+                    else
+                        notificationAdapter.setList(result as MutableList<Notification>)
+                    binding.notificationRecycler.visible(true)
+                    isLoading = false
+                    binding.progressBar.visible(false)
+                }
+                is Resource.Loading -> {
+                    isLoading = true
+                    binding.progressBar.visible(true)
+                }
+                is Resource.Failure -> {
+                    isLoading = false
+                    binding.progressBar.visible(true)
+                    binding.root.snackbar("Error loading notifications")
                 }
             }
         }
@@ -104,10 +94,7 @@ class NotificationActivity : BaseActivity<ActivityNotificationBinding,Notificati
         binding.notificationRecycler.apply {
             this.adapter = notificationAdapter
             this.layoutManager = notificationLayoutManager
-            this.visible(true)
         }
-        binding.progressBar.visible(false)
-        notificationAdapter
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
