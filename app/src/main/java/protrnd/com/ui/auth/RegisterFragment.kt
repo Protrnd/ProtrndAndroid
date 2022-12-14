@@ -19,20 +19,24 @@ class RegisterFragment : BaseFragment<AuthViewModel, FragmentRegisterBinding, Au
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val navHost = childFragmentManager.findFragmentById(R.id.register_fragment_container) as NavHostFragment
-        requireActivity().onBackPressedDispatcher.addCallback(requireActivity(), object : OnBackPressedCallback(true){
-            override fun handleOnBackPressed() {
-                val isSelectAccountType = navHost.childFragmentManager.fragments.any { it.javaClass == SelectAccountTypeFragment::class.java && it.isVisible }
-                if (!isSelectAccountType)
-                    navHost.navController.popBackStack()
-                val authActivity = requireActivity() as AuthenticationActivity
-                try {
-                    authActivity.startFragment(RegisterFragmentDirections.actionRegisterFragmentToLoginFragment())
-                } catch (e: Exception) {
-                    authActivity.finish()
+        val navHost =
+            childFragmentManager.findFragmentById(R.id.register_fragment_container) as NavHostFragment
+        requireActivity().onBackPressedDispatcher.addCallback(
+            requireActivity(),
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    val isSelectAccountType =
+                        navHost.childFragmentManager.fragments.any { it.javaClass == SelectAccountTypeFragment::class.java && it.isVisible }
+                    if (!isSelectAccountType)
+                        navHost.navController.popBackStack()
+                    val authActivity = requireActivity() as AuthenticationActivity
+                    try {
+                        authActivity.startFragment(RegisterFragmentDirections.actionRegisterFragmentToLoginFragment())
+                    } catch (e: Exception) {
+                        authActivity.finish()
+                    }
                 }
-            }
-        })
+            })
     }
 
     override fun getViewModel() = AuthViewModel::class.java
@@ -40,7 +44,8 @@ class RegisterFragment : BaseFragment<AuthViewModel, FragmentRegisterBinding, Au
     override fun getFragmentBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
-    ) = FragmentRegisterBinding.inflate(inflater,container,false)
+    ) = FragmentRegisterBinding.inflate(inflater, container, false)
 
-    override fun getFragmentRepository() = AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
+    override fun getFragmentRepository() =
+        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
 }

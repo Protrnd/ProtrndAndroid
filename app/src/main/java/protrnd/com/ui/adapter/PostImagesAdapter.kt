@@ -10,12 +10,17 @@ import protrnd.com.ui.post.NewPostActivity
 import protrnd.com.ui.viewholder.ImageListViewHolder
 import protrnd.com.ui.visible
 
-class PostImagesAdapter(private val activity: NewPostActivity? = null, private val images: List<String>? = null, val uri: MutableList<Uri>? = null): RecyclerView.Adapter<ImageListViewHolder>() {
+class PostImagesAdapter(
+    private val activity: NewPostActivity? = null,
+    private val images: List<String>? = null,
+    val uri: MutableList<Uri>? = null
+) : RecyclerView.Adapter<ImageListViewHolder>() {
 
     lateinit var imageClickListener: ImageClickListener
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int)= ImageListViewHolder(
-        PostImageItemBinding.inflate(LayoutInflater.from(parent.context),parent,false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ImageListViewHolder(
+        PostImageItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    )
 
     override fun onBindViewHolder(holder: ImageListViewHolder, position: Int) {
         if (images != null) {
@@ -27,7 +32,7 @@ class PostImagesAdapter(private val activity: NewPostActivity? = null, private v
             holder.view.removeImage.setOnClickListener {
                 uri.remove(uri[position])
                 this.notifyItemRemoved(position)
-                notifyItemRangeChanged(position,itemCount-1)
+                notifyItemRangeChanged(position, itemCount - 1)
             }
             holder.view.postImage.setOnClickListener {
                 imageClickListener.imageClickListener(uri[position], position)
@@ -35,7 +40,7 @@ class PostImagesAdapter(private val activity: NewPostActivity? = null, private v
         }
     }
 
-    override fun getItemCount() : Int {
+    override fun getItemCount(): Int {
         if (images != null)
             return images.size
         if (uri != null)

@@ -1,5 +1,6 @@
 package protrnd.com.ui.viewholder
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.recyclerview.widget.RecyclerView
 import protrnd.com.R
@@ -8,9 +9,11 @@ import protrnd.com.data.models.Profile
 import protrnd.com.databinding.PostItemBinding
 import protrnd.com.ui.bindPostDetails
 import protrnd.com.ui.profile.ProfileActivity
+import protrnd.com.ui.promotion.NewPromotionActivity
 import protrnd.com.ui.visible
 
 class PostsViewHolder(val view: PostItemBinding): RecyclerView.ViewHolder(view.root) {
+    @SuppressLint("SetTextI18n")
     fun bind(item: Post, postOwnerProfile: Profile? = null, currentProfile: Profile) {
         //loads image from network using coil extension function
         view.bindPostDetails(
@@ -26,9 +29,7 @@ class PostsViewHolder(val view: PostItemBinding): RecyclerView.ViewHolder(view.r
             timeText = view.timeUploaded
         )
 
-        if (currentProfile == postOwnerProfile) {
-            // Promote post
-        } else {
+        if (currentProfile != postOwnerProfile) {
             view.promoteText.text = "Support"
             view.promoteText.setCompoundDrawablesWithIntrinsicBounds(0,0, R.drawable.support_ic,0)
         }
@@ -46,11 +47,13 @@ class PostsViewHolder(val view: PostItemBinding): RecyclerView.ViewHolder(view.r
             })
         }
 
-//        view.promoteBtn.setOnClickListener {
-//            val i = Intent(it.context, NewPromotionActivity::class.java).also { intent ->
-//                intent.putExtra("post_details",item)
-//            }
-//            it.context.startActivity(i)
-//        }
+        view.promoteBtn.setOnClickListener {
+            if(currentProfile == postOwnerProfile) {
+                val i = Intent(it.context, NewPromotionActivity::class.java).also { intent ->
+                    intent.putExtra("post_details", item)
+                }
+                it.context.startActivity(i)
+            }
+        }
     }
 }

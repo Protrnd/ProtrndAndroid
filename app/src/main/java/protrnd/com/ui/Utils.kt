@@ -9,11 +9,16 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
 import android.media.MediaMetadataRetriever
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.TextPaint
 import android.text.format.DateUtils
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.view.Gravity
@@ -54,7 +59,7 @@ import protrnd.com.ui.adapter.PostImagesAdapter
 import protrnd.com.ui.auth.AuthenticationActivity
 import protrnd.com.ui.auth.LoginFragment
 import protrnd.com.ui.home.HomeViewModel
-import java.io.Serializable
+import protrnd.com.ui.profile.ProfileActivity
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -122,7 +127,8 @@ fun ViewBinding.bindPostDetails(
     val time = post.time.getAgo()
     timeText.text = time
     val caption = postOwnerProfile.username + " ${post.caption}"
-    captionTv.text = caption.setSpannableBold(postOwnerProfile.username)
+    captionTv.text = caption
+    captionTv.setTags(postOwnerProfile.username)
 
     if (postOwnerProfile.profileimg.isNotEmpty()) {
         Glide.with(this.root)
@@ -146,11 +152,67 @@ fun ViewBinding.bindPostDetails(
     TabLayoutMediator(tabLayout, imagesPager) { _, _ -> }.attach()
 }
 
-fun <T : Serializable?> Intent.getSerializable(key: String, m_class: Class<T>): T {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-        this.getSerializableExtra(key, m_class)!!
-    else
-        this.getSerializableExtra(key) as T
+//fun <T : Serializable?> Intent.getSerializable(key: String, m_class: Class<T>): T {
+//    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+//        this.getSerializableExtra(key, m_class)!!
+//    else
+//        this.getSerializableExtra(key) as T
+//}
+
+private fun TextView.setTags(section: String) {
+    val pTagString: String = this.text.toString().trim()
+    val string = SpannableString(pTagString)
+    string.setSpan(
+        StyleSpan(Typeface.BOLD),
+        0,
+        0 + section.length,
+        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+    )
+
+    var start = -1
+    var i = 0
+    while (i < pTagString.length) {
+        if (pTagString[i] == '@' || pTagString[i] == '#') {
+            start = i
+        } else if (pTagString[i] == ' '
+            || i == pTagString.length - 1 && start != -1
+        ) {
+            if (start != -1) {
+                if (i == pTagString.length - 1) {
+                    i++ // case for if hash is last word and there is no
+                    // space after word
+                }
+                val tag = pTagString.substring(start, i)
+                string.setSpan(object : ClickableSpan() {
+                    override fun onClick(widget: View) {
+                        if (tag.startsWith("@")) {
+                            Intent(this@setTags.context, ProfileActivity::class.java).apply {
+                                putExtra("profile_name", tag)
+                                this@setTags.context.startActivity(this)
+                            }
+                        }
+                        if (tag.startsWith("#")) {
+                            Intent(this@setTags.context, HashTagResultsActivity::class.java).apply {
+                                putExtra("hashtag", tag)
+                                this@setTags.context.startActivity(this)
+                            }
+                        }
+                    }
+
+                    override fun updateDrawState(ds: TextPaint) {
+                        if (tag.contains("@")) ds.color =
+                            Color.parseColor("#E02A45") else ds.color =
+                            Color.parseColor("#ed6057")
+                        ds.isUnderlineText = false
+                    }
+                }, start, i, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                start = -1
+            }
+        }
+        i++
+    }
+    this.movementMethod = LinkMovementMethod.getInstance()
+    this.text = string
 }
 
 fun showConfirmationDialog(
@@ -240,7 +302,7 @@ fun View.snackbar(message: String, action: (() -> Unit)? = null) {
     snackbar.setBackgroundTint(Color.RED)
     action.let {
         if (it != null) {
-             it()
+            it()
         }
     }
     val textView =
@@ -277,7 +339,7 @@ fun Fragment.handleAPIError(failure: Resource.Failure, retry: (() -> Unit)? = nu
             if (this is LoginFragment) {
                 requireView().snackbar("You've entered incorrect email or password")
             } else {
-                Intent(requireContext(),AuthenticationActivity::class.java).also {
+                Intent(requireContext(), AuthenticationActivity::class.java).also {
                     it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     startActivity(it)
                 }
@@ -294,7 +356,7 @@ fun handleAPIError(view: View, failure: Resource.Failure, retry: (() -> Unit)? =
     when {
         failure.isNetworkError -> view.snackbar("Please check your internet connection", retry)
         failure.errorCode == 401 -> {
-            Intent(view.context,AuthenticationActivity::class.java).also {
+            Intent(view.context, AuthenticationActivity::class.java).also {
                 it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 view.context.startActivity(it)
             }
@@ -370,10 +432,10 @@ fun String.getAgo(): CharSequence {
         val now = System.currentTimeMillis()
         val time: Long = sdf.parse(this)?.time ?: now
         val millis = now - time
-        val mins = millis/(1000*60) % 60
-        val hours = millis/ (1000*60*60)
+        val mins = millis / (1000 * 60) % 60
+        val hours = millis / (1000 * 60 * 60)
         if (mins < 59 && (hours - 1) < 1)
-             return "$mins min"
+            return "$mins min ago"
         val ago = DateUtils.getRelativeTimeSpanString(
             time,
             now,
@@ -395,7 +457,8 @@ fun View.hideSystemUI(window: Window) {
         controller.hide(WindowInsetsCompat.Type.systemBars())
         controller.hide(WindowInsetsCompat.Type.navigationBars())
         controller.hide(WindowInsetsCompat.Type.statusBars())
-        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 }
 
@@ -404,4 +467,15 @@ fun View.hideSystemUI(window: Window) {
 fun View.showSystemUI(window: Window) {
     WindowCompat.setDecorFitsSystemWindows(window, true)
     WindowInsetsControllerCompat(window, this).show(WindowInsetsCompat.Type.systemBars())
+}
+
+fun Activity.isNetworkAvailable(): Boolean {
+    val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val nw = connectivityManager.activeNetwork ?: return false
+    val activeNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
+    return when {
+        activeNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+        activeNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+        else -> false
+    }
 }

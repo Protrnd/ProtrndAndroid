@@ -7,13 +7,8 @@ import kotlinx.coroutines.tasks.await
 import protrnd.com.data.models.PostDTO
 import protrnd.com.data.network.PostApi
 import protrnd.com.data.network.ProfileApi
-import protrnd.com.data.responses.ProfileResponseBody
 
 class PostRepository(private val api: ProfileApi, private val postsApi: PostApi) : BaseRepository() {
-
-    suspend fun getCurrentProfile() = safeApiCall{
-        api.getCurrentProfile() as ProfileResponseBody
-    }
 
     suspend fun addPost(postDTO: PostDTO) = safeApiCall { postsApi.addPost(postDTO) }
 

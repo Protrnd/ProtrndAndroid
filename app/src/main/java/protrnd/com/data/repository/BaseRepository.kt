@@ -7,21 +7,22 @@ import protrnd.com.data.network.Resource
 import retrofit2.HttpException
 
 abstract class BaseRepository {
-    suspend fun<T> safeApiCall(
+    suspend fun <T> safeApiCall(
         apiCall: suspend () -> T
     ): Resource<T> {
-        return withContext(Dispatchers.IO){
-            try{
+        return withContext(Dispatchers.IO) {
+            try {
                 Resource.Success(apiCall.invoke())
-            }catch (throwable: Throwable){
-                when(throwable) {
+            } catch (throwable: Throwable) {
+                when (throwable) {
                     is HttpException -> {
-                        Resource.Failure(false,throwable.code(),
+                        Resource.Failure(
+                            false, throwable.code(),
                             throwable.response()?.errorBody() as ResponseBody
                         )
                     }
                     else -> {
-                        Resource.Failure(true,500,null)
+                        Resource.Failure(true, 500, null)
                     }
                 }
             }

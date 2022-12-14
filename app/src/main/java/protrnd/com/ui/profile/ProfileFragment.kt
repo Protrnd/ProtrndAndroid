@@ -25,11 +25,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import protrnd.com.data.models.Post
-import protrnd.com.data.models.Profile
 import protrnd.com.data.models.ProfileDTO
 import protrnd.com.data.network.PostApi
 import protrnd.com.data.network.ProfileApi
-import protrnd.com.data.network.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.FragmentProfileBinding
 import protrnd.com.databinding.LoadingLayoutBinding
@@ -38,6 +36,7 @@ import protrnd.com.ui.*
 import protrnd.com.ui.adapter.ImageThumbnailPostAdapter
 import protrnd.com.ui.adapter.listener.ImagePostItemClickListener
 import protrnd.com.ui.base.BaseFragment
+import protrnd.com.ui.home.HomeActivity
 import protrnd.com.ui.home.HomeViewModel
 import protrnd.com.ui.post.PostActivity
 import java.io.File
@@ -45,9 +44,8 @@ import java.util.*
 
 class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, HomeRepository>() {
 
-    private var profile: Profile? = null
-    private var profileMap: HashMap<String, Profile> = HashMap()
-    private lateinit var loadingDialog : Dialog
+    private lateinit var loadingDialog: Dialog
+    private lateinit var thisActivity: HomeActivity
 
     private val getProfileImageContent =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -66,7 +64,7 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
             autoDisposeScope.launch {
                 val uploadResult = viewModel.uploadImage(
                     uri,
-                    profile?.username.toString(),
+                    thisActivity.currentUserProfile.username,
                     requireActivity().getFileTypes(listOf(uri))[0]
                 )
                 withContext(Dispatchers.Main) {
@@ -74,24 +72,12 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
                         if (url.isEmpty()) {
                             binding.root.snackbar("Error")
                         } else {
-                            viewModel.updateProfile(
-                                ProfileDTO(
-                                    profileImage = url,
-                                    backgroundImageUrl = profile!!.bgimg,
-                                    phone = profile!!.phone!!,
-                                    accountType = profile?.acctype!!,
-                                    location = profile!!.location!!,
-                                    email = profile!!.email,
-                                    fullName = profile!!.fullname,
-                                    userName = profile!!.username
-                                )
-                            )
+                            uploadUrl(profileUrl = url)
                         }
                     }
                     loadingDialog.dismiss()
                 }
             }
-
             Glide.with(requireContext()).load(uri).circleCrop().into(binding.profileImage)
         }
     }
@@ -103,7 +89,7 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
             autoDisposeScope.launch {
                 val result = viewModel.uploadImage(
                     uri,
-                    profile?.username.toString(),
+                    thisActivity.currentUserProfile.username,
                     requireActivity().getFileTypes(listOf(uri))[0]
                 )
                 withContext(Dispatchers.Main) {
@@ -111,18 +97,7 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
                         if (url.isEmpty()) {
                             binding.root.snackbar("Error")
                         } else {
-                            viewModel.updateProfile(
-                                ProfileDTO(
-                                    profileImage = profile!!.profileimg,
-                                    backgroundImageUrl = url,
-                                    phone = profile!!.phone!!,
-                                    accountType = profile?.acctype!!,
-                                    location = profile!!.location!!,
-                                    email = profile!!.email,
-                                    fullName = profile!!.fullname,
-                                    userName = profile!!.username
-                                )
-                            )
+                            uploadUrl(backgroundUrl = url)
                         }
                     }
                     loadingDialog.dismiss()
@@ -155,7 +130,7 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
             override fun parseResult(resultCode: Int, intent: Intent?): Uri {
                 return try {
                     UCrop.getOutput(intent!!)!!
-                } catch(e: Exception) {
+                } catch (e: Exception) {
                     Uri.EMPTY
                 }
             }
@@ -163,7 +138,7 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        thisActivity = activity as HomeActivity
         loadingDialog = Dialog(requireContext())
         loadingDialog.setCanceledOnTouchOutside(false)
         val loadingLayoutBinding = LoadingLayoutBinding.inflate(layoutInflater)
@@ -176,44 +151,42 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
 
         requireActivity().checkStoragePermissions()
 
-        loadPage()
-        viewModel.profile.observe(viewLifecycleOwner) {
-            when (it) {
-                is Resource.Success -> {
-                    profileMap["profile"] = it.value.data
-                    profile = profileMap["profile"]
-                    binding.profileFullName.text = profile?.fullname
-                    val username = "@${profile?.username.toString()}"
-                    binding.profileUsername.text = username
-                    if (profile?.profileimg!!.isNotEmpty()) Glide.with(this)
-                        .load(profile?.profileimg).circleCrop().into(binding.profileImage)
-                    if (profile?.bgimg!!.isNotEmpty()) Glide.with(this).load(profile?.bgimg)
-                        .into(binding.bgImage)
+        binding.profileFullName.text = thisActivity.currentUserProfile.fullname
+        val username = "@${thisActivity.currentUserProfile.username}"
+        binding.profileUsername.text = username
+        if (thisActivity.currentUserProfile.profileimg.isNotEmpty())
+            Glide.with(this)
+                .load(thisActivity.currentUserProfile.profileimg).circleCrop()
+                .into(binding.profileImage)
+        if (thisActivity.currentUserProfile.bgimg.isNotEmpty())
+            Glide.with(this)
+                .load(thisActivity.currentUserProfile.bgimg)
+                .into(binding.bgImage)
 
-                    lifecycleScope.launch {
-                        binding.followersCount.showFollowersCount(viewModel, profile!!)
-                        binding.followingCount.showFollowingCount(viewModel, profile!!)
-                        binding.postsRv.showUserPostsInGrid(requireContext(),viewModel,profile!!)
-                        val thumbnailAdapter = binding.postsRv.adapter as ImageThumbnailPostAdapter
-                        thumbnailAdapter.imageClickListener(object : ImagePostItemClickListener {
-                            override fun postItemClickListener(post: Post) {
-                                startActivity(Intent(requireContext(), PostActivity::class.java).apply {
-                                    this.putExtra("post_id",post.identifier)
-                                })
-                            }
-                        })
-                        binding.profileShimmer.visible(false)
-                        binding.profileView.visible(true)
-                    }
+        binding.profileShimmer.visible(false)
+        binding.profileView.visible(true)
+
+        lifecycleScope.launch {
+            binding.followersCount.showFollowersCount(
+                viewModel,
+                thisActivity.currentUserProfile
+            )
+            binding.followingCount.showFollowingCount(
+                viewModel,
+                thisActivity.currentUserProfile
+            )
+            binding.postsRv.showUserPostsInGrid(
+                requireContext(), viewModel,
+                thisActivity.currentUserProfile
+            )
+            val thumbnailAdapter = binding.postsRv.adapter as ImageThumbnailPostAdapter
+            thumbnailAdapter.imageClickListener(object : ImagePostItemClickListener {
+                override fun postItemClickListener(post: Post) {
+                    startActivity(Intent(requireContext(), PostActivity::class.java).apply {
+                        this.putExtra("post_id", post.identifier)
+                    })
                 }
-                is Resource.Loading -> {
-                    binding.profileShimmer.visible(true)
-                    binding.profileView.visible(false)
-                }
-                is Resource.Failure -> {
-                    binding.root.snackbar("Error loading profile") { loadPage() }
-                }
-            }
+            })
         }
 
         val dialog = Dialog(requireContext())
@@ -259,7 +232,24 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         return HomeRepository(api, postsApi)
     }
 
-    private fun loadPage() {
-        viewModel.getCurrentProfile()
+    private fun uploadUrl(backgroundUrl: String? = null, profileUrl: String? = null) {
+        val dto = ProfileDTO(
+            profileImage = profileUrl ?: thisActivity.currentUserProfile.profileimg,
+            backgroundImageUrl = backgroundUrl ?: thisActivity.currentUserProfile.bgimg,
+            phone = thisActivity.currentUserProfile.phone!!,
+            accountType = thisActivity.currentUserProfile.acctype,
+            location = thisActivity.currentUserProfile.location!!,
+            email = thisActivity.currentUserProfile.email,
+            fullName = thisActivity.currentUserProfile.fullname,
+            userName = thisActivity.currentUserProfile.username
+        )
+
+        viewModel.updateProfile(dto)
+        thisActivity.currentUserProfile.bgimg = dto.backgroundImageUrl
+        thisActivity.currentUserProfile.profileimg = dto.profileImage
+
+        lifecycleScope.launch {
+            profilePreferences.saveProfile(thisActivity.currentUserProfile)
+        }
     }
 }

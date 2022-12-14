@@ -14,11 +14,14 @@ interface ProfileApi {
     @GET("profile/{id}")
     suspend fun getProfileById(@Path("id") id: String): ProfileResponseBody
 
+    @GET("profile/fetch/{name}")
+    suspend fun getProfileByName(@Path("name") name: String): ProfileResponseBody
+
     @GET("profile/name/{name}")
     suspend fun getProfilesByUsername(@Path("name") name: String): ProfileListResponseBody
 
     @GET("location/get")
-    suspend fun getLocations():GetLocationResponseBody
+    suspend fun getLocations(): GetLocationResponseBody
 
     @PUT("profile/update")
     suspend fun updateProfile(@Body profileDTO: ProfileDTO): ProfileResponseBody

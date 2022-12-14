@@ -14,10 +14,16 @@ class HomeRepository(private val api: ProfileApi, private val postsApi: PostApi)
 
     suspend fun getCurrentProfile() = safeApiCall { api.getCurrentProfile() }
 
-    suspend fun getProfileById(id: String) =
-        safeApiCall { api.getProfileById(id) }
+    suspend fun getProfileById(id: String) = safeApiCall { api.getProfileById(id) }
+
+    suspend fun getProfileByUsername(name: String) = safeApiCall { api.getProfileByName(name) }
 
     suspend fun getPostsPage(page: Int) = safeApiCall { postsApi.getPosts(page) }
+
+    suspend fun getPostsQuery(page: Int, word: String) =
+        safeApiCall { postsApi.getPostsQueried(page, word) }
+
+    suspend fun getQueryCount(word: String) = safeApiCall { postsApi.getQueryCount(word) }
 
     suspend fun isPostLiked(postId: String) = safeApiCall { postsApi.postIsLiked(postId) }
 

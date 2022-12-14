@@ -1,7 +1,6 @@
 package protrnd.com.ui.auth
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,12 +30,13 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
         val fragmentHost = parentFragment as NavHostFragment
         registerFragment = fragmentHost.parentFragment as RegisterFragment
         binding.input1.requestForFocus(binding.input2)
-        binding.input2.requestForFocus(binding.input3,binding.input1)
-        binding.input3.requestForFocus(binding.input4,binding.input2)
+        binding.input2.requestForFocus(binding.input3, binding.input1)
+        binding.input3.requestForFocus(binding.input4, binding.input2)
         binding.input4.requestForFocus(prev = binding.input3)
-        binding.enterOtpTv.text = binding.enterOtpTv.text.toString().setSpannableColor("One-Time-Password",10)
-        viewModel.verifyOtpResponse.observe(viewLifecycleOwner){
-            when(it) {
+        binding.enterOtpTv.text =
+            binding.enterOtpTv.text.toString().setSpannableColor("One-Time-Password", 10)
+        viewModel.verifyOtpResponse.observe(viewLifecycleOwner) {
+            when (it) {
                 is Resource.Success -> {
                     if (it.value.successful) {
                         lifecycleScope.launch {
@@ -97,7 +97,8 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
     override fun getFragmentBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
-    ) = FragmentVerifyOtpBinding.inflate(inflater,container,false)
+    ) = FragmentVerifyOtpBinding.inflate(inflater, container, false)
 
-    override fun getFragmentRepository() = AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
+    override fun getFragmentRepository() =
+        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
 }

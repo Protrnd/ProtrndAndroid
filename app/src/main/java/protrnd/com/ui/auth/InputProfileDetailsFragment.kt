@@ -32,7 +32,8 @@ class InputProfileDetailsFragment :
             base.startFragment(RegisterFragmentDirections.actionRegisterFragmentToLoginFragment())
         }
 
-        binding.loginHereTv.text = binding.loginHereTv.text.toString().setSpannableColor("Login here",72)
+        binding.loginHereTv.text =
+            binding.loginHereTv.text.toString().setSpannableColor("Login here", 72)
 
         if (registerFragment.verifyOTP.registerDto?.accountType == "business") {
             binding.detailsHeader.text = getString(R.string.business_details)
@@ -44,8 +45,8 @@ class InputProfileDetailsFragment :
             binding.usernameTv.text = getString(R.string.username_with_at)
         }
 
-        viewModel.registerResponse.observe(viewLifecycleOwner){
-            when(it) {
+        viewModel.registerResponse.observe(viewLifecycleOwner) {
+            when (it) {
                 is Resource.Success -> {
                     if (it.value.successful) {
                         registerFragment.verifyOTP.otpHash = it.value.data.toString()
@@ -62,7 +63,7 @@ class InputProfileDetailsFragment :
                     binding.continueBtn.enable(false)
                 }
                 is Resource.Failure -> {
-                    this.handleAPIError(it){ lifecycleScope.launch { register() } }
+                    this.handleAPIError(it) { lifecycleScope.launch { register() } }
                 }
             }
         }
@@ -108,11 +109,15 @@ class InputProfileDetailsFragment :
                 } else if (!binding.usernameEt.nonAlphabeticCharacterNotExists()) {
                     binding.usernameEt.error = "Please remove all non characters"
                 } else {
-                    if (binding.passwordEt.isPasswordLongEnough())  {
-                        registerFragment.verifyOTP.registerDto?.fullName = binding.nameEt.text.toString().trim()
-                        registerFragment.verifyOTP.registerDto?.userName = binding.usernameEt.text.toString().trim()
-                        registerFragment.verifyOTP.registerDto?.email = binding.emailEt.text.toString().trim()
-                        registerFragment.verifyOTP.registerDto?.password = binding.passwordEt.text.toString().trim()
+                    if (binding.passwordEt.isPasswordLongEnough()) {
+                        registerFragment.verifyOTP.registerDto?.fullName =
+                            binding.nameEt.text.toString().trim()
+                        registerFragment.verifyOTP.registerDto?.userName =
+                            binding.usernameEt.text.toString().trim()
+                        registerFragment.verifyOTP.registerDto?.email =
+                            binding.emailEt.text.toString().trim()
+                        registerFragment.verifyOTP.registerDto?.password =
+                            binding.passwordEt.text.toString().trim()
                         binding.progressBar.visible(true)
                         lifecycleScope.launch {
                             register()

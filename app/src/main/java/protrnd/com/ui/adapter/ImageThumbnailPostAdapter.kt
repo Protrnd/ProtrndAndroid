@@ -8,11 +8,13 @@ import protrnd.com.databinding.ProfilePostRvItemBinding
 import protrnd.com.ui.adapter.listener.ImagePostItemClickListener
 import protrnd.com.ui.viewholder.ImageThumbnailViewHolder
 
-class ImageThumbnailPostAdapter(private val posts: List<Post>): RecyclerView.Adapter<ImageThumbnailViewHolder>() {
+class ImageThumbnailPostAdapter(private val posts: List<Post>) :
+    RecyclerView.Adapter<ImageThumbnailViewHolder>() {
     lateinit var imagePostItemClickListener: ImagePostItemClickListener
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ImageThumbnailViewHolder(
-        ProfilePostRvItemBinding.inflate(LayoutInflater.from(parent.context),parent,false))
+        ProfilePostRvItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    )
 
     override fun onBindViewHolder(holder: ImageThumbnailViewHolder, position: Int) {
         holder.bind(posts[position])
@@ -23,7 +25,7 @@ class ImageThumbnailPostAdapter(private val posts: List<Post>): RecyclerView.Ada
 
     override fun getItemCount(): Int = posts.size
 
-    fun imageClickListener(imagePostItemClickListener: ImagePostItemClickListener){
+    fun imageClickListener(imagePostItemClickListener: ImagePostItemClickListener) {
         this.imagePostItemClickListener = imagePostItemClickListener
     }
 }

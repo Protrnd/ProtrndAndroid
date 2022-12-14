@@ -1,7 +1,6 @@
 package protrnd.com.ui.home
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -20,13 +19,11 @@ import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityHomeBinding
 import protrnd.com.databinding.SelectPaymentActionBinding
-import protrnd.com.ui.REQUEST_PERMISSION_CODE
 import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.checkStoragePermissions
 import protrnd.com.ui.notification.NotificationActivity
 import protrnd.com.ui.post.NewPostActivity
 import protrnd.com.ui.profile.ProfileFragmentDirections
-import protrnd.com.ui.snackbar
 
 class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeRepository>() {
 
@@ -40,7 +37,8 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
         actionBar.setIcon(R.drawable.launcher_outlined_ic)
         actionBar.title = " Protrnd"
         val chipNavigationBar = binding.bottomNav
-        val navHost = supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
+        val navHost =
+            supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
         navController = navHost.navController
         chipNavigationBar.setItemSelected(R.id.home)
         chipNavigationBar.setOnItemSelectedListener { itemId ->
@@ -53,12 +51,13 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
         this.checkStoragePermissions()
 
         binding.fab.setOnClickListener {
-            startActivity(Intent(this,NewPostActivity::class.java))
+            startActivity(Intent(this, NewPostActivity::class.java))
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                val isHomeFragment = navHost.childFragmentManager.fragments.any { it.javaClass == HomeFragment::class.java && it.isVisible }
+                val isHomeFragment =
+                    navHost.childFragmentManager.fragments.any { it.javaClass == HomeFragment::class.java && it.isVisible }
                 if (isHomeFragment)
                     finish()
                 else {
@@ -68,43 +67,29 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
         })
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String?>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            REQUEST_PERMISSION_CODE -> {
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    binding.root.snackbar("Permission denied, please accept permissions!")
-                }
-            }
-        }
-    }
-
-    override fun getActivityBinding(inflater: LayoutInflater) = ActivityHomeBinding.inflate(inflater)
+    override fun getActivityBinding(inflater: LayoutInflater) =
+        ActivityHomeBinding.inflate(inflater)
 
     override fun getViewModel() = HomeViewModel::class.java
 
     override fun getActivityRepository(): HomeRepository {
         val profileApi = ProtrndAPIDataSource().buildAPI(ProfileApi::class.java)
         val postsApi = ProtrndAPIDataSource().buildAPI(PostApi::class.java)
-        return HomeRepository(profileApi,postsApi)
+        return HomeRepository(profileApi, postsApi)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.home_toolbar_nav_menu,menu)
+        menuInflater.inflate(R.menu.home_toolbar_nav_menu, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.notification_btn -> {
-                startActivity(Intent(this,NotificationActivity::class.java))
+                startActivity(Intent(this, NotificationActivity::class.java))
             }
             R.id.scan_btn -> {
-                val dialog = BottomSheetDialog(this,R.style.BottomSheetTheme)
+                val dialog = BottomSheetDialog(this, R.style.BottomSheetTheme)
                 val qrBinding = SelectPaymentActionBinding.inflate(layoutInflater)
                 dialog.setContentView(qrBinding.root)
                 dialog.show()

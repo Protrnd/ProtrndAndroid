@@ -19,7 +19,7 @@ import protrnd.com.data.repository.BaseRepository
 import protrnd.com.ui.adapter.PostsAdapter
 import java.util.regex.Pattern
 
-abstract class BaseFragment<VM: ViewModel, B: ViewBinding, R: BaseRepository>: Fragment() {
+abstract class BaseFragment<VM : ViewModel, B : ViewBinding, R : BaseRepository> : Fragment() {
     protected lateinit var binding: B
     protected val protrndAPIDataSource = ProtrndAPIDataSource()
     protected lateinit var viewModel: VM
@@ -61,7 +61,7 @@ abstract class BaseFragment<VM: ViewModel, B: ViewBinding, R: BaseRepository>: F
         )
     }
 
-    fun isValidEmail(str: String): Boolean{
+    fun isValidEmail(str: String): Boolean {
         return EMAIL_ADDRESS_PATTERN.matcher(str).matches()
     }
 }

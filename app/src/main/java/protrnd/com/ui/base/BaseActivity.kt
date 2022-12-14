@@ -8,25 +8,36 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
+import com.google.gson.Gson
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import protrnd.com.data.ProfilePreferences
+import protrnd.com.data.models.Profile
 import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.repository.BaseRepository
 
 
-abstract class BaseActivity<B: ViewBinding, VM: ViewModel, R: BaseRepository>: AppCompatActivity() {
+abstract class BaseActivity<B : ViewBinding, VM : ViewModel, R : BaseRepository> :
+    AppCompatActivity() {
     lateinit var viewModel: VM
     lateinit var profilePreferences: ProfilePreferences
     protected val protrndAPIDataSource = ProtrndAPIDataSource()
     lateinit var binding: B
+    val profileHash = HashMap<String, Profile>()
+    var currentUserProfile = Profile()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = getActivityBinding(layoutInflater)
         setContentView(binding.root)
         profilePreferences = ProfilePreferences(this)
+        val profileP = runBlocking { profilePreferences.profile.first() }
+        if (profileP != null) {
+            currentUserProfile = Gson().fromJson(profileP, Profile::class.java)
+        }
         val factory = ViewModelFactory(getActivityRepository())
         viewModel = ViewModelProvider(this, factory)[getViewModel()]
-        onViewReady(savedInstanceState, intent);
+        onViewReady(savedInstanceState, intent)
     }
 
     abstract fun getActivityBinding(inflater: LayoutInflater): B

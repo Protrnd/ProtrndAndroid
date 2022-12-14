@@ -25,13 +25,14 @@ class LoginFragment : BaseFragment<AuthViewModel, FragmentLoginBinding, AuthRepo
             authActivity.startFragment(LoginFragmentDirections.actionLoginFragmentToRegisterFragment())
         }
 
-        binding.signupHereTv.text = binding.signupHereTv.text.toString().setSpannableColor("Sign up here",74)
+        binding.signupHereTv.text =
+            binding.signupHereTv.text.toString().setSpannableColor("Sign up here", 74)
 
         viewModel.loginResponse.observe(viewLifecycleOwner) {
             binding.progressBar.visible(it is Resource.Loading)
             binding.loginBtn.enable(true)
             when (it) {
-                is Resource.Loading ->{
+                is Resource.Loading -> {
                     binding.progressBar.visible(true)
                     binding.loginBtn.enable(false)
                 }

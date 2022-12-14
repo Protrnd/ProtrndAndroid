@@ -14,7 +14,8 @@ import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.enable
 import protrnd.com.ui.setSpannableColor
 
-class SelectAccountTypeFragment : BaseFragment<AuthViewModel,FragmentSelectAccountTypeBinding,AuthRepository>() {
+class SelectAccountTypeFragment :
+    BaseFragment<AuthViewModel, FragmentSelectAccountTypeBinding, AuthRepository>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -28,7 +29,7 @@ class SelectAccountTypeFragment : BaseFragment<AuthViewModel,FragmentSelectAccou
 
         binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
             binding.continueBtn.enable(true)
-            when(checkedId) {
+            when (checkedId) {
                 R.id.user_account_btn -> {
                     authActivity.verifyOTP.registerDto?.accountType = "user"
                 }
@@ -38,10 +39,12 @@ class SelectAccountTypeFragment : BaseFragment<AuthViewModel,FragmentSelectAccou
             }
         }
 
-        binding.loginHereTv.text = binding.loginHereTv.text.toString().setSpannableColor("Login here",72)
+        binding.loginHereTv.text =
+            binding.loginHereTv.text.toString().setSpannableColor("Login here", 72)
 
         binding.continueBtn.setOnClickListener {
-            Navigation.findNavController(requireView()).navigate(SelectAccountTypeFragmentDirections.actionSelectAccountTypeFragmentToInputProfileDetailsFragment())
+            Navigation.findNavController(requireView())
+                .navigate(SelectAccountTypeFragmentDirections.actionSelectAccountTypeFragmentToInputProfileDetailsFragment())
         }
     }
 
@@ -50,7 +53,8 @@ class SelectAccountTypeFragment : BaseFragment<AuthViewModel,FragmentSelectAccou
     override fun getFragmentBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
-    ) = FragmentSelectAccountTypeBinding.inflate(inflater,container,false)
+    ) = FragmentSelectAccountTypeBinding.inflate(inflater, container, false)
 
-    override fun getFragmentRepository() = AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
+    override fun getFragmentRepository() =
+        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
 }

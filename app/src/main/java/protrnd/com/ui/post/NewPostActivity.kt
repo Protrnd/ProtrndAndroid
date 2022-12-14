@@ -1,18 +1,22 @@
 package protrnd.com.ui.post
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View.OVER_SCROLL_NEVER
+import android.view.ViewGroup
+import android.view.Window
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
 import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.CompositePageTransformer
@@ -20,7 +24,9 @@ import androidx.viewpager2.widget.MarginPageTransformer
 import com.google.android.material.tabs.TabLayoutMediator
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.anko.doAsync
 import protrnd.com.data.models.Location
 import protrnd.com.data.models.PostDTO
 import protrnd.com.data.models.Profile
@@ -30,6 +36,7 @@ import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.network.Resource
 import protrnd.com.data.repository.PostRepository
 import protrnd.com.databinding.ActivityNewPostBinding
+import protrnd.com.databinding.LoadingLayoutBinding
 import protrnd.com.ui.*
 import protrnd.com.ui.adapter.PostImagesAdapter
 import protrnd.com.ui.adapter.ProfileTagAdapter
@@ -152,57 +159,46 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
 
         binding.postBtn.setOnClickListener {
             binding.postBtn.enable(false)
-            binding.overlay.visible(true)
-            binding.progressBar.visible(true)
-            viewModel.getCurrentProfile()
-            viewModel.profile.observe(this) { profile ->
-                when (profile) {
-                    is Resource.Loading -> {
-                    }
-                    is Resource.Success -> {
-                        try {
-                            viewModel.uploadImage(
-                                postUriList,
-                                profile.value.data.username,
-                                this.getFileTypes(postUriList)
+            binding.captionEt.clearFocus()
+            val loadingLayoutBinding = LoadingLayoutBinding.inflate(layoutInflater)
+            val dialog = Dialog(this)
+            dialog.setContentView(loadingLayoutBinding.root)
+            dialog.setCanceledOnTouchOutside(false)
+            val window: Window = dialog.window!!
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            doAsync {
+                lifecycleScope.launch {
+                    try {
+                        val result = viewModel.uploadImage(
+                            postUriList,
+                            currentUserProfile.username,
+                            this@NewPostActivity.getFileTypes(postUriList)
+                        )
+                        if (result.isEmpty()) {
+                            binding.root.snackbar("Error uploading")
+                        } else {
+                            val l = currentUserProfile.location!!.split(",")
+                            val location = Location(cities = listOf(l[1]), state = l[0])
+                            val postDto = PostDTO(
+                                caption = binding.captionEt.text.toString().trim(),
+                                location = location,
+                                uploadurls = result
                             )
-                            viewModel.uploadUrl.observe(this) { list ->
-                                if (list.isEmpty()) {
-                                    binding.root.snackbar("Error uploading")
-                                } else {
-                                    val l = profile.value.data.location!!.split(",")
-                                    val location = Location(cities = listOf(l[1]), state = l[0])
-                                    val postDto = PostDTO(caption = binding.captionEt.text.toString().trim(), location = location, uploadurls = list)
-                                    viewModel.addPost(postDto)
-                                    viewModel.postResult.observe(this) {
-                                        when(it) {
-                                            is Resource.Success -> {
-                                                if (it.value.successful) {
-                                                    binding.root.snackbar("Post uploaded successfully")
-                                                    finish()
-                                                }
-                                            }
-                                            is Resource.Failure -> {
-                                                binding.postBtn.enable(true)
-                                                handleAPIError(binding.root,it)
-                                            }
-                                            is Resource.Loading -> {
-                                                binding.overlay.visible(true)
-                                                binding.progressBar.visible(true)
-                                                binding.postBtn.enable(false)
-                                            }
-                                            else -> {}
-                                        }
-                                    }
-                                }
+                            when(viewModel.addPost(postDto)) {
+                                is Resource.Success -> finish()
+                                else -> {}
                             }
-                        } catch (e:Exception) {
-                            binding.root.snackbar("An error occurred")
                         }
-                    }
-                    else -> {
-                        binding.postBtn.enable(true)
-                        binding.root.snackbar("Please try again")
+                    } catch (e: Exception) {
+                        dialog.dismiss()
+                        Toast.makeText(
+                            this@NewPostActivity,
+                            "An error occurred please try again",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
@@ -235,14 +231,15 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
                                     }
                                 })
                                 tagsAdapter.notifyDataSetChanged()
+                                viewModel.profiles.removeObservers(this)
                             }
                             is Resource.Loading -> {
-                                if(text[text.length-2] == '@')
+                                if (text[text.length - 2] == '@')
                                     binding.shimmerProfiles.visible(true)
                                 binding.tagsRecyclerview.visible(false)
                             }
                             is Resource.Failure -> {
-                                handleAPIError(binding.root,it) { getProfilesByUsername(tag) }
+                                handleAPIError(binding.root, it) { getProfilesByUsername(tag) }
                                 binding.shimmerProfiles.visible(false)
                                 binding.tagsRecyclerview.visible(false)
                             }

@@ -21,7 +21,8 @@ import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.snackbar
 import protrnd.com.ui.visible
 
-class NotificationActivity : BaseActivity<ActivityNotificationBinding,NotificationViewModel,NotificationRepository>() {
+class NotificationActivity :
+    BaseActivity<ActivityNotificationBinding, NotificationViewModel, NotificationRepository>() {
 
     private var page = 1
     private var isLoading = false
@@ -37,8 +38,8 @@ class NotificationActivity : BaseActivity<ActivityNotificationBinding,Notificati
         binding.appToolbar.contentInsetStartWithNavigation = 0
         actionBar.setHomeAsUpIndicator(R.drawable.arrow_back_ic)
 
-        notificationLayoutManager = LinearLayoutManager(this,LinearLayoutManager.VERTICAL, false)
-        notificationAdapter = NotificationAdapter(viewModel=viewModel)
+        notificationLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        notificationAdapter = NotificationAdapter(viewModel = viewModel)
         setupRecyclerView()
         loadMoreItems(true)
 
@@ -50,13 +51,14 @@ class NotificationActivity : BaseActivity<ActivityNotificationBinding,Notificati
         }
     }
 
-    override fun getActivityBinding(inflater: LayoutInflater) = ActivityNotificationBinding.inflate(inflater)
+    override fun getActivityBinding(inflater: LayoutInflater) =
+        ActivityNotificationBinding.inflate(inflater)
 
     override fun getViewModel() = NotificationViewModel::class.java
 
     override fun getActivityRepository(): NotificationRepository {
         val token = runBlocking { profilePreferences.authToken.first() }
-        val api = ProtrndAPIDataSource().buildAPI(NotificationApi::class.java,token)
+        val api = ProtrndAPIDataSource().buildAPI(NotificationApi::class.java, token)
         return NotificationRepository(api)
     }
 
@@ -98,7 +100,7 @@ class NotificationActivity : BaseActivity<ActivityNotificationBinding,Notificati
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
+        when (item.itemId) {
             android.R.id.home -> finish()
         }
         return super.onOptionsItemSelected(item)

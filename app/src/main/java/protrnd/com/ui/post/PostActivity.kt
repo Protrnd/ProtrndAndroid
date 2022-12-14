@@ -20,7 +20,6 @@ import kotlinx.coroutines.withContext
 import protrnd.com.R
 import protrnd.com.data.models.CommentDTO
 import protrnd.com.data.models.Post
-import protrnd.com.data.models.Profile
 import protrnd.com.data.network.PostApi
 import protrnd.com.data.network.ProfileApi
 import protrnd.com.data.network.Resource
@@ -36,8 +35,6 @@ import protrnd.com.ui.snackbar
 import protrnd.com.ui.visible
 
 class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeRepository>() {
-    private var profile: Profile? = null
-    private var profileMap: HashMap<String, Profile> = HashMap()
     private var post: Post? = null
     private var postMap: HashMap<String, Post> = HashMap()
     private var postId = ""
@@ -52,33 +49,13 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
                 finish()
             }
         }
+
         postId = intent?.getStringExtra("post_id")!!
 
-        loadProfile()
-
-        viewModel.profile.observe(this) {
-            when (it) {
-                is Resource.Loading -> {
-                    binding.shimmerLayout.visible(true)
-                    binding.postResult.visible(false)
-                }
-                is Resource.Success -> {
-                    val result = it.value.data
-                    profileMap["profile"] = result
-                    profile = profileMap["profile"]
-                    if (profile?.profileimg!!.isNotEmpty())
-                        Glide.with(this).load(profile!!.profileimg).circleCrop()
-                            .into(binding.navImage)
-                    binding.navName.text = profile!!.username
-
-                }
-                is Resource.Failure -> {
-                    if (it.isNetworkError) {
-                        binding.root.snackbar("Please check your network connection", action = { loadProfile() })
-                    }
-                }
-            }
-        }
+        if (currentUserProfile.profileimg.isNotEmpty())
+            Glide.with(applicationContext).load(currentUserProfile.profileimg).circleCrop()
+                .into(binding.navImage)
+        binding.navName.text = currentUserProfile.username
 
         binding.likeToggle.setOnClickListener {
             val liked = binding.likeToggle.isChecked
@@ -114,13 +91,13 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
         }
 
         binding.commentBtn.setOnClickListener {
-            val bottomSheet = BottomSheetDialog(this, R.style.BottomSheetTheme)
+            val bottomSheet = BottomSheetDialog(applicationContext, R.style.BottomSheetTheme)
             val bottomSheetBinding = BottomSheetCommentsBinding.inflate(LayoutInflater.from(this))
             bottomSheet.setContentView(bottomSheetBinding.root)
             bottomSheetBinding.commentSection.layoutManager = LinearLayoutManager(this)
             loadComments()
             viewModel.comments.observe(this) { comments ->
-                when(comments) {
+                when (comments) {
                     is Resource.Success -> {
                         if (comments.value.data.isNotEmpty()) {
                             bottomSheetBinding.commentSection.visible(true)
@@ -165,11 +142,12 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
                             }
                         }
                     }
-                } else{
+                } else {
                     bottomSheetBinding.inputField.error = "This field cannot be empty"
                 }
             }
-            val frame = bottomSheet.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout
+            val frame =
+                bottomSheet.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout
             val behaviour = BottomSheetBehavior.from(frame)
             val layoutparams = frame.layoutParams
             val windowHeight = Resources.getSystem().displayMetrics.heightPixels
@@ -192,10 +170,6 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
         val api = protrndAPIDataSource.buildAPI(ProfileApi::class.java, token)
         val postsApi = protrndAPIDataSource.buildAPI(PostApi::class.java, token)
         return HomeRepository(api, postsApi)
-    }
-
-    private fun loadProfile() {
-        viewModel.getCurrentProfile()
     }
 
     private suspend fun loadPostData() {

@@ -25,7 +25,7 @@ class AuthenticationActivity : AppCompatActivity() {
         actionBar.title = " Protrnd"
         navHost = supportFragmentManager.findFragmentById(R.id.authContainerView) as NavHostFragment
         navController = navHost.navController
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true){
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 val isLoginFragment = isLoginFragment()
                 if (isLoginFragment)

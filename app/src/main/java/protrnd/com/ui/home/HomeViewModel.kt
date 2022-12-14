@@ -43,18 +43,24 @@ class HomeViewModel(
 
     suspend fun getPostByPage(page: Int) = repository.getPostsPage(page)
 
+    suspend fun getPostsQueried(page: Int, word: String) = repository.getPostsQuery(page, word)
+
+    suspend fun getQueryCount(word: String) = repository.getQueryCount(word)
+
     suspend fun getPost(id: String) = repository.getPost(id)
 
     suspend fun getProfileById(id: String) = repository.getProfileById(id)
+
+    suspend fun getProfileByName(name: String) = repository.getProfileByUsername(name)
 
     suspend fun getProfilePosts(id: String) = repository.getProfilePosts(id)
 
     suspend fun likePost(id: String) = repository.likePost(id)
 
-    suspend fun postIsLiked(id: String) : LiveData<Resource<LikeResponseBody>> {
-        val _postIsLiked: MutableLiveData<Resource<LikeResponseBody>> = MutableLiveData()
-        val postIsLiked: LiveData<Resource<LikeResponseBody>> = _postIsLiked
-        _postIsLiked.postValue(repository.isPostLiked(id))
+    suspend fun postIsLiked(id: String): LiveData<Resource<LikeResponseBody>> {
+        val postIsLikedI: MutableLiveData<Resource<LikeResponseBody>> = MutableLiveData()
+        val postIsLiked: LiveData<Resource<LikeResponseBody>> = postIsLikedI
+        postIsLikedI.postValue(repository.isPostLiked(id))
         return postIsLiked
     }
 
@@ -64,7 +70,7 @@ class HomeViewModel(
 
     fun getLocations() = viewModelScope.launch { _locations.value = repository.getLocations() }
 
-    suspend fun uploadImage(uri: Uri, username: String, filetype: String) : LiveData<String> {
+    suspend fun uploadImage(uri: Uri, username: String, filetype: String): LiveData<String> {
         val add = MutableLiveData<String>()
         val a: LiveData<String> = add
         add.postValue(repository.addImageToFirebase(uri, username, filetype))

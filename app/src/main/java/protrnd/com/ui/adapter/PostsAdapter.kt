@@ -35,7 +35,7 @@ class PostsAdapter(
     fun addAll(result: List<Post>) {
         val lastIndex = posts.size - 1
         posts.addAll(result)
-        notifyInsertChange(lastIndex,result.size,posts.size)
+        notifyInsertChange(lastIndex, result.size, posts.size)
     }
 
     fun setList(result: MutableList<Post>) {
@@ -44,10 +44,10 @@ class PostsAdapter(
         } else {
             val previousSize = posts.size
             posts = result
-            notifyItemRangeRemoved(0,previousSize)
-            notifyItemRangeChanged(0,previousSize)
+            notifyItemRangeRemoved(0, previousSize)
+            notifyItemRangeChanged(0, previousSize)
         }
-        notifyInsertChange(0,result.size,result.size)
+        notifyInsertChange(0, result.size, result.size)
     }
 
     private fun notifyInsertChange(insertStart: Int, insertSize: Int, changedSize: Int) {
@@ -111,6 +111,7 @@ class PostsAdapter(
                     binding.inputField.error = "This field cannot be empty"
                 }
             }
+
             bottomSheet.show()
             bottomSheet.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             bottomSheet.behavior.peekHeight = Resources.getSystem().displayMetrics.heightPixels

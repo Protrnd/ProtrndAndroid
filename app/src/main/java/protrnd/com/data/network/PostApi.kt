@@ -8,6 +8,15 @@ interface PostApi {
     @GET("post/fetch/{page}")
     suspend fun getPosts(@Path("page") page: Int): GetPostsResponseBody
 
+    @GET("post/fetch/query")
+    suspend fun getPostsQueried(
+        @Query("page") page: Int,
+        @Query("word") word: String
+    ): GetPostsResponseBody
+
+    @GET("post/get/count/{word}")
+    suspend fun getQueryCount(@Path(value = "word", encoded = true) word: String): BasicResponseBody
+
     @GET("post/is-liked/{id}")
     suspend fun postIsLiked(@Path("id") id: String): LikeResponseBody
 

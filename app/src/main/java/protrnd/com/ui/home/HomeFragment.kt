@@ -4,6 +4,8 @@ import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,7 +18,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import protrnd.com.data.models.Location
 import protrnd.com.data.models.Post
-import protrnd.com.data.models.Profile
 import protrnd.com.data.models.ProfileDTO
 import protrnd.com.data.network.PostApi
 import protrnd.com.data.network.ProfileApi
@@ -38,11 +39,11 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     private var page = 1
     private lateinit var dialog: Dialog
     private val locationHash = HashMap<String, List<String>>()
-    private val profileHash = HashMap<String, Profile>()
-    lateinit var profile: Profile
+    private lateinit var thisActivity: HomeActivity
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        thisActivity = activity as HomeActivity
         postsLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         binding.postsRv.layoutManager = postsLayoutManager
@@ -63,6 +64,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
         dialog = Dialog(requireContext())
         val locationPickerBinding = LocationPickerBinding.inflate(layoutInflater)
         dialog.setCanceledOnTouchOutside(false)
+        dialog.setCancelable(false)
         viewModel.locations.observe(viewLifecycleOwner) { resource ->
             when (resource) {
                 is Resource.Success -> {
@@ -112,17 +114,17 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
                     Toast.LENGTH_SHORT
                 ).show()
             else {
-                profile.location = "$state,$city"
+                thisActivity.currentUserProfile.location = "$state,$city"
                 viewModel.updateProfile(
                     ProfileDTO(
-                        profileImage = profile.profileimg,
-                        backgroundImageUrl = profile.bgimg,
-                        phone = profile.phone!!,
-                        accountType = profile.acctype,
-                        location = profile.location!!,
-                        email = profile.email,
-                        fullName = profile.fullname,
-                        userName = profile.username
+                        profileImage = thisActivity.currentUserProfile.profileimg,
+                        backgroundImageUrl = thisActivity.currentUserProfile.bgimg,
+                        phone = thisActivity.currentUserProfile.phone!!,
+                        accountType = thisActivity.currentUserProfile.acctype,
+                        location = thisActivity.currentUserProfile.location!!,
+                        email = thisActivity.currentUserProfile.email,
+                        fullName = thisActivity.currentUserProfile.fullname,
+                        userName = thisActivity.currentUserProfile.username
                     )
                 )
                 dialog.dismiss()
@@ -138,32 +140,16 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     }
 
     private fun loadPage() {
-        viewModel.getCurrentProfile()
-        viewModel.profile.observe(viewLifecycleOwner) {
-            when (it) {
-                is Resource.Loading -> {
-                    binding.postsRv.visible(false)
-                }
-                is Resource.Success -> {
-                    profileHash["profile"] = it.value.data
-                    profile = profileHash["profile"]!!
-                    if (profile.location == null || profile.location!!.isEmpty())
-                        loadLocations()
-                    val profile = it.value.data
-                    adapter = PostsAdapter(
-                        viewModel = viewModel,
-                        lifecycleOwner = viewLifecycleOwner,
-                        currentProfile = profile
-                    )
-                    //Load first page
-                    setupRecyclerView()
-                    loadMoreItems(true)
-                }
-                is Resource.Failure -> {
-                    this.handleAPIError(it) { lifecycleScope.launch { loadPage() } }
-                }
-            }
-        }
+        if (thisActivity.currentUserProfile.location == null || thisActivity.currentUserProfile.location!!.isEmpty())
+            loadLocations()
+        adapter = PostsAdapter(
+            viewModel = viewModel,
+            lifecycleOwner = viewLifecycleOwner,
+            currentProfile = thisActivity.currentUserProfile
+        )
+        //Load first page
+        setupRecyclerView()
+        loadMoreItems(true)
     }
 
     private fun loadMoreItems(isFirstPage: Boolean) {
@@ -177,9 +163,12 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
                         return@launch
                     if (!isFirstPage) adapter.addAll(result)
                     else adapter.setList(result as MutableList<Post>)
-                    binding.shimmerLayout.stopShimmerAnimation()
-                    binding.shimmerLayout.visible(false)
                     isLoading = false
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        binding.shimmerLayout.stopShimmerAnimation()
+                        binding.shimmerLayout.visible(false)
+                        binding.postsRv.visible(true)
+                    }, 5000)
                 }
                 is Resource.Loading -> {
                     isLoading = true
@@ -206,7 +195,6 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     private fun setupRecyclerView() {
         binding.postsRv.apply {
             this.adapter = this@HomeFragment.adapter
-            this.visible(true)
         }
     }
 

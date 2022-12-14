@@ -21,7 +21,7 @@ class NotificationAdapter(
     fun addAll(result: List<Notification>) {
         val lastIndex = notifications.size - 1
         notifications.addAll(result)
-        notifyInsertChange(lastIndex,result.size,notifications.size)
+        notifyInsertChange(lastIndex, result.size, notifications.size)
     }
 
     fun setList(result: MutableList<Notification>) {
@@ -30,10 +30,10 @@ class NotificationAdapter(
         } else {
             val previousSize = notifications.size
             notifications = result
-            notifyItemRangeRemoved(0,previousSize)
-            notifyItemRangeChanged(0,previousSize)
+            notifyItemRangeRemoved(0, previousSize)
+            notifyItemRangeChanged(0, previousSize)
         }
-        notifyInsertChange(0,result.size,result.size)
+        notifyInsertChange(0, result.size, result.size)
     }
 
     private fun notifyInsertChange(insertStart: Int, insertSize: Int, changedSize: Int) {
