@@ -20,24 +20,23 @@ import kotlinx.coroutines.withContext
 import protrnd.com.R
 import protrnd.com.data.models.CommentDTO
 import protrnd.com.data.models.Post
+import protrnd.com.data.models.Profile
 import protrnd.com.data.network.PostApi
 import protrnd.com.data.network.ProfileApi
 import protrnd.com.data.network.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityPostBinding
 import protrnd.com.databinding.BottomSheetCommentsBinding
+import protrnd.com.ui.*
 import protrnd.com.ui.adapter.CommentsAdapter
 import protrnd.com.ui.base.BaseActivity
-import protrnd.com.ui.bindPostDetails
-import protrnd.com.ui.enable
 import protrnd.com.ui.home.HomeViewModel
-import protrnd.com.ui.snackbar
-import protrnd.com.ui.visible
 
 class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeRepository>() {
     private var post: Post? = null
     private var postMap: HashMap<String, Post> = HashMap()
     private var postId = ""
+    private val otherProfileHash = HashMap<String, Profile>()
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
@@ -71,7 +70,17 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
                     val likes = if (count > 1) "$count likes" else "$count like"
                     binding.likesCount.text = likes
                     when (viewModel.likePost(postId)) {
-                        is Resource.Success -> {}
+                        is Resource.Success -> {
+                            withContext(Dispatchers.Main) {
+                                val otherProfile = otherProfileHash["otherProfile"]!!
+                                if (otherProfile != currentUserProfile)
+                                    sendLikeNotification(
+                                        otherProfile.username,
+                                        currentUserProfile,
+                                        postId
+                                    )
+                            }
+                        }
                         else -> {}
                     }
                 } else {
@@ -91,72 +100,84 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
         }
 
         binding.commentBtn.setOnClickListener {
-            val bottomSheet = BottomSheetDialog(applicationContext, R.style.BottomSheetTheme)
-            val bottomSheetBinding = BottomSheetCommentsBinding.inflate(LayoutInflater.from(this))
-            bottomSheet.setContentView(bottomSheetBinding.root)
-            bottomSheetBinding.commentSection.layoutManager = LinearLayoutManager(this)
-            loadComments()
-            viewModel.comments.observe(this) { comments ->
-                when (comments) {
-                    is Resource.Success -> {
-                        if (comments.value.data.isNotEmpty()) {
-                            bottomSheetBinding.commentSection.visible(true)
-                            bottomSheetBinding.noCommentsTv.visible(false)
-                            val commentsText = "${comments.value.data.size} Comments"
-                            bottomSheetBinding.commentsCount.text = commentsText
-                            val commentAdapter = CommentsAdapter(
-                                viewModel = viewModel,
-                                comments = comments.value.data
-                            )
-                            bottomSheetBinding.commentSection.adapter = commentAdapter
+            try {
+                val bottomSheet = BottomSheetDialog(this, R.style.BottomSheetTheme)
+                val bottomSheetBinding =
+                    BottomSheetCommentsBinding.inflate(LayoutInflater.from(this))
+                bottomSheet.setContentView(bottomSheetBinding.root)
+                bottomSheetBinding.commentSection.layoutManager = LinearLayoutManager(this)
+                loadComments()
+                viewModel.comments.observe(this) { comments ->
+                    when (comments) {
+                        is Resource.Success -> {
+                            if (comments.value.data.isNotEmpty()) {
+                                bottomSheetBinding.commentSection.visible(true)
+                                bottomSheetBinding.noCommentsTv.visible(false)
+                                val commentsText = "${comments.value.data.size} Comments"
+                                bottomSheetBinding.commentsCount.text = commentsText
+                                val commentAdapter = CommentsAdapter(
+                                    viewModel = viewModel,
+                                    comments = comments.value.data
+                                )
+                                bottomSheetBinding.commentSection.adapter = commentAdapter
+                            }
                         }
-                    }
-                    is Resource.Failure -> {
-                        if (comments.isNetworkError) {
-                            bottomSheetBinding.root.snackbar("Error loading comments") { loadComments() }
+                        is Resource.Failure -> {
+                            if (comments.isNetworkError) {
+                                bottomSheetBinding.root.snackbar("Error loading comments") { loadComments() }
+                            }
                         }
+                        else -> {}
                     }
-                    else -> {}
                 }
-            }
 
-            bottomSheetBinding.sendComment.setOnClickListener {
-                val commentContent = bottomSheetBinding.commentInput.text.toString().trim()
-                if (commentContent.isNotEmpty()) {
-                    bottomSheetBinding.sendComment.enable(false)
-                    val comment = CommentDTO(comment = commentContent, postid = postId)
-                    lifecycleScope.launch {
-                        when (val result = viewModel.addComment(comment)) {
-                            is Resource.Success -> {
-                                bottomSheetBinding.sendComment.enable(true)
-                                if (result.value.successful) {
-                                    bottomSheetBinding.commentInput.text.clear()
-                                    viewModel.getComments(postId)
+                bottomSheetBinding.sendComment.setOnClickListener {
+                    val commentContent = bottomSheetBinding.commentInput.text.toString().trim()
+                    if (commentContent.isNotEmpty()) {
+                        bottomSheetBinding.sendComment.enable(false)
+                        val comment = CommentDTO(comment = commentContent, postid = postId)
+                        lifecycleScope.launch {
+                            when (val result = viewModel.addComment(comment)) {
+                                is Resource.Success -> {
+                                    bottomSheetBinding.sendComment.enable(true)
+                                    if (result.value.successful) {
+                                        val otherProfile = otherProfileHash["otherProfile"]!!
+                                        if (otherProfile != currentUserProfile)
+                                            sendCommentNotification(
+                                                otherProfile.username,
+                                                currentUserProfile,
+                                                postId
+                                            )
+                                        bottomSheetBinding.commentInput.text.clear()
+                                        viewModel.getComments(postId)
+                                    }
+                                }
+                                is Resource.Loading -> {
+                                    bottomSheetBinding.sendComment.enable(false)
+                                }
+                                is Resource.Failure -> {
+                                    bottomSheetBinding.sendComment.enable(true)
                                 }
                             }
-                            is Resource.Loading -> {
-                                bottomSheetBinding.sendComment.enable(false)
-                            }
-                            is Resource.Failure -> {
-                                bottomSheetBinding.sendComment.enable(true)
-                            }
                         }
+                    } else {
+                        bottomSheetBinding.inputField.error = "This field cannot be empty"
                     }
-                } else {
-                    bottomSheetBinding.inputField.error = "This field cannot be empty"
                 }
+                val frame =
+                    bottomSheet.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout
+                val behaviour = BottomSheetBehavior.from(frame)
+                val layoutparams = frame.layoutParams
+                val windowHeight = Resources.getSystem().displayMetrics.heightPixels
+                if (layoutparams != null)
+                    layoutparams.height = windowHeight
+                frame.layoutParams = layoutparams
+                behaviour.state = BottomSheetBehavior.STATE_EXPANDED
+                bottomSheet.show()
+                bottomSheet.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            } catch (e: Exception) {
+                throw e
             }
-            val frame =
-                bottomSheet.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout
-            val behaviour = BottomSheetBehavior.from(frame)
-            val layoutparams = frame.layoutParams
-            val windowHeight = Resources.getSystem().displayMetrics.heightPixels
-            if (layoutparams != null)
-                layoutparams.height = windowHeight
-            frame.layoutParams = layoutparams
-            behaviour.state = BottomSheetBehavior.STATE_EXPANDED
-            bottomSheet.show()
-            bottomSheet.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         }
     }
 
@@ -180,6 +201,7 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
                         val result = item.value.data
                         postMap["post"] = result
                         post = postMap["post"]
+                        otherProfileHash["otherProfile"] = otherProfile.value.data
                         binding.bindPostDetails(
                             usernameTv = binding.username,
                             fullnameTv = binding.fullname,

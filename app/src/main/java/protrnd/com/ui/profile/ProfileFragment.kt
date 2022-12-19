@@ -44,6 +44,13 @@ import java.util.*
 
 class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, HomeRepository>() {
 
+    companion object {
+        const val RECYCLER_STATE = "Recycler_State"
+        const val FOLLOWERS = "followers"
+        const val FOLLOWING = "following"
+        const val BUNDLE = "bundle"
+    }
+
     private lateinit var loadingDialog: Dialog
     private lateinit var thisActivity: HomeActivity
 
@@ -139,6 +146,24 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         thisActivity = activity as HomeActivity
+
+        if (savedInstanceState != null) {
+            binding.postsRv.layoutManager!!.onRestoreInstanceState(savedInstanceState.getParcelable(
+                RECYCLER_STATE))
+            val bundle = savedInstanceState.getBundle(BUNDLE)
+            if (bundle != null) {
+                binding.followingCount.text = bundle.getString(FOLLOWING)
+                binding.followersCount.text = bundle.getString(FOLLOWERS)
+            }
+        }
+
+        binding.root.setOnRefreshListener {
+            loadView()
+            binding.root.isRefreshing = false
+        }
+
+        loadView()
+
         loadingDialog = Dialog(requireContext())
         loadingDialog.setCanceledOnTouchOutside(false)
         val loadingLayoutBinding = LoadingLayoutBinding.inflate(layoutInflater)
@@ -151,43 +176,6 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
 
         requireActivity().checkStoragePermissions()
 
-        binding.profileFullName.text = thisActivity.currentUserProfile.fullname
-        val username = "@${thisActivity.currentUserProfile.username}"
-        binding.profileUsername.text = username
-        if (thisActivity.currentUserProfile.profileimg.isNotEmpty())
-            Glide.with(this)
-                .load(thisActivity.currentUserProfile.profileimg).circleCrop()
-                .into(binding.profileImage)
-        if (thisActivity.currentUserProfile.bgimg.isNotEmpty())
-            Glide.with(this)
-                .load(thisActivity.currentUserProfile.bgimg)
-                .into(binding.bgImage)
-
-        binding.profileShimmer.visible(false)
-        binding.profileView.visible(true)
-
-        lifecycleScope.launch {
-            binding.followersCount.showFollowersCount(
-                viewModel,
-                thisActivity.currentUserProfile
-            )
-            binding.followingCount.showFollowingCount(
-                viewModel,
-                thisActivity.currentUserProfile
-            )
-            binding.postsRv.showUserPostsInGrid(
-                requireContext(), viewModel,
-                thisActivity.currentUserProfile
-            )
-            val thumbnailAdapter = binding.postsRv.adapter as ImageThumbnailPostAdapter
-            thumbnailAdapter.imageClickListener(object : ImagePostItemClickListener {
-                override fun postItemClickListener(post: Post) {
-                    startActivity(Intent(requireContext(), PostActivity::class.java).apply {
-                        this.putExtra("post_id", post.identifier)
-                    })
-                }
-            })
-        }
 
         val dialog = Dialog(requireContext())
         val selectBinding = SelectImageDialogBinding.inflate(layoutInflater)
@@ -250,6 +238,56 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
 
         lifecycleScope.launch {
             profilePreferences.saveProfile(thisActivity.currentUserProfile)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val listState = binding.postsRv.layoutManager!!.onSaveInstanceState()!!
+        outState.putParcelable(RECYCLER_STATE,listState)
+        val bundle = Bundle()
+        bundle.putString(FOLLOWERS,binding.followersCount.text.toString())
+        bundle.putString(FOLLOWING,binding.followingCount.text.toString())
+        outState.putBundle(BUNDLE,bundle)
+    }
+
+    private fun loadView() {
+        binding.profileFullName.text = thisActivity.currentUserProfile.fullname
+        val username = "@${thisActivity.currentUserProfile.username}"
+        binding.profileUsername.text = username
+        if (thisActivity.currentUserProfile.profileimg.isNotEmpty())
+            Glide.with(this)
+                .load(thisActivity.currentUserProfile.profileimg).circleCrop()
+                .into(binding.profileImage)
+        if (thisActivity.currentUserProfile.bgimg.isNotEmpty())
+            Glide.with(this)
+                .load(thisActivity.currentUserProfile.bgimg)
+                .into(binding.bgImage)
+
+        binding.profileShimmer.visible(false)
+        binding.profileView.visible(true)
+
+        lifecycleScope.launch {
+            binding.followersCount.showFollowersCount(
+                viewModel,
+                thisActivity.currentUserProfile
+            )
+            binding.followingCount.showFollowingCount(
+                viewModel,
+                thisActivity.currentUserProfile
+            )
+            binding.postsRv.showUserPostsInGrid(
+                requireContext(), viewModel,
+                thisActivity.currentUserProfile
+            )
+            val thumbnailAdapter = binding.postsRv.adapter as ImageThumbnailPostAdapter
+            thumbnailAdapter.imageClickListener(object : ImagePostItemClickListener {
+                override fun postItemClickListener(post: Post) {
+                    startActivity(Intent(requireContext(), PostActivity::class.java).apply {
+                        this.putExtra("post_id", post.identifier)
+                    })
+                }
+            })
         }
     }
 }

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.media.MediaMetadataRetriever
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -21,12 +22,9 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
+import android.view.*
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.view.Window
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -49,8 +47,8 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.gson.Gson
 import protrnd.com.R
-import protrnd.com.data.models.Post
-import protrnd.com.data.models.Profile
+import protrnd.com.data.models.*
+import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.network.Resource
 import protrnd.com.data.responses.BasicResponseBody
 import protrnd.com.databinding.ConfirmationLayoutBinding
@@ -60,6 +58,9 @@ import protrnd.com.ui.auth.AuthenticationActivity
 import protrnd.com.ui.auth.LoginFragment
 import protrnd.com.ui.home.HomeViewModel
 import protrnd.com.ui.profile.ProfileActivity
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -105,6 +106,34 @@ fun String.setSpannableColor(section: String, start: Int = 0): Spannable {
         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
     )
     return span
+}
+
+fun sendCommentNotification(otherProfileName: String,currentProfile: Profile, id: String) {
+    val title = "Hi $otherProfileName"
+    val body = "${currentProfile.username} just commented on your post"
+    val notificationPayload = ReceiveNotification(currentProfile.username, "Post", id, body)
+    sendNotification(currentProfile, title, Gson().toJson(notificationPayload))
+}
+
+fun sendLikeNotification(otherProfileName: String,currentProfile: Profile, id: String) {
+    val title = "Hi $otherProfileName"
+    val body = "${currentProfile.username} just liked your post"
+    val notificationPayload = ReceiveNotification(currentProfile.username, "Post", id, body)
+    sendNotification(currentProfile, title, Gson().toJson(notificationPayload))
+}
+
+fun sendNotification(currentProfile: Profile, title: String, body: String) {
+    ProtrndAPIDataSource().getClients().sendNotification(PushNotification(NotificationData(title, body), "/topics/${currentProfile.identifier}"))
+        .enqueue(object: Callback<PushNotification> {
+            override fun onResponse(
+                call: Call<PushNotification>,
+                response: Response<PushNotification>
+            ) {
+            }
+
+            override fun onFailure(call: Call<PushNotification>, t: Throwable) {
+            }
+        })
 }
 
 fun ViewBinding.bindPostDetails(
@@ -254,6 +283,7 @@ suspend fun RecyclerView.showUserPostsInGrid(
             val gridlayout = GridLayoutManager(context, 3)
             this.layoutManager = gridlayout
             val thumbnailsAdapter = ImageThumbnailPostAdapter(posts.value.data)
+            thumbnailsAdapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
             this.adapter = thumbnailsAdapter
         }
         is Resource.Failure -> {
@@ -478,4 +508,17 @@ fun Activity.isNetworkAvailable(): Boolean {
         activeNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
         else -> false
     }
+}
+
+fun Context.showFeatureComingSoonDialog() {
+    val dialog = Dialog(this)
+    val layout = R.layout.feature_coming
+    dialog.setContentView(layout)
+    dialog.show()
+    val window: Window = dialog.window!!
+    window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+    window.setLayout(
+        WRAP_CONTENT,
+        WRAP_CONTENT
+    )
 }

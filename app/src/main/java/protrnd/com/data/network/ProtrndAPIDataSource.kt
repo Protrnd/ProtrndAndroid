@@ -3,6 +3,7 @@ package protrnd.com.data.network
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import protrnd.com.BuildConfig
+import protrnd.com.data.models.FCMValues
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -35,5 +36,22 @@ class ProtrndAPIDataSource {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(api)
+    }
+
+    fun getClients(): FCMNotificationApi {
+        return Retrofit.Builder()
+            .baseUrl(FCMValues.BASE_URL)
+            .client(OkHttpClient.Builder()
+                .also { client ->
+                    if (BuildConfig.DEBUG) {
+                        val logginh = HttpLoggingInterceptor()
+                        logginh.setLevel(HttpLoggingInterceptor.Level.BODY)
+                        client.addInterceptor(logginh)
+                    }
+                }.build()
+            )
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(FCMNotificationApi::class.java)
     }
 }

@@ -41,7 +41,7 @@
         <item name="android:windowIsFloating">true</item>
     </style>
 
-    <style name="BottomSheetTheme" parent="android:Theme.Holo.Dialog.NoActionBar">
+    <style name="BottomSheetTheme" parent="Theme.Protrnd">
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 </resources>

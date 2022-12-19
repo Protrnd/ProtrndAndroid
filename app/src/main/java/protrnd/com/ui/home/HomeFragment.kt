@@ -3,16 +3,16 @@ package protrnd.com.ui.home
 import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -41,12 +41,13 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     private val locationHash = HashMap<String, List<String>>()
     private lateinit var thisActivity: HomeActivity
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         thisActivity = activity as HomeActivity
-        postsLayoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        binding.postsRv.layoutManager = postsLayoutManager
+            postsLayoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+            binding.postsRv.layoutManager = postsLayoutManager
 
         loadPage()
 
@@ -147,6 +148,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
             lifecycleOwner = viewLifecycleOwner,
             currentProfile = thisActivity.currentUserProfile
         )
+        adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
         //Load first page
         setupRecyclerView()
         loadMoreItems(true)
@@ -188,6 +190,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
         }
     }
 
+
     private fun loadLocations() {
         viewModel.getLocations()
     }
@@ -210,12 +213,6 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
         val api = protrndAPIDataSource.buildAPI(ProfileApi::class.java, token)
         val postsApi = protrndAPIDataSource.buildAPI(PostApi::class.java, token)
         return HomeRepository(api, postsApi)
-    }
-
-    override fun onPause() {
-        binding.shimmerLayout.stopShimmerAnimation()
-        dialog.dismiss()
-        super.onPause()
     }
 
     override fun onDestroy() {

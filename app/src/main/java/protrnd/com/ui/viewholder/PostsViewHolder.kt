@@ -9,7 +9,7 @@ import protrnd.com.data.models.Profile
 import protrnd.com.databinding.PostItemBinding
 import protrnd.com.ui.bindPostDetails
 import protrnd.com.ui.profile.ProfileActivity
-import protrnd.com.ui.promotion.NewPromotionActivity
+import protrnd.com.ui.showFeatureComingSoonDialog
 import protrnd.com.ui.visible
 
 class PostsViewHolder(val view: PostItemBinding): RecyclerView.ViewHolder(view.root) {
@@ -28,6 +28,14 @@ class PostsViewHolder(val view: PostItemBinding): RecyclerView.ViewHolder(view.r
             tabLayout = view.tabLayout,
             timeText = view.timeUploaded
         )
+
+        view.shareBtn.setOnClickListener {
+            itemView.context.showFeatureComingSoonDialog()
+        }
+
+        view.sendTextBtn.setOnClickListener {
+            itemView.context.showFeatureComingSoonDialog()
+        }
 
         if (currentProfile != postOwnerProfile) {
             view.promoteText.text = "Support"
@@ -48,12 +56,13 @@ class PostsViewHolder(val view: PostItemBinding): RecyclerView.ViewHolder(view.r
         }
 
         view.promoteBtn.setOnClickListener {
-            if(currentProfile == postOwnerProfile) {
-                val i = Intent(it.context, NewPromotionActivity::class.java).also { intent ->
-                    intent.putExtra("post_details", item)
-                }
-                it.context.startActivity(i)
-            }
+            itemView.context.showFeatureComingSoonDialog()
+//            if(currentProfile == postOwnerProfile) {
+//                val i = Intent(it.context, NewPromotionActivity::class.java).also { intent ->
+//                    intent.putExtra("post_details", item)
+//                }
+//                it.context.startActivity(i)
+//            }
         }
     }
 }

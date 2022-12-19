@@ -22,6 +22,8 @@ import protrnd.com.databinding.BottomSheetCommentsBinding
 import protrnd.com.databinding.PostItemBinding
 import protrnd.com.ui.enable
 import protrnd.com.ui.home.HomeViewModel
+import protrnd.com.ui.sendCommentNotification
+import protrnd.com.ui.sendLikeNotification
 import protrnd.com.ui.viewholder.PostsViewHolder
 import protrnd.com.ui.visible
 
@@ -59,6 +61,7 @@ class PostsAdapter(
 
     override fun onBindViewHolder(holder: PostsViewHolder, position: Int) {
         val postData = posts[position]
+        val otherProfileHash = HashMap<String, Profile>()
 
         holder.view.commentBtn.setOnClickListener {
             val bottomSheet = BottomSheetDialog(holder.itemView.context, R.style.BottomSheetTheme)
@@ -95,6 +98,13 @@ class PostsAdapter(
                             is Resource.Success -> {
                                 binding.sendComment.enable(true)
                                 if (result.value.successful) {
+                                    val otherProfile = otherProfileHash["otherProfile"]!!
+                                    if (otherProfile != currentProfile)
+                                        sendCommentNotification(
+                                            otherProfile.username,
+                                            currentProfile,
+                                            postData.identifier
+                                        )
                                     binding.commentInput.text.clear()
                                     viewModel.getComments(postData.identifier)
                                 }
@@ -131,7 +141,15 @@ class PostsAdapter(
                     val likes = if (count > 1) "$count likes" else "$count like"
                     holder.view.likesCount.text = likes
                     when (viewModel.likePost(postData.identifier)) {
-                        is Resource.Success -> {}
+                        is Resource.Success -> {
+                            val otherProfile = otherProfileHash["otherProfile"]!!
+                            if (otherProfile != currentProfile)
+                                sendLikeNotification(
+                                    otherProfile.username,
+                                    currentProfile,
+                                    postData.identifier
+                                )
+                        }
                         else -> {}
                     }
                 } else {
@@ -174,6 +192,7 @@ class PostsAdapter(
             when (val otherProfile = viewModel.getProfileById(postData.profileid)) {
                 is Resource.Success -> {
                     withContext(Dispatchers.Main) {
+                        otherProfileHash["otherProfile"] = otherProfile.value.data
                         holder.bind(postData, otherProfile.value.data, currentProfile)
                     }
                 }
@@ -182,6 +201,7 @@ class PostsAdapter(
             }
         }
     }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostsViewHolder {
         return PostsViewHolder(

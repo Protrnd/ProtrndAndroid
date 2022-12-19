@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -15,6 +16,7 @@ import protrnd.com.data.ProfilePreferences
 import protrnd.com.data.models.Profile
 import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.repository.BaseRepository
+import protrnd.com.ui.checkStoragePermissions
 
 
 abstract class BaseActivity<B : ViewBinding, VM : ViewModel, R : BaseRepository> :
@@ -30,6 +32,10 @@ abstract class BaseActivity<B : ViewBinding, VM : ViewModel, R : BaseRepository>
         super.onCreate(savedInstanceState)
         binding = getActivityBinding(layoutInflater)
         setContentView(binding.root)
+        this.checkStoragePermissions()
+        FirebaseMessaging.getInstance().token.addOnCompleteListener {
+
+        }
         profilePreferences = ProfilePreferences(this)
         val profileP = runBlocking { profilePreferences.profile.first() }
         if (profileP != null) {

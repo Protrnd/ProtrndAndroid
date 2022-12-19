@@ -169,6 +169,7 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
+            dialog.show()
             doAsync {
                 lifecycleScope.launch {
                     try {
@@ -188,7 +189,9 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
                                 uploadurls = result
                             )
                             when(viewModel.addPost(postDto)) {
-                                is Resource.Success -> finish()
+                                is Resource.Success -> {
+                                    finish()
+                                }
                                 else -> {}
                             }
                         }
