@@ -6,14 +6,15 @@ import android.view.LayoutInflater
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import protrnd.com.data.models.Post
 import protrnd.com.data.models.Profile
-import protrnd.com.data.network.PostApi
-import protrnd.com.data.network.ProfileApi
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.api.PostApi
+import protrnd.com.data.network.api.ProfileApi
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityProfileBinding
 import protrnd.com.ui.*
@@ -39,7 +40,7 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
-        binding.navBackBtn.setOnClickListener { finish() }
+        binding.navBackBtn.setOnClickListener { finishActivity() }
 
         val usernameIntent = intent?.getStringExtra("profile_name").toString()
         if (usernameIntent.isNotEmpty() && usernameIntent.contains("@")) {
@@ -103,11 +104,13 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
                         lifecycleScope.launch { getProfileByName(usernameIntent) }
                     }
                 } else {
-                    binding.root.snackbar("An error occurred") { finish() }
+                    binding.root.snackbar("An error occurred") { finishActivity() }
                 }
             }
+            else -> {}
         }
     }
+
 
     private suspend fun getProfileById() {
         when (val result = viewModel.getProfileById(profileId)) {
@@ -135,6 +138,7 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
                                     binding.followToggle.visible(false)
                                 }
                             }
+                            else -> {}
                         }
                     }
                 }
@@ -146,14 +150,17 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
 
                 if (profile?.profileimg!!.isNotEmpty()) {
                     Glide.with(applicationContext)
-                        .load(profile?.profileimg).circleCrop().into(binding.profileImage)
+                        .load(profile?.profileimg).circleCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL).into(binding.profileImage)
                     Glide.with(applicationContext)
-                        .load(profile?.profileimg).circleCrop().into(binding.navImage)
+                        .load(profile?.profileimg).circleCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL).into(binding.navImage)
                 }
 
                 if (profile?.bgimg!!.isNotEmpty())
                     Glide.with(applicationContext)
-                        .load(profile?.bgimg).into(binding.bgImage)
+                        .load(profile?.bgimg)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL).into(binding.bgImage)
 
                 lifecycleScope.launch {
                     binding.followersCount.showFollowersCount(viewModel, profile!!)
@@ -173,6 +180,7 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
                                 ).apply {
                                     this.putExtra("post_id", post.identifier)
                                 })
+                            startAnimation()
                         }
                     })
                     binding.profileShimmer.visible(false)
@@ -186,9 +194,11 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
             is Resource.Failure -> {
                 if (result.isNetworkError)
                     getProfileById()
-                else
-                    finish()
+                else {
+                    finishActivity()
+                }
             }
+            else -> {}
         }
     }
 }

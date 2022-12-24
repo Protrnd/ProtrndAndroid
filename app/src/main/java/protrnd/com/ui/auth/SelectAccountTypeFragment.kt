@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
 import protrnd.com.R
-import protrnd.com.data.network.AuthApi
+import protrnd.com.data.network.api.AuthApi
 import protrnd.com.data.repository.AuthRepository
 import protrnd.com.databinding.FragmentSelectAccountTypeBinding
 import protrnd.com.ui.base.BaseFragment
@@ -56,5 +56,5 @@ class SelectAccountTypeFragment :
     ) = FragmentSelectAccountTypeBinding.inflate(inflater, container, false)
 
     override fun getFragmentRepository() =
-        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
+        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), settingsPreferences)
 }

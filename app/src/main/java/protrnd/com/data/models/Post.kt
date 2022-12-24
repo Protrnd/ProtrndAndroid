@@ -2,12 +2,15 @@ package protrnd.com.data.models
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
+@Entity(tableName = "Posts")
 data class Post(
     val acceptgift: Boolean = false,
     val caption: String = "",
     val disabled: Boolean = false,
-    val id: String = "",
+    @PrimaryKey val id: String = "",
     val identifier: String = "",
     val location: Location = Location(),
     val profileid: String = "",

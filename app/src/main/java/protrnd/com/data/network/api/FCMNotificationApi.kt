@@ -1,4 +1,4 @@
-package protrnd.com.data.network
+package protrnd.com.data.network.api
 
 import protrnd.com.data.models.FCMValues.Companion.CONTENT_TYPE
 import protrnd.com.data.models.FCMValues.Companion.SERVER_KEY

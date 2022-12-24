@@ -1,24 +1,63 @@
 package protrnd.com.data.repository
 
 import android.net.Uri
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.liveData
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
 import protrnd.com.data.models.CommentDTO
+import protrnd.com.data.models.Post
+import protrnd.com.data.models.Profile
 import protrnd.com.data.models.ProfileDTO
-import protrnd.com.data.network.PostApi
-import protrnd.com.data.network.ProfileApi
+import protrnd.com.data.network.PostsPagingSource
+import protrnd.com.data.network.api.PostApi
+import protrnd.com.data.network.api.ProfileApi
+import protrnd.com.data.network.database.PostDatabase
+import protrnd.com.data.network.database.ProfileDatabase
 
-class HomeRepository(private val api: ProfileApi, private val postsApi: PostApi) :
+class HomeRepository(
+    private val api: ProfileApi,
+    private val postsApi: PostApi,
+    db: PostDatabase? = null,
+    profileDatabase: ProfileDatabase? = null
+) :
     BaseRepository() {
+
+    private val postDao = db?.postDao()
+
+    private val profileDao = profileDatabase?.profileDao()
+
+    fun getPostsPage() = Pager(
+        config = PagingConfig(pageSize = 10, maxSize = 100, enablePlaceholders = false),
+        pagingSourceFactory = { PostsPagingSource(postsApi) }
+    ).liveData
+
+    suspend fun savePostResult(posts: List<Post>) {
+        postDao?.deleteAllPosts()
+        postDao?.insertPosts(posts)
+    }
+
+    suspend fun saveProfile(profile: Profile) {
+        val dbSize = profileDao?.getDBSize()?.first()
+        if (dbSize != null && dbSize >= 20) {
+            val profiles = profileDao?.getProfiles()!!
+            profileDao.deleteProfile(profiles.first()[(0..20).random()].id)
+        }
+        profileDao?.insertProfile(profile)
+    }
+
+    fun getSavedPosts() = postDao?.getAllPosts()
+
+    fun getProfile(id: String) = profileDao?.getProfile(id)
 
     suspend fun getCurrentProfile() = safeApiCall { api.getCurrentProfile() }
 
     suspend fun getProfileById(id: String) = safeApiCall { api.getProfileById(id) }
 
     suspend fun getProfileByUsername(name: String) = safeApiCall { api.getProfileByName(name) }
-
-    suspend fun getPostsPage(page: Int) = safeApiCall { postsApi.getPosts(page) }
 
     suspend fun getPostsQuery(page: Int, word: String) =
         safeApiCall { postsApi.getPostsQueried(page, word) }

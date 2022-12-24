@@ -1,34 +1,22 @@
 package protrnd.com.ui.post
 
 import android.content.Intent
-import android.content.res.Resources
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.widget.FrameLayout
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlinx.coroutines.Dispatchers
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import protrnd.com.R
-import protrnd.com.data.models.CommentDTO
 import protrnd.com.data.models.Post
 import protrnd.com.data.models.Profile
-import protrnd.com.data.network.PostApi
-import protrnd.com.data.network.ProfileApi
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.api.PostApi
+import protrnd.com.data.network.api.ProfileApi
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityPostBinding
-import protrnd.com.databinding.BottomSheetCommentsBinding
 import protrnd.com.ui.*
-import protrnd.com.ui.adapter.CommentsAdapter
 import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.home.HomeViewModel
 
@@ -45,54 +33,29 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
                 val returnIntent = Intent()
                 returnIntent.putExtra("profile_id", post!!.profileid)
                 setResult(RESULT_OK, returnIntent)
-                finish()
+                finishActivity()
             }
         }
 
         postId = intent?.getStringExtra("post_id")!!
 
         if (currentUserProfile.profileimg.isNotEmpty())
-            Glide.with(applicationContext).load(currentUserProfile.profileimg).circleCrop()
+            Glide.with(applicationContext).load(currentUserProfile.profileimg).diskCacheStrategy(
+                DiskCacheStrategy.ALL
+            ).circleCrop()
                 .into(binding.navImage)
         binding.navName.text = currentUserProfile.username
 
         binding.likeToggle.setOnClickListener {
-            val liked = binding.likeToggle.isChecked
-            var likesResult = binding.likesCount.text.toString()
-            likesResult = if (likesResult.contains("likes"))
-                likesResult.replace(" likes", "")
-            else
-                likesResult.replace(" like", "")
-            var count = likesResult.toInt()
-            lifecycleScope.launch {
-                if (liked) {
-                    count += 1
-                    val likes = if (count > 1) "$count likes" else "$count like"
-                    binding.likesCount.text = likes
-                    when (viewModel.likePost(postId)) {
-                        is Resource.Success -> {
-                            withContext(Dispatchers.Main) {
-                                val otherProfile = otherProfileHash["otherProfile"]!!
-                                if (otherProfile != currentUserProfile)
-                                    sendLikeNotification(
-                                        otherProfile.username,
-                                        currentUserProfile,
-                                        postId
-                                    )
-                            }
-                        }
-                        else -> {}
-                    }
-                } else {
-                    count -= 1
-                    val likes = if (count > 1) "$count likes" else "$count like"
-                    binding.likesCount.text = likes
-                    when (viewModel.unlikePost(postId)) {
-                        is Resource.Success -> {}
-                        else -> {}
-                    }
-                }
-            }
+            likePost(
+                binding.likeToggle,
+                binding.likesCount,
+                lifecycleScope,
+                viewModel,
+                postId,
+                otherProfileHash["otherProfile"]!!,
+                currentUserProfile
+            )
         }
 
         lifecycleScope.launch {
@@ -100,84 +63,14 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
         }
 
         binding.commentBtn.setOnClickListener {
-            try {
-                val bottomSheet = BottomSheetDialog(this, R.style.BottomSheetTheme)
-                val bottomSheetBinding =
-                    BottomSheetCommentsBinding.inflate(LayoutInflater.from(this))
-                bottomSheet.setContentView(bottomSheetBinding.root)
-                bottomSheetBinding.commentSection.layoutManager = LinearLayoutManager(this)
-                loadComments()
-                viewModel.comments.observe(this) { comments ->
-                    when (comments) {
-                        is Resource.Success -> {
-                            if (comments.value.data.isNotEmpty()) {
-                                bottomSheetBinding.commentSection.visible(true)
-                                bottomSheetBinding.noCommentsTv.visible(false)
-                                val commentsText = "${comments.value.data.size} Comments"
-                                bottomSheetBinding.commentsCount.text = commentsText
-                                val commentAdapter = CommentsAdapter(
-                                    viewModel = viewModel,
-                                    comments = comments.value.data
-                                )
-                                bottomSheetBinding.commentSection.adapter = commentAdapter
-                            }
-                        }
-                        is Resource.Failure -> {
-                            if (comments.isNetworkError) {
-                                bottomSheetBinding.root.snackbar("Error loading comments") { loadComments() }
-                            }
-                        }
-                        else -> {}
-                    }
-                }
-
-                bottomSheetBinding.sendComment.setOnClickListener {
-                    val commentContent = bottomSheetBinding.commentInput.text.toString().trim()
-                    if (commentContent.isNotEmpty()) {
-                        bottomSheetBinding.sendComment.enable(false)
-                        val comment = CommentDTO(comment = commentContent, postid = postId)
-                        lifecycleScope.launch {
-                            when (val result = viewModel.addComment(comment)) {
-                                is Resource.Success -> {
-                                    bottomSheetBinding.sendComment.enable(true)
-                                    if (result.value.successful) {
-                                        val otherProfile = otherProfileHash["otherProfile"]!!
-                                        if (otherProfile != currentUserProfile)
-                                            sendCommentNotification(
-                                                otherProfile.username,
-                                                currentUserProfile,
-                                                postId
-                                            )
-                                        bottomSheetBinding.commentInput.text.clear()
-                                        viewModel.getComments(postId)
-                                    }
-                                }
-                                is Resource.Loading -> {
-                                    bottomSheetBinding.sendComment.enable(false)
-                                }
-                                is Resource.Failure -> {
-                                    bottomSheetBinding.sendComment.enable(true)
-                                }
-                            }
-                        }
-                    } else {
-                        bottomSheetBinding.inputField.error = "This field cannot be empty"
-                    }
-                }
-                val frame =
-                    bottomSheet.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout
-                val behaviour = BottomSheetBehavior.from(frame)
-                val layoutparams = frame.layoutParams
-                val windowHeight = Resources.getSystem().displayMetrics.heightPixels
-                if (layoutparams != null)
-                    layoutparams.height = windowHeight
-                frame.layoutParams = layoutparams
-                behaviour.state = BottomSheetBehavior.STATE_EXPANDED
-                bottomSheet.show()
-                bottomSheet.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            } catch (e: Exception) {
-                throw e
-            }
+            this.showCommentSection(
+                viewModel,
+                this,
+                lifecycleScope,
+                otherProfileHash["otherProfile"]!!,
+                currentUserProfile,
+                postId
+            )
         }
     }
 
@@ -212,7 +105,8 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
                             imagesPager = binding.imagesViewPager,
                             postOwnerProfile = otherProfile.value.data,
                             tabLayout = binding.tabLayout,
-                            timeText = binding.timeUploaded
+                            timeText = binding.timeUploaded,
+                            activity = this
                         )
                         binding.postResult.visible(true)
                         binding.shimmerLayout.visible(false)
@@ -232,29 +126,20 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
             }
         }
 
-        when (val likesCount = viewModel.getLikesCount(postId)) {
-            is Resource.Success -> {
-                val count = likesCount.value.data as Double
-                val likes = if (count > 1) "${count.toInt()} likes" else "${count.toInt()} like"
-                binding.likesCount.text = likes
-            }
-            else -> {}
-        }
-
-        val isLiked = viewModel.postIsLiked(postId)
-        withContext(Dispatchers.Main) {
-            isLiked.observe(this@PostActivity) {
-                when (it) {
-                    is Resource.Success -> {
-                        binding.likeToggle.isChecked = it.value.data
-                    }
-                    else -> {}
-                }
-            }
-        }
+        setupLikes(
+            viewModel,
+            postId,
+            this,
+            binding.likesCount,
+            binding.likeToggle
+        )
     }
 
-    private fun loadComments() {
-        viewModel.getComments(postId)
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        postId = intent?.getStringExtra("post_id")!!
+        lifecycleScope.launch {
+            loadPostData()
+        }
     }
 }

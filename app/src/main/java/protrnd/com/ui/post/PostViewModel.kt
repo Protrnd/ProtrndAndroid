@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import protrnd.com.data.models.PostDTO
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.PostRepository
 import protrnd.com.data.responses.ProfileListResponseBody
 import protrnd.com.data.responses.ProfileResponseBody
@@ -27,6 +27,7 @@ class PostViewModel(
         repository.addImageToFirebase(uri, username, filetype)
 
     fun getProfilesByUsername(name: String) = viewModelScope.launch {
+        _profiles.value = Resource.Loading()
         _profiles.value = repository.getProfilesByUsername(name)
     }
 

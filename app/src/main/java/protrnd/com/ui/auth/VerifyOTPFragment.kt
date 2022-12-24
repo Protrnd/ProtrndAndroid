@@ -9,13 +9,12 @@ import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import kotlinx.coroutines.launch
-import protrnd.com.data.network.AuthApi
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.api.AuthApi
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.AuthRepository
 import protrnd.com.databinding.FragmentVerifyOtpBinding
 import protrnd.com.ui.*
 import protrnd.com.ui.base.BaseFragment
-import protrnd.com.ui.home.HomeActivity
 
 class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, AuthRepository>() {
 
@@ -39,10 +38,14 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
             when (it) {
                 is Resource.Success -> {
                     if (it.value.successful) {
-                        lifecycleScope.launch {
-                            viewModel.saveAuthToken(it.value.data.toString())
-                            requireActivity().startNewActivityFromAuth(HomeActivity::class.java)
-                        }
+                        viewModel.saveAndStartHomeFragment(
+                            binding.root,
+                            it.value.data.toString(),
+                            lifecycleScope,
+                            viewLifecycleOwner,
+                            requireActivity(),
+                            settingsPreferences
+                        )
                     } else {
                         binding.root.snackbar(it.value.message)
                     }
@@ -60,6 +63,7 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
                         binding.root.snackbar("Internal server error occurred")
                     }
                 }
+                else -> {}
             }
         }
 
@@ -100,5 +104,5 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
     ) = FragmentVerifyOtpBinding.inflate(inflater, container, false)
 
     override fun getFragmentRepository() =
-        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
+        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), settingsPreferences)
 }

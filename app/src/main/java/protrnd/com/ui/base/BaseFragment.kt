@@ -13,28 +13,32 @@ import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import androidx.viewbinding.ViewBinding
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import protrnd.com.data.ProfilePreferences
 import protrnd.com.data.network.ProtrndAPIDataSource
+import protrnd.com.data.network.SettingsPreferences
 import protrnd.com.data.repository.BaseRepository
 import protrnd.com.ui.adapter.PostsAdapter
+import protrnd.com.ui.handleUnCaughtException
 import java.util.regex.Pattern
 
 abstract class BaseFragment<VM : ViewModel, B : ViewBinding, R : BaseRepository> : Fragment() {
     protected lateinit var binding: B
     protected val protrndAPIDataSource = ProtrndAPIDataSource()
     protected lateinit var viewModel: VM
-    lateinit var profilePreferences: ProfilePreferences
+    lateinit var settingsPreferences: SettingsPreferences
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        profilePreferences = ProfilePreferences(requireContext())
+        settingsPreferences = SettingsPreferences(requireContext())
         binding = getFragmentBinding(inflater, container)
-        lifecycleScope.launch { profilePreferences.authToken.first() } //This automatically stores the information to memory
+        lifecycleScope.launch { settingsPreferences.authToken.first() } //This automatically stores the information to memory
         val factory = ViewModelFactory(getFragmentRepository())
         viewModel = ViewModelProvider(this, factory)[getViewModel()]
+        Thread.setDefaultUncaughtExceptionHandler { _, _ ->
+            binding.root.handleUnCaughtException()
+        }
         return binding.root
     }
 

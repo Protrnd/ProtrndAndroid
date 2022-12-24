@@ -6,14 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import protrnd.com.data.network.AuthApi
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.api.AuthApi
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.AuthRepository
 import protrnd.com.databinding.FragmentLoginBinding
 import protrnd.com.ui.*
 import protrnd.com.ui.base.BaseFragment
-import protrnd.com.ui.home.HomeActivity
 
 class LoginFragment : BaseFragment<AuthViewModel, FragmentLoginBinding, AuthRepository>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -37,12 +35,17 @@ class LoginFragment : BaseFragment<AuthViewModel, FragmentLoginBinding, AuthRepo
                     binding.loginBtn.enable(false)
                 }
                 is Resource.Success -> {
-                    lifecycleScope.launch {
-                        viewModel.saveAuthToken(it.value.data.toString())
-                        requireActivity().startNewActivityFromAuth(HomeActivity::class.java)
-                    }
+                    viewModel.saveAndStartHomeFragment(
+                        binding.root,
+                        it.value.data.toString(),
+                        lifecycleScope,
+                        viewLifecycleOwner,
+                        requireActivity(),
+                        settingsPreferences
+                    )
                 }
                 is Resource.Failure -> handleAPIError(it)
+                else -> {}
             }
         }
 
@@ -71,5 +74,5 @@ class LoginFragment : BaseFragment<AuthViewModel, FragmentLoginBinding, AuthRepo
     ) = FragmentLoginBinding.inflate(inflater, container, false)
 
     override fun getFragmentRepository() =
-        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
+        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), settingsPreferences)
 }

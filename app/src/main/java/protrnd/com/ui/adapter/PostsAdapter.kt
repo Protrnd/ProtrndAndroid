@@ -1,38 +1,34 @@
 package protrnd.com.ui.adapter
 
-import android.content.res.Resources
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
+import android.app.Activity
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.lifecycle.LifecycleOwner
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.satoshun.coroutine.autodispose.view.autoDisposeScope
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import protrnd.com.R
-import protrnd.com.data.models.CommentDTO
 import protrnd.com.data.models.Post
 import protrnd.com.data.models.Profile
-import protrnd.com.data.network.Resource
-import protrnd.com.databinding.BottomSheetCommentsBinding
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.databinding.PostItemBinding
-import protrnd.com.ui.enable
 import protrnd.com.ui.home.HomeViewModel
-import protrnd.com.ui.sendCommentNotification
-import protrnd.com.ui.sendLikeNotification
+import protrnd.com.ui.likePost
+import protrnd.com.ui.reload
+import protrnd.com.ui.setupLikes
+import protrnd.com.ui.showCommentSection
 import protrnd.com.ui.viewholder.PostsViewHolder
-import protrnd.com.ui.visible
 
 class PostsAdapter(
-    private var posts: MutableList<Post> = ArrayList(),
+    var posts: MutableList<Post> = ArrayList(),
     val viewModel: HomeViewModel,
     val lifecycleOwner: LifecycleOwner,
-    val currentProfile: Profile
+    val currentProfile: Profile,
+    val activity: Activity
 ) : RecyclerView.Adapter<PostsViewHolder>() {
+
+    private val otherProfileHash = HashMap<String, Profile>()
 
     fun addAll(result: List<Post>) {
         val lastIndex = posts.size - 1
@@ -61,147 +57,69 @@ class PostsAdapter(
 
     override fun onBindViewHolder(holder: PostsViewHolder, position: Int) {
         val postData = posts[position]
-        val otherProfileHash = HashMap<String, Profile>()
+
 
         holder.view.commentBtn.setOnClickListener {
-            val bottomSheet = BottomSheetDialog(holder.itemView.context, R.style.BottomSheetTheme)
-            val binding =
-                BottomSheetCommentsBinding.inflate(LayoutInflater.from(holder.itemView.context))
-            bottomSheet.setContentView(binding.root)
-            binding.commentSection.layoutManager = LinearLayoutManager(holder.itemView.context)
-            viewModel.getComments(postData.identifier)
-            viewModel.comments.observe(lifecycleOwner) { comments ->
-                when (comments) {
-                    is Resource.Success -> {
-                        if (comments.value.data.isNotEmpty()) {
-                            binding.commentSection.visible(true)
-                            binding.noCommentsTv.visible(false)
-                            val commentsText = "${comments.value.data.size} Comments"
-                            binding.commentsCount.text = commentsText
-                            val commentAdapter = CommentsAdapter(
-                                viewModel = viewModel,
-                                comments = comments.value.data
-                            )
-                            binding.commentSection.adapter = commentAdapter
-                        }
-                    }
-                    else -> {}
-                }
-            }
-
-            binding.sendComment.setOnClickListener {
-                val commentContent = binding.commentInput.text.toString().trim()
-                if (commentContent.isNotEmpty()) {
-                    val comment = CommentDTO(comment = commentContent, postid = postData.identifier)
-                    holder.itemView.autoDisposeScope.launch {
-                        when (val result = viewModel.addComment(comment)) {
-                            is Resource.Success -> {
-                                binding.sendComment.enable(true)
-                                if (result.value.successful) {
-                                    val otherProfile = otherProfileHash["otherProfile"]!!
-                                    if (otherProfile != currentProfile)
-                                        sendCommentNotification(
-                                            otherProfile.username,
-                                            currentProfile,
-                                            postData.identifier
-                                        )
-                                    binding.commentInput.text.clear()
-                                    viewModel.getComments(postData.identifier)
-                                }
-                            }
-                            is Resource.Loading -> {
-                                binding.sendComment.enable(false)
-                            }
-                            is Resource.Failure -> {
-                                binding.sendComment.enable(true)
-                            }
-                        }
-                    }
-                } else {
-                    binding.inputField.error = "This field cannot be empty"
-                }
-            }
-
-            bottomSheet.show()
-            bottomSheet.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            bottomSheet.behavior.peekHeight = Resources.getSystem().displayMetrics.heightPixels
+            holder.itemView.context.showCommentSection(
+                viewModel,
+                lifecycleOwner,
+                holder.itemView.autoDisposeScope,
+                otherProfileHash["otherProfile"]!!,
+                currentProfile,
+                postData.identifier
+            )
         }
 
         holder.view.likeToggle.setOnClickListener {
-            val liked = holder.view.likeToggle.isChecked
-            var likesResult = holder.view.likesCount.text.toString()
-            likesResult = if (likesResult.contains("likes"))
-                likesResult.replace(" likes", "")
-            else
-                likesResult.replace(" like", "")
-            var count = if (likesResult.isNotEmpty()) likesResult.toInt() else 0
-            holder.itemView.autoDisposeScope.launch {
-                if (liked) {
-                    count += 1
-                    val likes = if (count > 1) "$count likes" else "$count like"
-                    holder.view.likesCount.text = likes
-                    when (viewModel.likePost(postData.identifier)) {
-                        is Resource.Success -> {
-                            val otherProfile = otherProfileHash["otherProfile"]!!
-                            if (otherProfile != currentProfile)
-                                sendLikeNotification(
-                                    otherProfile.username,
-                                    currentProfile,
-                                    postData.identifier
-                                )
-                        }
-                        else -> {}
-                    }
-                } else {
-                    count -= 1
-                    val likes = if (count > 1) "$count likes" else "$count like"
-                    holder.view.likesCount.text = likes
-                    when (viewModel.unlikePost(postData.identifier)) {
-                        is Resource.Success -> {}
-                        else -> {}
-                    }
-                }
-            }
+            likePost(
+                holder.view.likeToggle,
+                holder.view.likesCount,
+                holder.itemView.autoDisposeScope,
+                viewModel,
+                postData.identifier,
+                otherProfileHash["otherProfile"]!!,
+                currentProfile
+            )
         }
 
         holder.itemView.autoDisposeScope.launch {
-            when (val likesCount = viewModel.getLikesCount(postData.id)) {
-                is Resource.Success -> {
-                    withContext(Dispatchers.Main) {
-                        val count = likesCount.value.data as Double
-                        val likes =
-                            if (count > 1) "${count.toInt()} likes" else "${count.toInt()} like"
-                        holder.view.likesCount.text = likes
-                    }
-                }
-                else -> {}
-            }
+            setupLikes(
+                viewModel,
+                postData.id,
+                lifecycleOwner,
+                holder.view.likesCount,
+                holder.view.likeToggle
+            )
 
-            val isLiked = viewModel.postIsLiked(postData.identifier)
-            withContext(Dispatchers.Main) {
-                isLiked.observe(lifecycleOwner) {
-                    when (it) {
-                        is Resource.Success -> {
-                            holder.view.likeToggle.isChecked = it.value.data
-                        }
-                        else -> {}
-                    }
-                }
-            }
-
-            when (val otherProfile = viewModel.getProfileById(postData.profileid)) {
-                is Resource.Success -> {
-                    withContext(Dispatchers.Main) {
-                        otherProfileHash["otherProfile"] = otherProfile.value.data
-                        holder.bind(postData, otherProfile.value.data, currentProfile)
-                    }
-                }
-                is Resource.Loading -> {}
-                is Resource.Failure -> {}
-            }
+            getOtherProfile(holder, postData)
         }
     }
 
+    private suspend fun getOtherProfile(holder: PostsViewHolder, postData: Post) {
+        when (val otherProfile = viewModel.getProfileById(postData.profileid)) {
+            is Resource.Success -> {
+                withContext(Dispatchers.Main) {
+                    otherProfileHash["otherProfile"] = otherProfile.value.data
+                    holder.bind(activity, postData, otherProfile.value.data, currentProfile)
+                }
+            }
+            is Resource.Loading -> {}
+            else -> {
+                reload {
+                    holder.itemView.autoDisposeScope.launch {
+                        withContext(Dispatchers.Main) {
+                            holder.bind(
+                                activity,
+                                postData,
+                                null,
+                                currentProfile
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostsViewHolder {
         return PostsViewHolder(

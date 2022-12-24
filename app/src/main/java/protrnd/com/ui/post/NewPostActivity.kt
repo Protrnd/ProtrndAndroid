@@ -30,10 +30,10 @@ import org.jetbrains.anko.doAsync
 import protrnd.com.data.models.Location
 import protrnd.com.data.models.PostDTO
 import protrnd.com.data.models.Profile
-import protrnd.com.data.network.PostApi
-import protrnd.com.data.network.ProfileApi
 import protrnd.com.data.network.ProtrndAPIDataSource
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.api.PostApi
+import protrnd.com.data.network.api.ProfileApi
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.PostRepository
 import protrnd.com.databinding.ActivityNewPostBinding
 import protrnd.com.databinding.LoadingLayoutBinding
@@ -137,10 +137,10 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
                     "Continue Editing",
                     "Dismiss",
                     title = "Are you sure you want to dismiss your progress?",
-                    action = { finish() }
+                    action = { finishActivity() }
                 )
             else
-                finish()
+                finishActivity()
         }
 
         binding.postBtn.enable(false)
@@ -188,9 +188,9 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
                                 location = location,
                                 uploadurls = result
                             )
-                            when(viewModel.addPost(postDto)) {
+                            when (viewModel.addPost(postDto)) {
                                 is Resource.Success -> {
-                                    finish()
+                                    finishActivity()
                                 }
                                 else -> {}
                             }
@@ -246,6 +246,7 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
                                 binding.shimmerProfiles.visible(false)
                                 binding.tagsRecyclerview.visible(false)
                             }
+                            else -> {}
                         }
                     }
                 }

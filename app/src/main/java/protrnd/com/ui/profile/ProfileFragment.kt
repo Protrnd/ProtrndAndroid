@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.github.satoshun.coroutine.autodispose.lifecycle.autoDisposeScope
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.Dispatchers
@@ -26,8 +27,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import protrnd.com.data.models.Post
 import protrnd.com.data.models.ProfileDTO
-import protrnd.com.data.network.PostApi
-import protrnd.com.data.network.ProfileApi
+import protrnd.com.data.network.api.PostApi
+import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.FragmentProfileBinding
 import protrnd.com.databinding.LoadingLayoutBinding
@@ -148,8 +149,11 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         thisActivity = activity as HomeActivity
 
         if (savedInstanceState != null) {
-            binding.postsRv.layoutManager!!.onRestoreInstanceState(savedInstanceState.getParcelable(
-                RECYCLER_STATE))
+            binding.postsRv.layoutManager!!.onRestoreInstanceState(
+                savedInstanceState.getParcelable(
+                    RECYCLER_STATE
+                )
+            )
             val bundle = savedInstanceState.getBundle(BUNDLE)
             if (bundle != null) {
                 binding.followingCount.text = bundle.getString(FOLLOWING)
@@ -214,7 +218,7 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
     ) = FragmentProfileBinding.inflate(inflater)
 
     override fun getFragmentRepository(): HomeRepository {
-        val token = runBlocking { profilePreferences.authToken.first() }
+        val token = runBlocking { settingsPreferences.authToken.first() }
         val api = protrndAPIDataSource.buildAPI(ProfileApi::class.java, token)
         val postsApi = protrndAPIDataSource.buildAPI(PostApi::class.java, token)
         return HomeRepository(api, postsApi)
@@ -237,18 +241,18 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         thisActivity.currentUserProfile.profileimg = dto.profileImage
 
         lifecycleScope.launch {
-            profilePreferences.saveProfile(thisActivity.currentUserProfile)
+            settingsPreferences.saveProfile(thisActivity.currentUserProfile)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         val listState = binding.postsRv.layoutManager!!.onSaveInstanceState()!!
-        outState.putParcelable(RECYCLER_STATE,listState)
+        outState.putParcelable(RECYCLER_STATE, listState)
         val bundle = Bundle()
-        bundle.putString(FOLLOWERS,binding.followersCount.text.toString())
-        bundle.putString(FOLLOWING,binding.followingCount.text.toString())
-        outState.putBundle(BUNDLE,bundle)
+        bundle.putString(FOLLOWERS, binding.followersCount.text.toString())
+        bundle.putString(FOLLOWING, binding.followingCount.text.toString())
+        outState.putBundle(BUNDLE, bundle)
     }
 
     private fun loadView() {
@@ -258,10 +262,12 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         if (thisActivity.currentUserProfile.profileimg.isNotEmpty())
             Glide.with(this)
                 .load(thisActivity.currentUserProfile.profileimg).circleCrop()
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(binding.profileImage)
         if (thisActivity.currentUserProfile.bgimg.isNotEmpty())
             Glide.with(this)
                 .load(thisActivity.currentUserProfile.bgimg)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(binding.bgImage)
 
         binding.profileShimmer.visible(false)

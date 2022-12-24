@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".ui.profile.ProfileActivity">
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize">
@@ -183,9 +184,10 @@
                 android:id="@+id/posts_rv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:clipToPadding="false"
                 android:layout_marginTop="@dimen/padding_10"
-                android:padding="@dimen/spacing"/>
+                android:clipToPadding="false"
+                android:padding="@dimen/spacing"
+                app:reverseLayout="true" />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.core.widget.NestedScrollView>
 </androidx.appcompat.widget.LinearLayoutCompat>

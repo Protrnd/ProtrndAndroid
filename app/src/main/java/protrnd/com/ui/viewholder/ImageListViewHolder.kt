@@ -9,6 +9,7 @@ import android.net.Uri
 import android.view.LayoutInflater
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import protrnd.com.R
 import protrnd.com.databinding.PostImageItemBinding
@@ -20,17 +21,20 @@ import protrnd.com.ui.visible
 
 class ImageListViewHolder(val view: PostImageItemBinding) : RecyclerView.ViewHolder(view.root) {
     fun bind(imageUrl: String) {
-        Glide.with(view.root).load(imageUrl).into(view.postImage)
+        Glide.with(view.root).load(imageUrl).diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(view.postImage)
         if (imageUrl.contains(".mp4"))
             view.playBtn.visible(true)
         this.itemView.setOnClickListener {
-            if (imageUrl.contains(".mp4")){
+            if (imageUrl.contains(".mp4")) {
                 val bottomSheet = BottomSheetDialog(this.itemView.context, R.style.BottomSheetTheme)
-                val binding = VideoPlayerLayoutBinding.inflate(LayoutInflater.from(this.itemView.context))
+                val binding =
+                    VideoPlayerLayoutBinding.inflate(LayoutInflater.from(this.itemView.context))
                 bottomSheet.setContentView(binding.root)
                 binding.root.minHeight = Resources.getSystem().displayMetrics.heightPixels
                 this.itemView.hideSystemUI((this.itemView.context as Activity).window)
                 binding.videoView.setVideoPath(imageUrl)
+                binding.videoView.isDrawingCacheEnabled = true
                 binding.videoView.start()
                 binding.closeVideo.setOnClickListener {
                     binding.videoView.stopPlayback()
@@ -49,7 +53,8 @@ class ImageListViewHolder(val view: PostImageItemBinding) : RecyclerView.ViewHol
     }
 
     fun bind(activity: NewPostActivity?, imageUri: Uri) {
-        Glide.with(view.root).load(imageUri).into(view.postImage)
+        Glide.with(view.root).load(imageUri).diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(view.postImage)
         if (activity != null) {
             val retriever = MediaMetadataRetriever()
             try {

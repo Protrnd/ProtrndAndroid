@@ -8,11 +8,12 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.NavHostFragment
 import protrnd.com.R
 import protrnd.com.databinding.ActivityAuthenticationBinding
+import protrnd.com.ui.finishActivity
 
 class AuthenticationActivity : AppCompatActivity() {
     lateinit var binding: ActivityAuthenticationBinding
     lateinit var navController: NavController
-    lateinit var navHost: NavHostFragment
+    private lateinit var navHost: NavHostFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +30,7 @@ class AuthenticationActivity : AppCompatActivity() {
             override fun handleOnBackPressed() {
                 val isLoginFragment = isLoginFragment()
                 if (isLoginFragment)
-                    finish()
+                    finishActivity()
                 else
                     navController.popBackStack()
             }

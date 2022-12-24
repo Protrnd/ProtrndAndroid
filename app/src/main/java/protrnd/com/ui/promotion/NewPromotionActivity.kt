@@ -21,6 +21,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -28,9 +29,9 @@ import kotlinx.coroutines.runBlocking
 import protrnd.com.R
 import protrnd.com.data.models.Location
 import protrnd.com.data.models.Post
-import protrnd.com.data.network.PostApi
-import protrnd.com.data.network.ProfileApi
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.api.PostApi
+import protrnd.com.data.network.api.ProfileApi
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.BaseRepository
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityNewPromotionBinding
@@ -80,7 +81,8 @@ class NewPromotionActivity :
     private val cropImage = registerForActivityResult(uCropContract) { uri ->
         binding.selectToAddTv.visible(false)
         bannerUri = uri
-        Glide.with(this).load(uri).into(binding.bannerImage)
+        Glide.with(this).load(uri).diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(binding.bannerImage)
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -107,7 +109,8 @@ class NewPromotionActivity :
             post = post,
             profileImage = binding.promotionsPostOwnerImage,
             tabLayout = binding.tabLayout,
-            timeText = binding.promotionTimeUploaded
+            timeText = binding.promotionTimeUploaded,
+            activity = this
         )
         binding.bannerImage.setOnClickListener {
             getContent.launch("image/*")
@@ -147,6 +150,7 @@ class NewPromotionActivity :
                         resource
                     ) { lifecycleScope.launch { loadLocations() } }
                 }
+                else -> {}
             }
         }
 
@@ -266,7 +270,7 @@ class NewPromotionActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> finish()
+            android.R.id.home -> finishActivity()
         }
         return super.onOptionsItemSelected(item)
     }

@@ -8,10 +8,11 @@ import androidx.activity.OnBackPressedCallback
 import androidx.navigation.fragment.NavHostFragment
 import protrnd.com.R
 import protrnd.com.data.models.VerifyOTP
-import protrnd.com.data.network.AuthApi
+import protrnd.com.data.network.api.AuthApi
 import protrnd.com.data.repository.AuthRepository
 import protrnd.com.databinding.FragmentRegisterBinding
 import protrnd.com.ui.base.BaseFragment
+import protrnd.com.ui.finishActivity
 
 class RegisterFragment : BaseFragment<AuthViewModel, FragmentRegisterBinding, AuthRepository>() {
 
@@ -33,7 +34,7 @@ class RegisterFragment : BaseFragment<AuthViewModel, FragmentRegisterBinding, Au
                     try {
                         authActivity.startFragment(RegisterFragmentDirections.actionRegisterFragmentToLoginFragment())
                     } catch (e: Exception) {
-                        authActivity.finish()
+                        authActivity.finishActivity()
                     }
                 }
             })
@@ -47,5 +48,5 @@ class RegisterFragment : BaseFragment<AuthViewModel, FragmentRegisterBinding, Au
     ) = FragmentRegisterBinding.inflate(inflater, container, false)
 
     override fun getFragmentRepository() =
-        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
+        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), settingsPreferences)
 }

@@ -1,6 +1,6 @@
 package protrnd.com.data.repository
 
-import protrnd.com.data.network.NotificationApi
+import protrnd.com.data.network.api.NotificationApi
 
 class NotificationRepository(private val notificationApi: NotificationApi) : BaseRepository() {
 

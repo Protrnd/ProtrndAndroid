@@ -2,13 +2,17 @@ package protrnd.com.data.models
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
+@Entity(tableName = "Profiles")
 data class Profile(
     var acctype: String = "",
     var bgimg: String = "",
     var disabled: Boolean = false,
     var email: String = "",
     var fullname: String = "",
+    @PrimaryKey
     var id: String = "",
     var identifier: String = "",
     var location: String? = "",
@@ -16,7 +20,7 @@ data class Profile(
     var profileimg: String = "",
     var regdate: String = "",
     var username: String = ""
-): Parcelable {
+) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readString()!!,

@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import protrnd.com.data.models.Comment
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.databinding.CommentsRvLayoutBinding
 import protrnd.com.ui.getAgo
 import protrnd.com.ui.home.HomeViewModel

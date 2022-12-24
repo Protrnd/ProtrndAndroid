@@ -3,7 +3,7 @@ package protrnd.com.data.repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.resource.Resource
 import retrofit2.HttpException
 
 abstract class BaseRepository {

@@ -11,8 +11,8 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
 import kotlinx.coroutines.launch
 import protrnd.com.R
-import protrnd.com.data.network.AuthApi
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.api.AuthApi
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.AuthRepository
 import protrnd.com.databinding.FragmentInputProfileDetailsBinding
 import protrnd.com.ui.*
@@ -64,50 +64,43 @@ class InputProfileDetailsFragment :
                 }
                 is Resource.Failure -> {
                     this.handleAPIError(it) { lifecycleScope.launch { register() } }
+                    binding.continueBtn.enable(true)
+                    binding.progressBar.visible(false)
                 }
+                else -> {}
             }
         }
 
         binding.emailEt.addTextChangedListener {
-            if (binding.emailEt.inputNotEmpty() &&
-                binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty()
-            ) {
+            if (binding.emailEt.inputNotEmpty() && binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty()) {
                 binding.continueBtn.enable(true)
             }
         }
 
         binding.nameEt.addTextChangedListener {
-            if (binding.emailEt.inputNotEmpty() &&
-                binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty()
-            ) {
+            if (binding.emailEt.inputNotEmpty() && binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty()) {
                 binding.continueBtn.enable(true)
             }
         }
 
         binding.passwordEt.addTextChangedListener {
-            if (binding.emailEt.inputNotEmpty() &&
-                binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty()
-            ) {
+            if (binding.emailEt.inputNotEmpty() && binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty()) {
                 binding.continueBtn.enable(true)
             }
         }
 
         binding.usernameEt.addTextChangedListener {
-            if (binding.emailEt.inputNotEmpty() &&
-                binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty()
-            ) {
+            if (binding.emailEt.inputNotEmpty() && binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty()) {
                 binding.continueBtn.enable(true)
             }
         }
 
         binding.continueBtn.setOnClickListener {
-            if (binding.emailEt.inputNotEmpty() &&
-                binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty()
-            ) {
+            if (binding.emailEt.inputNotEmpty() && binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty()) {
                 if (!isValidEmail(binding.emailEt.text.toString().trim())) {
                     binding.emailIl.error = "Please input a valid email"
-                } else if (!binding.usernameEt.nonAlphabeticCharacterNotExists()) {
-                    binding.usernameEt.error = "Please remove all non characters"
+                } else if (!binding.usernameEt.usernameNotEmpty()) {
+                    binding.usernameEt.error = "This field cannot be left empty"
                 } else {
                     if (binding.passwordEt.isPasswordLongEnough()) {
                         registerFragment.verifyOTP.registerDto?.fullName =
@@ -132,20 +125,18 @@ class InputProfileDetailsFragment :
         viewModel.register(registerFragment.verifyOTP.registerDto!!)
     }
 
-    private fun EditText.nonAlphabeticCharacterNotExists(): Boolean {
-        return this.text.toString().trim().matches("^[a-zA-Z]*$".toRegex())
+    private fun EditText.usernameNotEmpty(): Boolean {
+        return this.text.isNotEmpty()
     }
 
     private fun EditText.isPasswordLongEnough(): Boolean {
-        if (this.text.toString().trim().length >= 7)
-            return true
+        if (this.text.toString().trim().length >= 7) return true
         this.error = "Your password has to be at-least 7 characters"
         return false
     }
 
     private fun EditText.inputNotEmpty(): Boolean {
-        if (this.text.toString().trim().isNotEmpty())
-            return true
+        if (this.text.toString().trim().isNotEmpty()) return true
         this.error = "Please Fill"
         return false
     }
@@ -153,10 +144,9 @@ class InputProfileDetailsFragment :
     override fun getViewModel() = AuthViewModel::class.java
 
     override fun getFragmentBinding(
-        inflater: LayoutInflater,
-        container: ViewGroup?
+        inflater: LayoutInflater, container: ViewGroup?
     ) = FragmentInputProfileDetailsBinding.inflate(inflater, container, false)
 
     override fun getFragmentRepository() =
-        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
+        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), settingsPreferences)
 }

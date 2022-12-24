@@ -5,10 +5,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.cachedIn
 import kotlinx.coroutines.launch
 import protrnd.com.data.models.CommentDTO
+import protrnd.com.data.models.Post
+import protrnd.com.data.models.Profile
 import protrnd.com.data.models.ProfileDTO
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.data.responses.*
 
@@ -32,16 +35,22 @@ class HomeViewModel(
         get() = _comments
 
     fun getCurrentProfile() = viewModelScope.launch {
-        _profile.value = Resource.Loading
+        _profile.value = Resource.Loading()
         _profile.value = repository.getCurrentProfile()
     }
 
     fun updateProfile(profileDTO: ProfileDTO) = viewModelScope.launch {
-        _profile.value = Resource.Loading
+        _profile.value = Resource.Loading()
         _profile.value = repository.updateProfile(profileDTO)
     }
 
-    suspend fun getPostByPage(page: Int) = repository.getPostsPage(page)
+    fun getProfile(id: String) = repository.getProfile(id)
+
+    fun getPostByPage() = repository.getPostsPage().cachedIn(viewModelScope)
+
+    suspend fun savePosts(posts: List<Post>) = repository.savePostResult(posts)
+
+    fun getSavedPosts() = repository.getSavedPosts()
 
     suspend fun getPostsQueried(page: Int, word: String) = repository.getPostsQuery(page, word)
 
@@ -82,7 +91,7 @@ class HomeViewModel(
     suspend fun getFollowingsCount(id: String) = repository.getFollowingsCount(id)
 
     fun isFollowing(id: String) = viewModelScope.launch {
-        _isFollowing.value = Resource.Loading
+        _isFollowing.value = Resource.Loading()
         _isFollowing.value = repository.isFollowing(id)
     }
 
@@ -93,7 +102,11 @@ class HomeViewModel(
     suspend fun addComment(commentDTO: CommentDTO) = repository.addComment(commentDTO)
 
     fun getComments(id: String) = viewModelScope.launch {
-        _comments.value = Resource.Loading
+        _comments.value = Resource.Loading()
         _comments.value = repository.getComments(id)
+    }
+
+    suspend fun saveProfile(data: Profile) {
+        repository.saveProfile(data)
     }
 }

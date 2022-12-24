@@ -1,4 +1,4 @@
-package protrnd.com.data
+package protrnd.com.data.network
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -11,8 +11,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import protrnd.com.data.models.Profile
 
-class ProfilePreferences(context: Context) {
+class SettingsPreferences(context: Context) {
     private val dataStore: DataStore<Preferences> = context.DATASTORE
+
+    val posts: Flow<String?>
+        get() = dataStore.data.map { p ->
+            p[POSTS_DATA]
+        }
 
     val authToken: Flow<String?>
         get() = dataStore.data.map { preferences ->
@@ -20,9 +25,9 @@ class ProfilePreferences(context: Context) {
         }
 
     val profile: Flow<String?>
-    get() = dataStore.data.map { preferences ->
-        preferences[PROFILE_KEY]
-    }
+        get() = dataStore.data.map { preferences ->
+            preferences[PROFILE_KEY]
+        }
 
     suspend fun saveAuthToken(authToken: String) {
         dataStore.edit { preferences ->
@@ -41,5 +46,6 @@ class ProfilePreferences(context: Context) {
         private val Context.DATASTORE by preferencesDataStore("Protrnd_Store")
         private val KEY_AUTH = stringPreferencesKey("jwt_auth")
         private val PROFILE_KEY = stringPreferencesKey("profile_key")
+        private val POSTS_DATA = stringPreferencesKey("posts_data")
     }
 }

@@ -14,6 +14,11 @@
         <!-- Customize your theme here. -->
         <item name="android:textViewStyle">@style/DMSansTextViewStyle</item>
         <item name="buttonStyle">@style/DMSansButtonStyle</item>
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowEnterTransition">@transition/explode_transition</item>
+        <item name="android:windowExitTransition">@transition/explode_transition</item>
+        <item name="android:fragmentEnterTransition">@transition/explode_transition</item>
+        <item name="android:fragmentExitTransition">@transition/explode_transition</item>
         <item name="android:windowLightStatusBar" tools:ignore="NewApi">true</item>
     </style>
 
@@ -43,5 +48,8 @@
 
     <style name="BottomSheetTheme" parent="Theme.Protrnd">
         <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 </resources>

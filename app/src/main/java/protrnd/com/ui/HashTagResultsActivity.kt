@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import protrnd.com.data.models.Post
-import protrnd.com.data.network.PostApi
-import protrnd.com.data.network.ProfileApi
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.api.PostApi
+import protrnd.com.data.network.api.ProfileApi
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityHashTagResultsBinding
 import protrnd.com.ui.adapter.PostsAdapter
@@ -77,7 +77,8 @@ class HashTagResultsActivity :
         postsAdapter = PostsAdapter(
             viewModel = viewModel,
             lifecycleOwner = this,
-            currentProfile = currentUserProfile
+            currentProfile = currentUserProfile,
+            activity = this
         )
         //Load first page
         setupRecyclerView()
@@ -112,6 +113,7 @@ class HashTagResultsActivity :
                         }
                     }
                 }
+                else -> {}
             }
         }
     }
@@ -136,7 +138,9 @@ class HashTagResultsActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> finish()
+            android.R.id.home -> {
+                finishActivity()
+            }
         }
         return true
     }

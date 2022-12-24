@@ -1,6 +1,7 @@
 package protrnd.com.ui.viewholder
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import androidx.recyclerview.widget.RecyclerView
 import protrnd.com.R
@@ -10,11 +11,17 @@ import protrnd.com.databinding.PostItemBinding
 import protrnd.com.ui.bindPostDetails
 import protrnd.com.ui.profile.ProfileActivity
 import protrnd.com.ui.showFeatureComingSoonDialog
+import protrnd.com.ui.startAnimation
 import protrnd.com.ui.visible
 
-class PostsViewHolder(val view: PostItemBinding): RecyclerView.ViewHolder(view.root) {
+class PostsViewHolder(val view: PostItemBinding) : RecyclerView.ViewHolder(view.root) {
     @SuppressLint("SetTextI18n")
-    fun bind(item: Post, postOwnerProfile: Profile? = null, currentProfile: Profile) {
+    fun bind(
+        activity: Activity,
+        item: Post,
+        postOwnerProfile: Profile? = null,
+        currentProfile: Profile
+    ) {
         //loads image from network using coil extension function
         view.bindPostDetails(
             usernameTv = view.username,
@@ -24,9 +31,10 @@ class PostsViewHolder(val view: PostItemBinding): RecyclerView.ViewHolder(view.r
             post = item,
             profileImage = view.postOwnerImage,
             imagesPager = view.imagesViewPager,
-            postOwnerProfile = postOwnerProfile!!,
+            postOwnerProfile = postOwnerProfile,
             tabLayout = view.tabLayout,
-            timeText = view.timeUploaded
+            timeText = view.timeUploaded,
+            activity = activity
         )
 
         view.shareBtn.setOnClickListener {
@@ -39,7 +47,7 @@ class PostsViewHolder(val view: PostItemBinding): RecyclerView.ViewHolder(view.r
 
         if (currentProfile != postOwnerProfile) {
             view.promoteText.text = "Support"
-            view.promoteText.setCompoundDrawablesWithIntrinsicBounds(0,0, R.drawable.support_ic,0)
+            view.promoteText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.support_ic, 0)
         }
 
         if (view.captionTv.lineCount > 3)
@@ -48,11 +56,16 @@ class PostsViewHolder(val view: PostItemBinding): RecyclerView.ViewHolder(view.r
             view.readMoreTv.visible(false)
 
         view.postOwnerImage.setOnClickListener {
-            it.context.startActivity(
-                Intent(it.context,
-                    ProfileActivity::class.java).also { intent ->
-                intent.putExtra("profile_id",postOwnerProfile.identifier)
-            })
+            if (postOwnerProfile != null) {
+                it.context.startActivity(
+                    Intent(
+                        it.context,
+                        ProfileActivity::class.java
+                    ).also { intent ->
+                        intent.putExtra("profile_id", postOwnerProfile.identifier)
+                    })
+                activity.startAnimation()
+            }
         }
 
         view.promoteBtn.setOnClickListener {

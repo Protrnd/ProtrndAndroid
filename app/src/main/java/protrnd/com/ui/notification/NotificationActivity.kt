@@ -11,13 +11,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import protrnd.com.R
 import protrnd.com.data.models.Notification
-import protrnd.com.data.network.NotificationApi
 import protrnd.com.data.network.ProtrndAPIDataSource
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.api.NotificationApi
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.NotificationRepository
 import protrnd.com.databinding.ActivityNotificationBinding
 import protrnd.com.ui.adapter.NotificationAdapter
 import protrnd.com.ui.base.BaseActivity
+import protrnd.com.ui.finishActivity
 import protrnd.com.ui.snackbar
 import protrnd.com.ui.visible
 
@@ -39,7 +40,7 @@ class NotificationActivity :
         actionBar.setHomeAsUpIndicator(R.drawable.arrow_back_ic)
 
         notificationLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        notificationAdapter = NotificationAdapter(viewModel = viewModel)
+        notificationAdapter = NotificationAdapter(viewModel = viewModel, activity = this)
         setupRecyclerView()
         loadMoreItems(true)
 
@@ -88,6 +89,7 @@ class NotificationActivity :
                     binding.progressBar.visible(true)
                     binding.root.snackbar("Error loading notifications")
                 }
+                else -> {}
             }
         }
     }
@@ -101,7 +103,9 @@ class NotificationActivity :
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> finish()
+            android.R.id.home -> {
+                finishActivity()
+            }
         }
         return super.onOptionsItemSelected(item)
     }

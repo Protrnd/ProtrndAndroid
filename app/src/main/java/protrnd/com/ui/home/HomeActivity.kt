@@ -8,32 +8,35 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.messaging.FirebaseMessaging
 import protrnd.com.R
-import protrnd.com.data.network.PostApi
-import protrnd.com.data.network.ProfileApi
 import protrnd.com.data.network.ProtrndAPIDataSource
+import protrnd.com.data.network.api.PostApi
+import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityHomeBinding
 import protrnd.com.databinding.SelectPaymentActionBinding
 import protrnd.com.ui.base.BaseActivity
+import protrnd.com.ui.finishActivity
 import protrnd.com.ui.notification.NotificationActivity
 import protrnd.com.ui.post.NewPostActivity
-import protrnd.com.ui.profile.ProfileFragmentDirections
+import protrnd.com.ui.profile.ProfileFragment
 import protrnd.com.ui.showFeatureComingSoonDialog
+import protrnd.com.ui.startAnimation
+import protrnd.com.ui.visible
 
 class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeRepository>() {
 
-    private lateinit var navController: NavController
+    var lmState: Parcelable? = null
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
@@ -45,30 +48,30 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
         actionBar.setIcon(R.drawable.launcher_outlined_ic)
         actionBar.title = " Protrnd"
         val chipNavigationBar = binding.bottomNav
-        val navHost =
-            supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
-        navController = navHost.navController
+        val homeFragment = HomeFragment()
+        val profileFragment = ProfileFragment()
+        val fm = supportFragmentManager
+        val t = fm.beginTransaction()
+        t.add(R.id.fragmentContainerView, profileFragment, "P")
+        t.add(R.id.fragmentContainerView, homeFragment, "H")
+        t.commit()
+
         chipNavigationBar.setItemSelected(R.id.home)
-        chipNavigationBar.setOnItemSelectedListener { itemId ->
-            if (itemId == R.id.profile)
-                navController.navigate(HomeFragmentDirections.actionHomeFragmentToProfileFragment())
-            else
-                navController.navigate(ProfileFragmentDirections.actionProfileFragmentToHomeFragment())
+        chipNavigationBar.setOnItemSelectedListener {
+            showHomeFragment(homeFragment, profileFragment)
         }
 
         binding.fab.setOnClickListener {
             startActivity(Intent(this, NewPostActivity::class.java))
+            startAnimation()
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                val isHomeFragment =
-                    navHost.childFragmentManager.fragments.any { it.javaClass == HomeFragment::class.java && it.isVisible }
-                if (isHomeFragment)
-                    finish()
-                else {
+                if (homeFragment.isHidden)
                     chipNavigationBar.setItemSelected(R.id.home)
-                }
+                else
+                    finishActivity()
             }
         })
     }
@@ -89,9 +92,14 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
         return true
     }
 
-    fun requestNotificationsPermissions() {
-        val requestLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()){}
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+    private fun requestNotificationsPermissions() {
+        val requestLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 requestLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
@@ -102,8 +110,11 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
         when (item.itemId) {
             R.id.notification_btn -> {
                 startActivity(Intent(this, NotificationActivity::class.java))
+                startAnimation()
             }
             R.id.scan_btn -> {
+                binding.dimBg.visible(true)
+                binding.bottomNav.visible(false)
                 val dialog = BottomSheetDialog(this, R.style.BottomSheetTheme)
                 val qrBinding = SelectPaymentActionBinding.inflate(layoutInflater)
                 dialog.setContentView(qrBinding.root)
@@ -115,6 +126,17 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
                     dialog.dismiss()
                     this.showFeatureComingSoonDialog()
                 }
+                dialog.setCanceledOnTouchOutside(true)
+                dialog.setOnCancelListener {
+                    dialog.behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                    binding.dimBg.visible(false)
+                    binding.bottomNav.visible(true)
+                }
+                dialog.setOnDismissListener {
+                    dialog.behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                    binding.dimBg.visible(false)
+                    binding.bottomNav.visible(true)
+                }
                 dialog.show()
                 dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                 dialog.behavior.peekHeight = Resources.getSystem().displayMetrics.heightPixels
@@ -125,5 +147,18 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
 
     private fun registerMessaging() {
         FirebaseMessaging.getInstance().subscribeToTopic(currentUserProfile.identifier)
+    }
+
+    private fun showHomeFragment(homeFragment: HomeFragment, profileFragment: ProfileFragment) {
+        val fragmentM = supportFragmentManager.beginTransaction()
+            .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
+        if (homeFragment.isHidden) {
+            fragmentM.show(homeFragment)
+            fragmentM.hide(profileFragment)
+        } else {
+            fragmentM.hide(homeFragment)
+            fragmentM.show(profileFragment)
+        }
+        fragmentM.commit()
     }
 }

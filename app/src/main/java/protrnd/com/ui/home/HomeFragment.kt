@@ -3,61 +3,59 @@ package protrnd.com.ui.home
 import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.os.*
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.Toast
-import androidx.annotation.RequiresApi
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import protrnd.com.data.models.Location
-import protrnd.com.data.models.Post
 import protrnd.com.data.models.ProfileDTO
-import protrnd.com.data.network.PostApi
-import protrnd.com.data.network.ProfileApi
-import protrnd.com.data.network.Resource
+import protrnd.com.data.network.api.PostApi
+import protrnd.com.data.network.api.ProfileApi
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.FragmentHomeBinding
 import protrnd.com.databinding.LocationPickerBinding
-import protrnd.com.ui.adapter.PostsAdapter
+import protrnd.com.ui.*
+import protrnd.com.ui.adapter.PostsPagingAdapter
 import protrnd.com.ui.base.BaseFragment
-import protrnd.com.ui.enable
-import protrnd.com.ui.handleAPIError
-import protrnd.com.ui.visible
 
 class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeRepository>() {
 
-    private lateinit var adapter: PostsAdapter
+    private lateinit var adapter: PostsPagingAdapter
     private lateinit var postsLayoutManager: LinearLayoutManager
-    private var isLoading: Boolean = false
-    private var page = 1
     private lateinit var dialog: Dialog
     private val locationHash = HashMap<String, List<String>>()
     private lateinit var thisActivity: HomeActivity
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         thisActivity = activity as HomeActivity
-            postsLayoutManager =
-                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-            binding.postsRv.layoutManager = postsLayoutManager
+        postsLayoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        binding.postsRv.layoutManager = postsLayoutManager
 
-        loadPage()
+        setupStoredData()
+        setupRecyclerView()
 
         binding.root.setOnRefreshListener {
             if (binding.root.isRefreshing) {
-                binding.shimmerLayout.visible(true)
-                binding.shimmerLayout.startShimmerAnimation()
-                binding.postsRv.visible(false)
-                page = 1
-                loadPage()
+                if (thisActivity.isNetworkAvailable()) {
+                    binding.shimmerLayout.visible(true)
+                    binding.shimmerLayout.startShimmerAnimation()
+                    binding.postsRv.visible(false)
+                    loadPage()
+                } else {
+                    binding.root.snackbar("Please check your network connection")
+                }
                 binding.root.isRefreshing = false
             }
         }
@@ -89,8 +87,10 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
                     locationPickerBinding.saveBtn.enable(false)
                 }
                 is Resource.Failure -> {
-                    this.handleAPIError(resource) { lifecycleScope.launch { loadLocations() } }
+                    if (thisActivity.currentUserProfile.location.toString().isEmpty())
+                        this.handleAPIError(resource) { lifecycleScope.launch { loadLocations() } }
                 }
+                else -> {}
             }
         }
 
@@ -131,65 +131,22 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
                 dialog.dismiss()
             }
         }
-
-        binding.postsRv.setOnScrollChangeListener { _, _, _, _, _ ->
-            if (!isLoading) {
-                loadMoreItems(false)
-                isLoading = true
-            }
-        }
     }
 
     private fun loadPage() {
-        if (thisActivity.currentUserProfile.location == null || thisActivity.currentUserProfile.location!!.isEmpty())
+        if (thisActivity.currentUserProfile.location.toString().isEmpty())
             loadLocations()
-        adapter = PostsAdapter(
-            viewModel = viewModel,
-            lifecycleOwner = viewLifecycleOwner,
-            currentProfile = thisActivity.currentUserProfile
-        )
-        adapter.stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT
         //Load first page
-        setupRecyclerView()
-        loadMoreItems(true)
-    }
 
-    private fun loadMoreItems(isFirstPage: Boolean) {
-        if (!isFirstPage)
-            page += 1
-        viewLifecycleOwner.lifecycleScope.launch {
-            when (val posts = viewModel.getPostByPage(page)) {
-                is Resource.Success -> {
-                    val result = posts.value.data
-                    if (result.isEmpty())
-                        return@launch
-                    if (!isFirstPage) adapter.addAll(result)
-                    else adapter.setList(result as MutableList<Post>)
-                    isLoading = false
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        binding.shimmerLayout.stopShimmerAnimation()
-                        binding.shimmerLayout.visible(false)
-                        binding.postsRv.visible(true)
-                    }, 5000)
-                }
-                is Resource.Loading -> {
-                    isLoading = true
-                    binding.postsRv.visible(false)
-                }
-                is Resource.Failure -> {
-                    isLoading = false
-                    this@HomeFragment.handleAPIError(posts) {
-                        lifecycleScope.launch {
-                            loadMoreItems(
-                                isFirstPage
-                            )
-                        }
-                    }
-                }
+        if (requireActivity().isNetworkAvailable()) {
+            viewModel.getPostByPage().observe(viewLifecycleOwner) {
+                binding.shimmerLayout.stopShimmerAnimation()
+                binding.shimmerLayout.visible(false)
+                binding.postsRv.visible(true)
+                adapter.submitData(viewLifecycleOwner.lifecycle, it)
             }
         }
     }
-
 
     private fun loadLocations() {
         viewModel.getLocations()
@@ -197,7 +154,40 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
 
     private fun setupRecyclerView() {
         binding.postsRv.apply {
-            this.adapter = this@HomeFragment.adapter
+            adapter = PostsPagingAdapter(
+                viewModel = viewModel,
+                lifecycleOwner = viewLifecycleOwner,
+                currentProfile = thisActivity.currentUserProfile,
+                activity = thisActivity
+            )
+            setItemViewCacheSize(10)
+        }
+        adapter = binding.postsRv.adapter as PostsPagingAdapter
+    }
+
+    private fun setupStoredData() {
+        viewModel.getSavedPosts()?.asLiveData()?.observe(viewLifecycleOwner) { saved ->
+            if (saved.isNotEmpty()) {
+                binding.shimmerLayout.stopShimmerAnimation()
+                binding.shimmerLayout.visible(false)
+                binding.postsRv.visible(true)
+                adapter.submitData(viewLifecycleOwner.lifecycle, PagingData.from(saved))
+                if (thisActivity.lmState != null)
+                    binding.postsRv.layoutManager!!.onRestoreInstanceState(thisActivity.lmState)
+            }
+        }
+
+        if (thisActivity.isNetworkAvailable())
+            loadPage()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        lifecycleScope.launch {
+            val postItems = adapter.snapshot().items
+            if (postItems.isNotEmpty())
+                viewModel.savePosts(postItems)
+            thisActivity.lmState = postsLayoutManager.onSaveInstanceState()!!
         }
     }
 
@@ -209,10 +199,13 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     ) = FragmentHomeBinding.inflate(inflater, container, false)
 
     override fun getFragmentRepository(): HomeRepository {
-        val token = runBlocking { profilePreferences.authToken.first() }
+        val token = runBlocking { settingsPreferences.authToken.first() }
         val api = protrndAPIDataSource.buildAPI(ProfileApi::class.java, token)
         val postsApi = protrndAPIDataSource.buildAPI(PostApi::class.java, token)
-        return HomeRepository(api, postsApi)
+        val postDatabase = protrndAPIDataSource.providePostDatabase(requireActivity().application)
+        val profileDatabase =
+            protrndAPIDataSource.provideProfileDatabase(requireActivity().application)
+        return HomeRepository(api, postsApi, postDatabase, profileDatabase)
     }
 
     override fun onDestroy() {

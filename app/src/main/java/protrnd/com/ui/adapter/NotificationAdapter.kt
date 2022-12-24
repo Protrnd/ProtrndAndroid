@@ -1,5 +1,6 @@
 package protrnd.com.ui.adapter
 
+import android.app.Activity
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -11,11 +12,13 @@ import protrnd.com.databinding.NotificationRvItemBinding
 import protrnd.com.ui.notification.NotificationViewModel
 import protrnd.com.ui.post.PostActivity
 import protrnd.com.ui.profile.ProfileActivity
+import protrnd.com.ui.startAnimation
 import protrnd.com.ui.viewholder.NotificationsViewHolder
 
 class NotificationAdapter(
     private var notifications: MutableList<Notification> = ArrayList(),
-    val viewModel: NotificationViewModel
+    val viewModel: NotificationViewModel,
+    val activity: Activity
 ) : RecyclerView.Adapter<NotificationsViewHolder>() {
 
     fun addAll(result: List<Notification>) {
@@ -58,15 +61,21 @@ class NotificationAdapter(
                     else -> {}
                 }
             }
-            if (notifications[position].type == "Post") {
-                it.context.startActivity(Intent(it.context, PostActivity::class.java).apply {
-                    this.putExtra("post_id", notifications[position].item_id)
-                })
-            } else if (notifications[position].type == "Profile") {
-                it.context.startActivity(Intent(it.context, ProfileActivity::class.java).apply {
-                    this.putExtra("profile_id", notifications[position].senderid)
-                })
+            val id: String
+            val name: String
+            val toA = if (notifications[position].type == "Post") {
+                name = "post_id"
+                id = notifications[position].item_id
+                PostActivity::class.java
+            } else {
+                name = "profile_id"
+                id = notifications[position].senderid
+                ProfileActivity::class.java
             }
+            it.context.startActivity(Intent(it.context, toA).apply {
+                putExtra(name, id)
+            })
+            activity.startAnimation()
         }
     }
 
