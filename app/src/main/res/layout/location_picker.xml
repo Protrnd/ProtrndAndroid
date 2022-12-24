@@ -1,58 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="wrap_content">
+
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="15dp"
-        android:layout_margin="@dimen/padding_10">
+        android:layout_margin="@dimen/padding_10"
+        app:cardCornerRadius="15dp">
+
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="25sp">
+
             <TextView
                 android:id="@+id/please_select"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toTopOf="parent"
-                android:textStyle="bold"
+                android:fontFamily="@font/dm_sans_medium"
+                android:text="@string/please_select_location"
                 android:textColor="#2D264B"
                 android:textSize="15sp"
-                android:fontFamily="@font/dm_sans_medium"
-                android:text="@string/please_select_location"/>
+                android:textStyle="bold"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <TextView
                 android:id="@+id/state_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/state"
                 android:layout_marginTop="20dp"
-                android:textStyle="bold"
+                android:text="@string/state"
                 android:textColor="#2D264B"
-                app:layout_constraintTop_toBottomOf="@id/please_select"
-                app:layout_constraintStart_toStartOf="@id/state_picker"/>
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/state_picker"
+                app:layout_constraintTop_toBottomOf="@id/please_select" />
+
             <TextView
                 android:id="@+id/city_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/city"
-                android:textStyle="bold"
                 android:layout_marginTop="20dp"
+                android:text="@string/city"
                 android:textColor="#2D264B"
-                app:layout_constraintTop_toBottomOf="@id/please_select"
-                app:layout_constraintStart_toStartOf="@id/city_picker"/>
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/city_picker"
+                app:layout_constraintTop_toBottomOf="@id/please_select" />
+
             <com.skydoves.powerspinner.PowerSpinnerView
                 android:id="@+id/state_picker"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_margin="@dimen/padding_10"
                 android:background="@drawable/popup_selector_state"
+                android:gravity="center"
                 android:hint="@string/select_state"
                 android:padding="15dp"
                 android:textColor="#2D264B"
                 android:textColorHint="#2D264B"
                 android:textSize="15sp"
-                android:gravity="center"
                 app:layout_constraintEnd_toStartOf="@id/city_picker"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/state_tv"
@@ -61,7 +68,6 @@
                 app:spinner_arrow_tint="#2D264B"
                 app:spinner_divider_color="#2D264B"
                 app:spinner_divider_show="true"
-                android:layout_margin="@dimen/padding_10"
                 app:spinner_divider_size="0.4dp"
                 app:spinner_popup_animation="normal"
                 app:spinner_popup_background="@drawable/popup_open"
@@ -71,20 +77,20 @@
                 android:id="@+id/city_picker"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_margin="@dimen/padding_10"
                 android:background="@drawable/popup_selector_state"
                 android:gravity="center"
                 android:hint="@string/select_city"
                 android:padding="15dp"
                 android:textColor="#2D264B"
-                app:spinner_arrow_tint="#2D264B"
                 android:textColorHint="#2D264B"
                 android:textSize="15sp"
-                android:layout_margin="@dimen/padding_10"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/state_picker"
                 app:layout_constraintTop_toBottomOf="@id/city_tv"
                 app:spinner_arrow_gravity="end"
                 app:spinner_arrow_padding="8dp"
+                app:spinner_arrow_tint="#2D264B"
                 app:spinner_divider_color="@color/white"
                 app:spinner_divider_show="true"
                 app:spinner_divider_size="0.4dp"
@@ -96,14 +102,14 @@
                 android:id="@+id/save_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/save_changes"
+                android:layout_marginTop="15dp"
                 android:background="@drawable/popup_selector_bg_active"
                 android:backgroundTint="#E02A45"
-                android:textColor="@color/white"
                 android:padding="10dp"
-                app:layout_constraintTop_toBottomOf="@id/city_picker"
+                android:text="@string/save_changes"
+                android:textColor="@color/white"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="15dp"/>
+                app:layout_constraintTop_toBottomOf="@id/city_picker" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 </androidx.appcompat.widget.LinearLayoutCompat>

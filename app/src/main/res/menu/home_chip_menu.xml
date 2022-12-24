@@ -2,13 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <group>
-        <item android:id="@+id/home"
-            android:title="@string/home"
+        <item
+            android:id="@+id/home"
             android:icon="@drawable/home_ic"
-            app:showAsAction="always"/>
-        <item android:id="@+id/profile"
-            android:title="@string/profile"
+            android:title="@string/home"
+            app:showAsAction="always" />
+        <item
+            android:id="@+id/profile"
             android:icon="@drawable/following_ic"
-            app:showAsAction="always"/>
+            android:title="@string/profile"
+            app:showAsAction="always" />
     </group>
 </menu>

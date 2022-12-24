@@ -1,33 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="@dimen/padding_10"
-    app:cardCornerRadius="5dp"
-    android:background="@color/white">
+    android:background="@color/white"
+    app:cardCornerRadius="5dp">
+
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="20dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="20dp">
+
         <TextView
             android:id="@+id/action_request"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/want_to_select_a_new_photo_to_upload"
-            android:gravity="center"
-            android:textSize="18sp"
             android:fontFamily="@font/dm_sans_bold"
-            android:textColor="#2D264B"/>
+            android:gravity="center"
+            android:text="@string/want_to_select_a_new_photo_to_upload"
+            android:textColor="#2D264B"
+            android:textSize="18sp" />
+
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/accept_btn"
             android:layout_width="100dp"
             android:layout_height="40dp"
-            android:text="@string/yes"
-            android:textColor="@color/white"
             android:layout_gravity="end"
+            android:layout_marginTop="20dp"
             android:background="@drawable/button_elevation"
-            android:layout_marginTop="20dp"/>
+            android:text="@string/yes"
+            android:textColor="@color/white" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 </androidx.cardview.widget.CardView>

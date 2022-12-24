@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_checked="true"
-        android:drawable="@drawable/textview_active_outlined"/>
+    <item android:drawable="@drawable/textview_active_outlined" android:state_checked="true" />
 
-    <item android:state_pressed="true"
-        android:drawable="@drawable/textview_active_outlined"/>
+    <item android:drawable="@drawable/textview_active_outlined" android:state_pressed="true" />
 
     <item>
         <shape android:shape="rectangle">
-            <corners android:radius="50dp"/>
-            <solid android:color="@color/white"/>
-            <stroke android:color="#8E8E8E" android:width="2dp"/>
+            <corners android:radius="50dp" />
+            <solid android:color="@color/white" />
+            <stroke android:width="2dp" android:color="#8E8E8E" />
         </shape>
     </item>
 </selector>

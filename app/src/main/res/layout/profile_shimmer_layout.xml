@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="250dp">
+
+    <View
         android:layout_width="match_parent"
-        android:layout_height="250dp">
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:background="@color/shimmer_color"
-            android:alpha="0.7"/>
-        <View
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_centerHorizontal="true"
-            android:layout_alignParentBottom="true"
-            android:background="@color/shimmer_color"/>
+        android:layout_height="200dp"
+        android:alpha="0.7"
+        android:background="@color/shimmer_color" />
+
+    <View
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="@color/shimmer_color" />
 </RelativeLayout>

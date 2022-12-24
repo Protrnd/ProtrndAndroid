@@ -9,7 +9,7 @@
         android:id="@+id/selectAccountTypeFragment"
         android:name="protrnd.com.ui.auth.SelectAccountTypeFragment"
         android:label="fragment_select_account_type"
-        tools:layout="@layout/fragment_select_account_type" >
+        tools:layout="@layout/fragment_select_account_type">
         <action
             android:id="@+id/action_selectAccountTypeFragment_to_inputProfileDetailsFragment"
             app:destination="@id/inputProfileDetailsFragment" />
@@ -18,7 +18,7 @@
         android:id="@+id/inputProfileDetailsFragment"
         android:name="protrnd.com.ui.auth.InputProfileDetailsFragment"
         android:label="fragment_input_profile_details"
-        tools:layout="@layout/fragment_input_profile_details" >
+        tools:layout="@layout/fragment_input_profile_details">
         <action
             android:id="@+id/action_inputProfileDetailsFragment_to_verifyOTPFragment"
             app:destination="@id/verifyOTPFragment" />

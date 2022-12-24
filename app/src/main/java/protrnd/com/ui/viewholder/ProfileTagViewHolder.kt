@@ -5,7 +5,7 @@ import com.bumptech.glide.Glide
 import protrnd.com.data.models.Profile
 import protrnd.com.databinding.ProfileTagBinding
 
-class ProfileTagViewHolder(val view: ProfileTagBinding): RecyclerView.ViewHolder(view.root) {
+class ProfileTagViewHolder(val view: ProfileTagBinding) : RecyclerView.ViewHolder(view.root) {
     fun bind(profile: Profile) {
         if (profile.profileimg.isNotEmpty()) {
             Glide.with(view.root)

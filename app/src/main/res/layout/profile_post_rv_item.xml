@@ -4,12 +4,13 @@
     android:layout_height="wrap_content"
     android:background="@android:color/transparent"
     android:elevation="@dimen/padding_10">
+
     <ImageView
         android:id="@+id/image_thumbnail"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/white"
-        android:scaleType="centerCrop"
+        android:contentDescription="@string/post_image_result"
         android:paddingTop="3.15dp"
-        android:contentDescription="@string/post_image_result"/>
+        android:scaleType="centerCrop" />
 </androidx.appcompat.widget.LinearLayoutCompat>

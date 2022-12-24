@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/notification_btn"
-        android:title="@string/notification"
+    <item
+        android:id="@+id/notification_btn"
         android:icon="@drawable/notification_ic"
-        app:showAsAction="ifRoom"/>
-    <item android:id="@+id/scan_btn"
-        android:title="@string/scan"
+        android:title="@string/notification"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/scan_btn"
         android:icon="@drawable/scan_ic"
-        app:showAsAction="always"/>
+        android:title="@string/scan"
+        app:showAsAction="always" />
 </menu>

@@ -8,7 +8,7 @@ data class Location(
     val cities: List<String> = arrayListOf(),
     val id: String = UUID.randomUUID().toString(),
     val state: String = ""
-): Parcelable {
+) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.createStringArrayList()!!,
         parcel.readString()!!,

@@ -3,80 +3,82 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.auth.SelectAccountTypeFragment"
+    android:background="@android:color/white"
     android:orientation="vertical"
-    android:background="@android:color/white">
+    tools:context=".ui.auth.SelectAccountTypeFragment">
 
     <TextView
         android:id="@+id/login_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/register"
-        android:textColor="#2D264B"
-        android:textSize="30sp"
         android:layout_marginStart="20dp"
+        android:layout_marginTop="30dp"
         android:layout_marginEnd="20dp"
         android:fontFamily="@font/dmsans_bold"
-        android:layout_marginTop="30dp"/>
+        android:text="@string/register"
+        android:textColor="#2D264B"
+        android:textSize="30sp" />
 
     <TextView
         android:id="@+id/login_here_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="20dp"
         android:text="@string/login_here"
         android:textColor="#2D264B"
-        android:textSize="16sp"
-        android:layout_marginTop="10dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"/>
+        android:textSize="16sp" />
 
     <RadioGroup
         android:id="@+id/radio_group"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
         <RadioButton
             android:id="@+id/user_account_btn"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:drawableStart="@drawable/user_account_ic"
-            android:buttonTint="@android:color/transparent"
-            android:drawableEnd="@drawable/arrow_right_ic"
-            android:background="@drawable/textview_click_state"
-            android:text="@string/user_account_ni_don_t_own_a_business"
-            android:drawablePadding="20dp"
-            android:textColor="@color/app_blue"
             android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
             android:layout_marginTop="20dp"
-            android:paddingEnd="20dp"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/textview_click_state"
+            android:buttonTint="@android:color/transparent"
+            android:drawableStart="@drawable/user_account_ic"
+            android:drawableEnd="@drawable/arrow_right_ic"
+            android:drawablePadding="20dp"
             android:drawableTint="@color/button_state_checked"
-            android:paddingStart="0dp"/>
+            android:paddingStart="0dp"
+            android:paddingEnd="20dp"
+            android:text="@string/user_account_ni_don_t_own_a_business"
+            android:textColor="@color/app_blue" />
+
         <RadioButton
             android:id="@+id/enterprise_account_btn"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:drawableStart="@drawable/buildings_ic"
-            android:buttonTint="@android:color/transparent"
-            android:drawableEnd="@drawable/arrow_right_ic"
-            android:background="@drawable/textview_click_state"
-            android:text="@string/enterprise_account_ni_own_a_business_sme_or_startup"
-            android:drawablePadding="20dp"
             android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:textColor="@color/app_blue"
             android:layout_marginTop="20dp"
-            android:paddingEnd="20dp"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/textview_click_state"
+            android:buttonTint="@android:color/transparent"
+            android:drawableStart="@drawable/buildings_ic"
+            android:drawableEnd="@drawable/arrow_right_ic"
+            android:drawablePadding="20dp"
             android:drawableTint="@color/button_state_checked"
-            android:paddingStart="0dp"/>
+            android:paddingStart="0dp"
+            android:paddingEnd="20dp"
+            android:text="@string/enterprise_account_ni_own_a_business_sme_or_startup"
+            android:textColor="@color/app_blue" />
     </RadioGroup>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/continue_btn"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
         android:background="@drawable/button_elevation"
         android:text="@string/continue_text"
-        android:textColor="@color/white"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp" />
+        android:textColor="@color/white" />
 </LinearLayout>

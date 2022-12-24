@@ -4,12 +4,12 @@ import android.os.Parcel
 import android.os.Parcelable
 import protrnd.com.data.models.Profile
 
-data class ProfileResponseBody (
+data class ProfileResponseBody(
     val `data`: Profile = Profile(),
     val message: String = "",
     val statusCode: Int = 0,
     val successful: Boolean = false
-): Parcelable {
+) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(Profile::class.java.classLoader)!!,
         parcel.readString()!!,
