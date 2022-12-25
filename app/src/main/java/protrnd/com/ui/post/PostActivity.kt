@@ -33,8 +33,8 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
                 val returnIntent = Intent()
                 returnIntent.putExtra("profile_id", post!!.profileid)
                 setResult(RESULT_OK, returnIntent)
-                finishActivity()
             }
+            finishActivity()
         }
 
         postId = intent?.getStringExtra("post_id")!!
@@ -112,7 +112,7 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
                         binding.shimmerLayout.visible(false)
                     }
                     is Resource.Failure -> {
-                        binding.root.snackbar("An error occurred we will try again") { lifecycleScope.launch { loadPostData() } }
+                        binding.root.snackbar("An error occurred, please try again") { lifecycleScope.launch { loadPostData() } }
                     }
                     else -> {
                         binding.postResult.visible(false)

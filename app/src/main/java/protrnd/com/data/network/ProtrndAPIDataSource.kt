@@ -7,6 +7,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import protrnd.com.BuildConfig
 import protrnd.com.data.models.FCMValues
 import protrnd.com.data.network.api.FCMNotificationApi
+import protrnd.com.data.network.database.NotificationDatabase
 import protrnd.com.data.network.database.PostDatabase
 import protrnd.com.data.network.database.ProfileDatabase
 import retrofit2.Retrofit
@@ -66,4 +67,8 @@ class ProtrndAPIDataSource {
 
     fun provideProfileDatabase(application: Application): ProfileDatabase =
         Room.databaseBuilder(application, ProfileDatabase::class.java, "Profile Database").build()
+
+    fun provideNotificationDatabase(application: Application): NotificationDatabase =
+        Room.databaseBuilder(application, NotificationDatabase::class.java, "Notification Database")
+            .build()
 }

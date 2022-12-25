@@ -45,13 +45,6 @@ import java.util.*
 
 class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, HomeRepository>() {
 
-    companion object {
-        const val RECYCLER_STATE = "Recycler_State"
-        const val FOLLOWERS = "followers"
-        const val FOLLOWING = "following"
-        const val BUNDLE = "bundle"
-    }
-
     private lateinit var loadingDialog: Dialog
     private lateinit var thisActivity: HomeActivity
 
@@ -148,19 +141,6 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         super.onViewCreated(view, savedInstanceState)
         thisActivity = activity as HomeActivity
 
-        if (savedInstanceState != null) {
-            binding.postsRv.layoutManager!!.onRestoreInstanceState(
-                savedInstanceState.getParcelable(
-                    RECYCLER_STATE
-                )
-            )
-            val bundle = savedInstanceState.getBundle(BUNDLE)
-            if (bundle != null) {
-                binding.followingCount.text = bundle.getString(FOLLOWING)
-                binding.followersCount.text = bundle.getString(FOLLOWERS)
-            }
-        }
-
         binding.root.setOnRefreshListener {
             loadView()
             binding.root.isRefreshing = false
@@ -179,7 +159,6 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         )
 
         requireActivity().checkStoragePermissions()
-
 
         val dialog = Dialog(requireContext())
         val selectBinding = SelectImageDialogBinding.inflate(layoutInflater)
@@ -243,16 +222,6 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         lifecycleScope.launch {
             settingsPreferences.saveProfile(thisActivity.currentUserProfile)
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        val listState = binding.postsRv.layoutManager!!.onSaveInstanceState()!!
-        outState.putParcelable(RECYCLER_STATE, listState)
-        val bundle = Bundle()
-        bundle.putString(FOLLOWERS, binding.followersCount.text.toString())
-        bundle.putString(FOLLOWING, binding.followingCount.text.toString())
-        outState.putBundle(BUNDLE, bundle)
     }
 
     private fun loadView() {

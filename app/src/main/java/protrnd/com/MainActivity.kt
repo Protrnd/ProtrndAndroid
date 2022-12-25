@@ -14,6 +14,7 @@ import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityMainBinding
 import protrnd.com.ui.auth.AuthenticationActivity
 import protrnd.com.ui.handleAPIError
+import protrnd.com.ui.handleUnCaughtException
 import protrnd.com.ui.home.HomeActivity
 import protrnd.com.ui.home.HomeViewModel
 import protrnd.com.ui.reload
@@ -28,6 +29,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Thread.setDefaultUncaughtExceptionHandler { _, _ ->
+            binding.root.handleUnCaughtException()
+        }
         try {
             val profilePreferences = SettingsPreferences(this)
             var tries = 0

@@ -1,11 +1,20 @@
 package protrnd.com.ui.notification
 
 import androidx.lifecycle.ViewModel
+import protrnd.com.data.models.Notification
 import protrnd.com.data.repository.NotificationRepository
 
 class NotificationViewModel(val repository: NotificationRepository) : ViewModel() {
 
-    suspend fun getNotificationsPage(page: Int) = repository.getNotificationsPage(page)
+    fun getNotificationsPage() = repository.getNotificationsPage()
+
+    fun getProfile(id: String) = repository.getSavedProfile(id)
+
+    suspend fun saveNotifications(notifications: List<Notification>) {
+        repository.saveNotifications(notifications)
+    }
+
+    fun getSavedNotifications() = repository.getSavedNotifications()
 
     suspend fun getProfileById(id: String) = repository.getProfileById(id)
 

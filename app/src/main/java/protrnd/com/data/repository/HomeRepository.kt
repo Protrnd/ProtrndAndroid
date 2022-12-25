@@ -12,11 +12,11 @@ import protrnd.com.data.models.CommentDTO
 import protrnd.com.data.models.Post
 import protrnd.com.data.models.Profile
 import protrnd.com.data.models.ProfileDTO
-import protrnd.com.data.network.PostsPagingSource
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.network.database.PostDatabase
 import protrnd.com.data.network.database.ProfileDatabase
+import protrnd.com.data.pagingsource.PostsPagingSource
 
 class HomeRepository(
     private val api: ProfileApi,
@@ -28,11 +28,13 @@ class HomeRepository(
 
     private val postDao = db?.postDao()
 
+    private val dataSource = PostsPagingSource(postsApi)
+
     private val profileDao = profileDatabase?.profileDao()
 
     fun getPostsPage() = Pager(
         config = PagingConfig(pageSize = 10, maxSize = 100, enablePlaceholders = false),
-        pagingSourceFactory = { PostsPagingSource(postsApi) }
+        pagingSourceFactory = { dataSource }
     ).liveData
 
     suspend fun savePostResult(posts: List<Post>) {

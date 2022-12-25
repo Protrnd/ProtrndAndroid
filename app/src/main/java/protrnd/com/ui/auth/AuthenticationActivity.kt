@@ -9,6 +9,7 @@ import androidx.navigation.fragment.NavHostFragment
 import protrnd.com.R
 import protrnd.com.databinding.ActivityAuthenticationBinding
 import protrnd.com.ui.finishActivity
+import protrnd.com.ui.handleUnCaughtException
 
 class AuthenticationActivity : AppCompatActivity() {
     lateinit var binding: ActivityAuthenticationBinding
@@ -19,6 +20,9 @@ class AuthenticationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthenticationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        Thread.setDefaultUncaughtExceptionHandler { _, _ ->
+            binding.root.handleUnCaughtException()
+        }
         setSupportActionBar(binding.appAuthToolbar)
         val actionBar = supportActionBar!!
         actionBar.setDisplayShowHomeEnabled(true)
