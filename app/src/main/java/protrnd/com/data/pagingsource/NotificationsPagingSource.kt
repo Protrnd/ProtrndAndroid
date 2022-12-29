@@ -12,7 +12,7 @@ private const val STARTING_PAGE_INDEX = 1
 class NotificationsPagingSource(private val api: NotificationApi) :
     PagingSource<Int, Notification>() {
     override fun getRefreshKey(state: PagingState<Int, Notification>): Int? {
-        return null
+        return state.anchorPosition
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Notification> {

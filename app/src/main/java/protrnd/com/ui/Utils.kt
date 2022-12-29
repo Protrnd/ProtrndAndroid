@@ -2,7 +2,6 @@ package protrnd.com.ui
 
 import android.Manifest
 import android.app.Activity
-import android.app.ActivityOptions
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -11,10 +10,11 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.media.MediaMetadataRetriever
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
-import android.net.Uri
+import android.net.*
 import android.os.Build
+import android.os.Build.VERSION.SDK_INT
+import android.os.Bundle
+import android.os.Parcelable
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextPaint
@@ -49,7 +49,6 @@ import androidx.viewpager2.widget.MarginPageTransformer
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
@@ -99,8 +98,19 @@ fun <A : Activity> Activity.startNewActivityFromAuth(activity: Class<A>) {
         activity
     ).also {
         it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(it, ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
+        startActivity(it)
         startAnimation()
+    }
+}
+
+fun <A : Activity> Activity.startActivityFromNotification(activity: Class<A>, extras: Bundle) {
+    Intent(
+        this,
+        activity
+    ).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        putExtras(extras)
+        startActivity(this)
     }
 }
 
@@ -130,7 +140,6 @@ fun HomeViewModel.getProfile() {
 }
 
 fun AuthViewModel.saveAndStartHomeFragment(
-    view: View,
     token: String,
     scope: CoroutineScope,
     lifecycleOwner: LifecycleOwner,
@@ -151,13 +160,6 @@ fun AuthViewModel.saveAndStartHomeFragment(
                     preferences.saveProfile(profileResponse.value.data)
                     activity.startNewActivityFromAuth(HomeActivity::class.java)
                 }
-            }
-            is Resource.Failure -> {
-                if (profileResponse.isNetworkError)
-                    handleAPIError(
-                        view,
-                        profileResponse
-                    ) { lvm.getProfile() }
             }
             else -> {}
         }
@@ -182,14 +184,13 @@ fun String.setSpannableColor(section: String, start: Int = 0): Spannable {
     return span
 }
 
-suspend fun setupLikes(
-    viewModel: HomeViewModel,
+suspend fun HomeViewModel.setupLikes(
     postId: String,
     lifecycleOwner: LifecycleOwner,
     likesCountTv: TextView,
     likeToggle: AppCompatToggleButton
 ) {
-    when (val likesCount = viewModel.getLikesCount(postId)) {
+    when (val likesCount = this.getLikesCount(postId)) {
         is Resource.Success -> {
             withContext(Dispatchers.Main) {
                 val count = likesCount.value.data as Double
@@ -198,11 +199,10 @@ suspend fun setupLikes(
                 likesCountTv.text = likes
             }
         }
-        is Resource.Loading -> {}
         else -> {}
     }
 
-    val isLiked = viewModel.postIsLiked(postId)
+    val isLiked = this.postIsLiked(postId)
     withContext(Dispatchers.Main) {
         isLiked.observe(lifecycleOwner) {
             when (it) {
@@ -229,6 +229,27 @@ fun sendLikeNotification(otherProfileName: Profile, currentProfile: Profile, id:
     sendNotification(otherProfileName, title, notificationData)
 }
 
+fun sendUploadNotification(currentProfile: Profile, id: String) {
+    val title = "Hi ${currentProfile.username}"
+    val body = if (id.isNotEmpty())
+        "Your upload was successfully added"
+    else
+        "Error uploading"
+    val notificationData = NotificationData(currentProfile.username, "Upload", id, body)
+    sendNotification(currentProfile, title, notificationData)
+}
+
+inline fun <reified T : Parcelable> Intent.getParcelableArrayList(key: String): ArrayList<T>? =
+    when {
+        SDK_INT >= 33 -> getParcelableArrayListExtra(key, T::class.java)
+        else -> @Suppress("DEPRECATION") getParcelableArrayListExtra(key)
+    }
+
+inline fun <reified T : Parcelable> Intent.getParcelable(key: String): T? = when {
+    SDK_INT >= 33 -> getParcelableExtra(key, T::class.java)
+    else -> @Suppress("DEPRECATION") getParcelableExtra(key) as? T
+}
+
 fun sendNotification(
     profile: Profile,
     title: String,
@@ -240,17 +261,16 @@ fun sendNotification(
             "/topics/${profile.identifier}",
             notificationData
         )
-    )
-        .enqueue(object : Callback<PushNotification> {
-            override fun onResponse(
-                call: Call<PushNotification>,
-                response: Response<PushNotification>
-            ) {
-            }
+    ).enqueue(object : Callback<PushNotification> {
+        override fun onResponse(
+            call: Call<PushNotification>,
+            response: Response<PushNotification>
+        ) {
+        }
 
-            override fun onFailure(call: Call<PushNotification>, t: Throwable) {
-            }
-        })
+        override fun onFailure(call: Call<PushNotification>, t: Throwable) {
+        }
+    })
 }
 
 fun likePost(
@@ -327,6 +347,17 @@ fun Context.showCommentSection(
                             viewModel = viewModel,
                             comments = comments.value.data
                         )
+                        commentAdapter.clickListener(object : CommentsAdapter.ClickListener {
+                            override fun clickProfile(profileId: String) {
+                                this@showCommentSection.startActivity(
+                                    Intent(
+                                        this@showCommentSection,
+                                        ProfileActivity::class.java
+                                    ).also { intent ->
+                                        intent.putExtra("profile_id", profileId)
+                                    })
+                            }
+                        })
                         bottomSheetBinding.commentSection.adapter = commentAdapter
                     }
                 }
@@ -411,12 +442,14 @@ fun ViewBinding.bindPostDetails(
         captionTv.text = caption
         captionTv.setTags(postOwnerProfile.username, activity)
 
+
         if (postOwnerProfile.profileimg.isNotEmpty()) {
-            Glide.with(this.root)
+            Glide.with(this.root.context)
                 .load(postOwnerProfile.profileimg)
+                .placeholder(R.drawable.default_profile_ic)
                 .circleCrop()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .transition(DrawableTransitionOptions.withCrossFade())
+                .error(R.drawable.default_profile_ic)
                 .into(profileImage)
         }
     }
@@ -430,7 +463,7 @@ fun ViewBinding.bindPostDetails(
     imagesPager.clipChildren = false
     imagesPager.clipToPadding = false
     imagesPager.getChildAt(0).overScrollMode = View.OVER_SCROLL_NEVER
-    val adapter = PostImagesAdapter(images = post.uploadurls)
+    val adapter = PostImagesAdapter(images = post.uploadurls, activity = activity)
     imagesPager.adapter = adapter
 
     val transformer = CompositePageTransformer()
@@ -541,10 +574,6 @@ suspend fun RecyclerView.showUserPostsInGrid(
                 RecyclerView.Adapter.StateRestorationPolicy.PREVENT
             this.adapter = thumbnailsAdapter
         }
-        is Resource.Failure -> {
-            if (posts.isNetworkError)
-                this.showUserPostsInGrid(context, viewModel, profile)
-        }
         else -> {}
     }
 }
@@ -558,10 +587,6 @@ suspend fun TextView.showFollowersCount(viewModel: HomeViewModel, profile: Profi
             this.text = followersResult.setSpannableBold(count)
             this.visible(true)
         }
-        is Resource.Failure -> {
-            if (followersCount.isNetworkError)
-                this.showFollowersCount(viewModel, profile)
-        }
         else -> {}
     }
 }
@@ -573,10 +598,6 @@ suspend fun TextView.showFollowingCount(viewModel: HomeViewModel, profile: Profi
             val followersResult = "$count Following"
             this.text = followersResult.setSpannableBold(count)
             this.visible(true)
-        }
-        is Resource.Failure -> {
-            if (f.isNetworkError)
-                this.showFollowingCount(viewModel, profile)
         }
         else -> {}
     }
@@ -668,7 +689,7 @@ fun AppCompatActivity.setupHomeIndicator(toolbar: Toolbar) {
 }
 
 fun Activity.checkStoragePermissions() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    if (SDK_INT >= Build.VERSION_CODES.O) {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.READ_EXTERNAL_STORAGE
@@ -683,7 +704,7 @@ fun Activity.checkStoragePermissions() {
     }
 }
 
-fun Activity.isVideoFile(uri: Uri): Boolean {
+fun Context.isVideoFile(uri: Uri): Boolean {
     val retriever = MediaMetadataRetriever()
     try {
         retriever.setDataSource(this, uri)
@@ -694,7 +715,7 @@ fun Activity.isVideoFile(uri: Uri): Boolean {
     return "yes" == hasVideo
 }
 
-fun Activity.getFileTypes(uris: List<Uri>): List<String> {
+fun Context.getFileTypes(uris: List<Uri>): List<String> {
     val uriFiles = mutableListOf<String>()
     for (uri in uris) {
         if (this.isVideoFile(uri)) {
@@ -730,7 +751,7 @@ fun String.getAgo(): CharSequence {
             return "$mins min ago"
         val ago = DateUtils.getRelativeTimeSpanString(
             time,
-            now,
+            now - 60000L,
             DateUtils.MINUTE_IN_MILLIS,
             DateUtils.FORMAT_ABBREV_RELATIVE
         )

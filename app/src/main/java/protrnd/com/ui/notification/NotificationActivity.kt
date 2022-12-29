@@ -57,14 +57,15 @@ class NotificationActivity :
     }
 
     private fun loadMoreItems() {
-        viewModel.getSavedNotifications().asLiveData().observe(this) {
-            if (it.isNotEmpty()) {
-                notificationAdapter.submitData(lifecycle, PagingData.from(it))
-            }
-        }
         if (isNetworkAvailable()) {
             viewModel.getNotificationsPage().observe(this) {
                 notificationAdapter.submitData(lifecycle, it)
+            }
+        } else {
+            viewModel.getSavedNotifications().asLiveData().observe(this) {
+                if (it.isNotEmpty()) {
+                    notificationAdapter.submitData(lifecycle, PagingData.from(it))
+                }
             }
         }
     }

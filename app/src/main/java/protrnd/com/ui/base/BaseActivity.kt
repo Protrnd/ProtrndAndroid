@@ -15,8 +15,10 @@ import protrnd.com.data.models.Profile
 import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.network.SettingsPreferences
 import protrnd.com.data.repository.BaseRepository
+import protrnd.com.ui.auth.AuthenticationActivity
 import protrnd.com.ui.checkStoragePermissions
 import protrnd.com.ui.handleUnCaughtException
+import protrnd.com.ui.startNewActivityFromAuth
 
 abstract class BaseActivity<B : ViewBinding, VM : ViewModel, R : BaseRepository> :
     AppCompatActivity() {
@@ -25,17 +27,21 @@ abstract class BaseActivity<B : ViewBinding, VM : ViewModel, R : BaseRepository>
     protected val protrndAPIDataSource = ProtrndAPIDataSource()
     lateinit var binding: B
     val profileHash = HashMap<String, Profile>()
-    var currentUserProfile = Profile()
+    var currentUserProfile: Profile = Profile()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = getActivityBinding(layoutInflater)
         setContentView(binding.root)
         this.checkStoragePermissions()
+
         profilePreferences = SettingsPreferences(this)
-        val profileP = runBlocking { profilePreferences.profile.first() }
-        if (profileP != null) {
-            currentUserProfile = Gson().fromJson(profileP, Profile::class.java)
+        val profile = runBlocking { profilePreferences.profile.first() }
+        val authToken = runBlocking { profilePreferences.authToken.first() }
+        if (authToken != null && profile != null) {
+            currentUserProfile = Gson().fromJson(profile, Profile::class.java)
+        } else {
+            startNewActivityFromAuth(AuthenticationActivity::class.java)
         }
         val factory = ViewModelFactory(getActivityRepository())
         viewModel = ViewModelProvider(this, factory)[getViewModel()]

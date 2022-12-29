@@ -1,22 +1,18 @@
 package protrnd.com.ui.post
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View.OVER_SCROLL_NEVER
-import android.view.ViewGroup
-import android.view.Window
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
 import androidx.core.widget.addTextChangedListener
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.CompositePageTransformer
@@ -24,11 +20,8 @@ import androidx.viewpager2.widget.MarginPageTransformer
 import com.google.android.material.tabs.TabLayoutMediator
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.anko.doAsync
-import protrnd.com.data.models.Location
-import protrnd.com.data.models.PostDTO
+import protrnd.com.data.UploadService
 import protrnd.com.data.models.Profile
 import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.network.api.PostApi
@@ -36,7 +29,6 @@ import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.PostRepository
 import protrnd.com.databinding.ActivityNewPostBinding
-import protrnd.com.databinding.LoadingLayoutBinding
 import protrnd.com.ui.*
 import protrnd.com.ui.adapter.PostImagesAdapter
 import protrnd.com.ui.adapter.ProfileTagAdapter
@@ -53,6 +45,7 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
     private var currentPosition = 0
     private var selectedUri = Uri.EMPTY
     private lateinit var tagsAdapter: ProfileTagAdapter
+    var authToken = ""
 
     private fun getContent() {
         val outputUri = File(filesDir, "${Date().time}.jpg").toUri()
@@ -160,51 +153,18 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
         binding.postBtn.setOnClickListener {
             binding.postBtn.enable(false)
             binding.captionEt.clearFocus()
-            val loadingLayoutBinding = LoadingLayoutBinding.inflate(layoutInflater)
-            val dialog = Dialog(this)
-            dialog.setContentView(loadingLayoutBinding.root)
-            dialog.setCanceledOnTouchOutside(false)
-            val window: Window = dialog.window!!
-            window.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            dialog.show()
-            doAsync {
-                lifecycleScope.launch {
-                    try {
-                        val result = viewModel.uploadImage(
-                            postUriList,
-                            currentUserProfile.username,
-                            this@NewPostActivity.getFileTypes(postUriList)
-                        )
-                        if (result.isEmpty()) {
-                            binding.root.snackbar("Error uploading")
-                        } else {
-                            val l = currentUserProfile.location!!.split(",")
-                            val location = Location(cities = listOf(l[1]), state = l[0])
-                            val postDto = PostDTO(
-                                caption = binding.captionEt.text.toString().trim(),
-                                location = location,
-                                uploadurls = result
-                            )
-                            when (viewModel.addPost(postDto)) {
-                                is Resource.Success -> {
-                                    finishActivity()
-                                }
-                                else -> {}
-                            }
-                        }
-                    } catch (e: Exception) {
-                        dialog.dismiss()
-                        Toast.makeText(
-                            this@NewPostActivity,
-                            "An error occurred please try again",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
+            val serviceIntent = Intent(this, UploadService::class.java)
+            serviceIntent.putExtra("auth_token", authToken)
+            serviceIntent.putExtra("posts", postUriList)
+            serviceIntent.putExtra("profile", currentUserProfile)
+            serviceIntent.putExtra("caption", binding.captionEt.text.toString().trim())
+            startService(serviceIntent)
+            Toast.makeText(
+                this,
+                "We will notify you when your upload is completed",
+                Toast.LENGTH_SHORT
+            ).show()
+            finishActivity()
         }
 
         binding.captionEt.addTextChangedListener { s ->
@@ -267,6 +227,7 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
 
     override fun getActivityRepository(): PostRepository {
         val token = runBlocking { profilePreferences.authToken.first() }
+        authToken = token!!
         val postApi = ProtrndAPIDataSource().buildAPI(PostApi::class.java, token)
         val profileApi = ProtrndAPIDataSource().buildAPI(ProfileApi::class.java, token)
         return PostRepository(profileApi, postApi)

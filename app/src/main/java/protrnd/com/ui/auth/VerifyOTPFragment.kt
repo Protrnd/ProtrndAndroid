@@ -39,7 +39,6 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
                 is Resource.Success -> {
                     if (it.value.successful) {
                         viewModel.saveAndStartHomeFragment(
-                            binding.root,
                             it.value.data.toString(),
                             lifecycleScope,
                             viewLifecycleOwner,

@@ -18,6 +18,7 @@ import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityPostBinding
 import protrnd.com.ui.*
 import protrnd.com.ui.base.BaseActivity
+import protrnd.com.ui.home.HomeActivity
 import protrnd.com.ui.home.HomeViewModel
 
 class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeRepository>() {
@@ -28,16 +29,21 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
+        var isFromNotification = false
         binding.navBackBtn.setOnClickListener {
-            if (post != null) {
-                val returnIntent = Intent()
-                returnIntent.putExtra("profile_id", post!!.profileid)
-                setResult(RESULT_OK, returnIntent)
-            }
-            finishActivity()
+            if (isFromNotification)
+                startNewActivityFromAuth(HomeActivity::class.java)
+            else
+                finishActivity()
         }
 
-        postId = intent?.getStringExtra("post_id")!!
+        if (intent != null && intent.extras != null) {
+            val bundle = intent.extras!!
+            postId = bundle.getString("post_id").toString()
+            if (bundle.containsKey("isFromNotification")) {
+                isFromNotification = bundle.getBoolean("isFromNotification")
+            }
+        }
 
         if (currentUserProfile.profileimg.isNotEmpty())
             Glide.with(applicationContext).load(currentUserProfile.profileimg).diskCacheStrategy(
@@ -126,20 +132,11 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
             }
         }
 
-        setupLikes(
-            viewModel,
+        viewModel.setupLikes(
             postId,
             this,
             binding.likesCount,
             binding.likeToggle
         )
-    }
-
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        postId = intent?.getStringExtra("post_id")!!
-        lifecycleScope.launch {
-            loadPostData()
-        }
     }
 }

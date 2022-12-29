@@ -4,27 +4,28 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import protrnd.com.data.models.Post
+import protrnd.com.data.models.Profile
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityHashTagResultsBinding
-import protrnd.com.ui.adapter.PostsAdapter
+import protrnd.com.ui.adapter.PostsPagingAdapter
 import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.home.HomeViewModel
+import protrnd.com.ui.viewholder.PostsViewHolder
 
 class HashTagResultsActivity :
     BaseActivity<ActivityHashTagResultsBinding, HomeViewModel, HomeRepository>() {
-    private lateinit var postsAdapter: PostsAdapter
+    private lateinit var postsAdapter: PostsPagingAdapter
     private lateinit var postsLayoutManager: LinearLayoutManager
-    private var isLoading: Boolean = false
-    private var page = 1
     private var hashtag: String = ""
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
@@ -51,77 +52,135 @@ class HashTagResultsActivity :
         }
 
         postsLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-
         binding.hashTaggedResultsRv.layoutManager = postsLayoutManager
+        postsAdapter = PostsPagingAdapter()
+        binding.hashTaggedResultsRv.adapter = postsAdapter
 
-        loadPage()
+        setupStoredData()
 
         binding.refreshLayout.setOnRefreshListener {
             if (binding.refreshLayout.isRefreshing) {
-                binding.hashTaggedResultsRv.visible(false)
-                page = 1
                 loadPage()
                 binding.refreshLayout.isRefreshing = false
-            }
-        }
-
-        binding.hashTaggedResultsRv.setOnScrollChangeListener { _, _, _, _, _ ->
-            if (!isLoading) {
-                loadMoreItems(false)
-                isLoading = true
             }
         }
     }
 
     private fun loadPage() {
-        postsAdapter = PostsAdapter(
-            viewModel = viewModel,
-            lifecycleOwner = this,
-            currentProfile = currentUserProfile,
-            activity = this
-        )
         //Load first page
         setupRecyclerView()
-        loadMoreItems(true)
+        viewModel.getPostsQueried(hashtag).observe(this) {
+            postsAdapter.submitData(lifecycle, it)
+        }
     }
 
-    private fun loadMoreItems(isFirstPage: Boolean) {
-        if (!isFirstPage) page += 1
-        lifecycleScope.launch {
-            when (val posts = viewModel.getPostsQueried(page, hashtag)) {
-                is Resource.Success -> {
-                    val result = posts.value.data
-                    if (result.isEmpty())
-                        return@launch
-                    if (!isFirstPage) postsAdapter.addAll(result)
-                    else postsAdapter.setList(result as MutableList<Post>)
-                    isLoading = false
-                    binding.progressBar.visible(false)
-                    binding.hashTaggedResultsRv.visible(true)
-                }
-                is Resource.Loading -> {
-                    isLoading = true
-                }
-                is Resource.Failure -> {
-                    isLoading = false
-                    binding.progressBar.visible(false)
-                    handleAPIError(binding.root, posts) {
-                        lifecycleScope.launch {
-                            loadMoreItems(
-                                isFirstPage
-                            )
-                        }
-                    }
-                }
-                else -> {}
+    private fun getSoredProfile(id: String): Profile? {
+        val otherProfile = viewModel.getProfile(id)
+        var result: Profile? = null
+        otherProfile?.asLiveData()?.observe(this) {
+            if (it != null) {
+                result = it
             }
         }
+        return result
+    }
+
+    private suspend fun getOtherProfile(
+        id: String
+    ): Profile? {
+        return getSoredProfile(id)
+            ?: when (val otherProfile = viewModel.getProfileById(id)) {
+                is Resource.Success -> {
+                    viewModel.saveProfile(otherProfile.value.data)
+                    return otherProfile.value.data
+                }
+                is Resource.Loading -> {
+                    return null
+                }
+                is Resource.Failure -> {
+                    if (otherProfile.isNetworkError) {
+                        return getSoredProfile(id)
+                    } else {
+                        return null
+                    }
+                }
+                else -> {
+                    return null
+                }
+            }
     }
 
     private fun setupRecyclerView() {
-        binding.hashTaggedResultsRv.apply {
-            adapter = postsAdapter
-        }
+        postsAdapter = binding.hashTaggedResultsRv.adapter as PostsPagingAdapter
+        postsAdapter.setupRecyclerResults(object : PostsPagingAdapter.SetupRecyclerResultsListener {
+            override fun setupLikes(holder: PostsViewHolder, postData: Post) {
+                lifecycleScope.launch {
+                    if (isNetworkAvailable())
+                        viewModel.setupLikes(
+                            postData.id,
+                            this@HashTagResultsActivity,
+                            holder.view.likesCount,
+                            holder.view.likeToggle
+                        )
+                }
+            }
+
+            override fun setupData(holder: PostsViewHolder, postData: Post) {
+                lifecycleScope.launch {
+                    val profileResult = getOtherProfile(postData.profileid)
+                    if (profileResult != null) {
+                        holder.bind(
+                            this@HashTagResultsActivity,
+                            postData,
+                            profileResult,
+                            currentUserProfile
+                        )
+                    }
+                }
+            }
+
+            override fun showCommentSection(postData: Post) {
+                lifecycleScope.launch {
+                    val profileResult = getOtherProfile(postData.profileid)
+                    if (profileResult != null) {
+                        showCommentSection(
+                            viewModel,
+                            this@HashTagResultsActivity,
+                            lifecycleScope,
+                            profileResult,
+                            currentUserProfile,
+                            postData.identifier
+                        )
+                    }
+                }
+            }
+
+            override fun like(holder: PostsViewHolder, postData: Post) {
+                lifecycleScope.launch {
+                    val profileResult = getOtherProfile(postData.profileid)
+                    if (profileResult != null) {
+                        val liked = holder.view.likeToggle.isChecked
+                        if (isNetworkAvailable())
+                            likePost(
+                                holder.view.likeToggle,
+                                holder.view.likesCount,
+                                lifecycleScope,
+                                viewModel,
+                                postData.identifier,
+                                profileResult,
+                                currentUserProfile
+                            )
+                        else
+                            holder.view.likeToggle.isChecked = !liked
+                    }
+                }
+            }
+        })
+    }
+
+    private fun setupStoredData() {
+        if (isNetworkAvailable())
+            loadPage()
     }
 
     override fun getViewModel() = HomeViewModel::class.java
@@ -133,7 +192,10 @@ class HashTagResultsActivity :
         val token = runBlocking { profilePreferences.authToken.first() }
         val api = protrndAPIDataSource.buildAPI(ProfileApi::class.java, token)
         val postsApi = protrndAPIDataSource.buildAPI(PostApi::class.java, token)
-        return HomeRepository(api, postsApi)
+        val postDatabase = protrndAPIDataSource.providePostDatabase(application)
+        val profileDatabase =
+            protrndAPIDataSource.provideProfileDatabase(application)
+        return HomeRepository(api, postsApi, postDatabase, profileDatabase)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -36,7 +36,6 @@ class LoginFragment : BaseFragment<AuthViewModel, FragmentLoginBinding, AuthRepo
                 }
                 is Resource.Success -> {
                     viewModel.saveAndStartHomeFragment(
-                        binding.root,
                         it.value.data.toString(),
                         lifecycleScope,
                         viewLifecycleOwner,

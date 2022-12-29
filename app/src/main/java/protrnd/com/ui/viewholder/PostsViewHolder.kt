@@ -8,11 +8,8 @@ import protrnd.com.R
 import protrnd.com.data.models.Post
 import protrnd.com.data.models.Profile
 import protrnd.com.databinding.PostItemBinding
-import protrnd.com.ui.bindPostDetails
+import protrnd.com.ui.*
 import protrnd.com.ui.profile.ProfileActivity
-import protrnd.com.ui.showFeatureComingSoonDialog
-import protrnd.com.ui.startAnimation
-import protrnd.com.ui.visible
 
 class PostsViewHolder(val view: PostItemBinding) : RecyclerView.ViewHolder(view.root) {
     @SuppressLint("SetTextI18n")

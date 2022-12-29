@@ -56,6 +56,8 @@
                     android:id="@+id/posts_rv"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:focusableInTouchMode="true"
+                    android:nestedScrollingEnabled="false"
                     android:orientation="vertical"
                     android:paddingStart="15dp"
                     android:paddingEnd="15dp" />

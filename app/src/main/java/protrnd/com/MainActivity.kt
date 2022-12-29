@@ -1,87 +1,47 @@
 package protrnd.com
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import protrnd.com.data.network.ProtrndAPIDataSource
-import protrnd.com.data.network.SettingsPreferences
+import android.view.LayoutInflater
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
-import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityMainBinding
-import protrnd.com.ui.auth.AuthenticationActivity
-import protrnd.com.ui.handleAPIError
+import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.handleUnCaughtException
 import protrnd.com.ui.home.HomeActivity
 import protrnd.com.ui.home.HomeViewModel
-import protrnd.com.ui.reload
+import protrnd.com.ui.post.PostActivity
+import protrnd.com.ui.startActivityFromNotification
 import protrnd.com.ui.startNewActivityFromAuth
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel, HomeRepository>() {
 
-    lateinit var binding: ActivityMainBinding
-    private lateinit var lvm: HomeViewModel
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
+        super.onViewReady(savedInstanceState, intent)
+        val bundle = intent!!.extras
         Thread.setDefaultUncaughtExceptionHandler { _, _ ->
             binding.root.handleUnCaughtException()
         }
-        try {
-            val profilePreferences = SettingsPreferences(this)
-            var tries = 0
-            profilePreferences.authToken.asLiveData().observe(this) {
-                if (it != null) {
-                    val api = ProtrndAPIDataSource().buildAPI(ProfileApi::class.java, it)
-                    val postsApi = ProtrndAPIDataSource().buildAPI(PostApi::class.java, it)
-                    lvm = HomeViewModel(HomeRepository(api, postsApi))
-                    getCurrentProfile()
-                    lvm.profile.observe(this) { profileResponse ->
-                        when (profileResponse) {
-                            is Resource.Success -> {
-                                lifecycleScope.launch {
-                                    profilePreferences.saveProfile(profileResponse.value.data)
-                                    startNewActivityFromAuth(HomeActivity::class.java)
-                                }
-                            }
-                            is Resource.Failure -> {
-                                if (profileResponse.isNetworkError) {
-                                    tries += 1
-                                    if (tries == 2) {
-                                        profilePreferences.profile.asLiveData().observe(this) { p ->
-                                            if (p != null) {
-                                                startNewActivityFromAuth(HomeActivity::class.java)
-                                            } else {
-                                                reload { getCurrentProfile() }
-                                            }
-                                        }
-                                    } else {
-                                        handleAPIError(
-                                            binding.root,
-                                            profileResponse
-                                        ) { getCurrentProfile() }
-                                    }
-                                } else
-                                    startNewActivityFromAuth(AuthenticationActivity::class.java)
-                            }
-                            else -> {}
-                        }
-                    }
-                } else {
-                    startNewActivityFromAuth(AuthenticationActivity::class.java)
-                }
-            }
-        } catch (e: Exception) {
-            startNewActivityFromAuth(AuthenticationActivity::class.java)
+        if (bundle != null && bundle.containsKey("post_id")) {
+            bundle.putBoolean("isFromNotification", true)
+            startActivityFromNotification(PostActivity::class.java, bundle)
+        } else if (currentUserProfile.id.isNotEmpty()) {
+            startNewActivityFromAuth(HomeActivity::class.java)
         }
     }
 
-    private fun getCurrentProfile() {
-        lvm.getCurrentProfile()
+    override fun getActivityBinding(inflater: LayoutInflater) =
+        ActivityMainBinding.inflate(inflater)
+
+    override fun getViewModel() = HomeViewModel::class.java
+
+    override fun getActivityRepository(): HomeRepository {
+        val token = runBlocking { profilePreferences.authToken.first() }
+        val api = protrndAPIDataSource.buildAPI(ProfileApi::class.java, token)
+        val postsApi = protrndAPIDataSource.buildAPI(PostApi::class.java, token)
+        return HomeRepository(api, postsApi)
     }
 }

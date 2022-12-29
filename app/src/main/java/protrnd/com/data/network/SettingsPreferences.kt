@@ -14,11 +14,6 @@ import protrnd.com.data.models.Profile
 class SettingsPreferences(context: Context) {
     private val dataStore: DataStore<Preferences> = context.DATASTORE
 
-    val posts: Flow<String?>
-        get() = dataStore.data.map { p ->
-            p[POSTS_DATA]
-        }
-
     val authToken: Flow<String?>
         get() = dataStore.data.map { preferences ->
             preferences[KEY_AUTH]
@@ -46,6 +41,5 @@ class SettingsPreferences(context: Context) {
         private val Context.DATASTORE by preferencesDataStore("Protrnd_Store")
         private val KEY_AUTH = stringPreferencesKey("jwt_auth")
         private val PROFILE_KEY = stringPreferencesKey("profile_key")
-        private val POSTS_DATA = stringPreferencesKey("posts_data")
     }
 }

@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import protrnd.com.data.NetworkConnectionLiveData
 import protrnd.com.data.models.Post
 import protrnd.com.data.models.ProfileDTO
 import protrnd.com.data.network.api.PostApi
@@ -66,7 +67,7 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
                 val uploadResult = viewModel.uploadImage(
                     uri,
                     thisActivity.currentUserProfile.username,
-                    requireActivity().getFileTypes(listOf(uri))[0]
+                    requireContext().getFileTypes(listOf(uri))[0]
                 )
                 withContext(Dispatchers.Main) {
                     uploadResult.observe(viewLifecycleOwner) { url ->
@@ -146,7 +147,15 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
             binding.root.isRefreshing = false
         }
 
-        loadView()
+        NetworkConnectionLiveData(context ?: return)
+            .observe(viewLifecycleOwner) { isConnected ->
+                if (!isConnected) {
+                    loadView()
+                    return@observe
+                }
+                loadView()
+            }
+
 
         loadingDialog = Dialog(requireContext())
         loadingDialog.setCanceledOnTouchOutside(false)

@@ -52,7 +52,7 @@ class HomeViewModel(
 
     fun getSavedPosts() = repository.getSavedPosts()
 
-    suspend fun getPostsQueried(page: Int, word: String) = repository.getPostsQuery(page, word)
+    fun getPostsQueried(word: String) = repository.getHashTagPage(word).cachedIn(viewModelScope)
 
     suspend fun getQueryCount(word: String) = repository.getQueryCount(word)
 

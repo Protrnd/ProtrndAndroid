@@ -16,6 +16,7 @@ import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.network.database.PostDatabase
 import protrnd.com.data.network.database.ProfileDatabase
+import protrnd.com.data.pagingsource.HashTagsPagingSource
 import protrnd.com.data.pagingsource.PostsPagingSource
 
 class HomeRepository(
@@ -28,13 +29,16 @@ class HomeRepository(
 
     private val postDao = db?.postDao()
 
-    private val dataSource = PostsPagingSource(postsApi)
-
     private val profileDao = profileDatabase?.profileDao()
 
     fun getPostsPage() = Pager(
         config = PagingConfig(pageSize = 10, maxSize = 100, enablePlaceholders = false),
-        pagingSourceFactory = { dataSource }
+        pagingSourceFactory = { PostsPagingSource(postsApi) }
+    ).liveData
+
+    fun getHashTagPage(word: String) = Pager(
+        config = PagingConfig(pageSize = 10, maxSize = 100, enablePlaceholders = false),
+        pagingSourceFactory = { HashTagsPagingSource(postsApi, word) }
     ).liveData
 
     suspend fun savePostResult(posts: List<Post>) {
@@ -60,9 +64,6 @@ class HomeRepository(
     suspend fun getProfileById(id: String) = safeApiCall { api.getProfileById(id) }
 
     suspend fun getProfileByUsername(name: String) = safeApiCall { api.getProfileByName(name) }
-
-    suspend fun getPostsQuery(page: Int, word: String) =
-        safeApiCall { postsApi.getPostsQueried(page, word) }
 
     suspend fun getQueryCount(word: String) = safeApiCall { postsApi.getQueryCount(word) }
 

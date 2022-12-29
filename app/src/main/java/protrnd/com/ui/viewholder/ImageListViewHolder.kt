@@ -21,7 +21,10 @@ import protrnd.com.ui.visible
 
 class ImageListViewHolder(val view: PostImageItemBinding) : RecyclerView.ViewHolder(view.root) {
     fun bind(imageUrl: String) {
-        Glide.with(view.root).load(imageUrl).diskCacheStrategy(DiskCacheStrategy.ALL)
+        Glide.with(view.postImage).load(imageUrl)
+            .placeholder(R.color.black)
+            .error(R.color.black)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(view.postImage)
         if (imageUrl.contains(".mp4"))
             view.playBtn.visible(true)

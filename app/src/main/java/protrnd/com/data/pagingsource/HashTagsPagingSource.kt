@@ -9,7 +9,8 @@ import java.io.IOException
 
 private const val STARTING_PAGE_INDEX = 1
 
-class PostsPagingSource(private val api: PostApi) : PagingSource<Int, Post>() {
+class HashTagsPagingSource(private val api: PostApi, private val word: String) :
+    PagingSource<Int, Post>() {
     override fun getRefreshKey(state: PagingState<Int, Post>): Int? {
         return state.anchorPosition
     }
@@ -17,7 +18,7 @@ class PostsPagingSource(private val api: PostApi) : PagingSource<Int, Post>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Post> {
         val position = params.key ?: STARTING_PAGE_INDEX
         return try {
-            val response = api.getPosts(position)
+            val response = api.getPostsQueried(position, word)
             val posts = response.data
             LoadResult.Page(
                 data = posts,
