@@ -4,17 +4,27 @@ import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "Posts")
 data class Post(
+    @SerializedName("acceptgift")
     val acceptgift: Boolean = false,
+    @SerializedName("caption")
     val caption: String = "",
+    @SerializedName("disabled")
     val disabled: Boolean = false,
+    @SerializedName("id")
     @PrimaryKey val id: String = "",
+    @SerializedName("identifier")
     val identifier: String = "",
+    @SerializedName("location")
     val location: Location = Location(),
+    @SerializedName("profileid")
     val profileid: String = "",
+    @SerializedName("time")
     val time: String = "",
+    @SerializedName("uploadurls")
     val uploadurls: List<String> = arrayListOf()
 ) : Parcelable {
     constructor(parcel: Parcel) : this(

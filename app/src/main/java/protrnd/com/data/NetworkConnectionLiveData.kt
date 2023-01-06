@@ -55,12 +55,6 @@ class NetworkConnectionLiveData(val context: Context) : LiveData<Boolean>() {
         return connectivityManagerCallback
     }
 
-    //    private val networkReceiver = object : BroadcastReceiver() {
-//        override fun onReceive(context: Context, intent: Intent) {
-//            updateConnection()
-//        }
-//    }
-//
     private fun updateConnection() {
         val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
         postValue(activeNetwork?.isConnected == true)

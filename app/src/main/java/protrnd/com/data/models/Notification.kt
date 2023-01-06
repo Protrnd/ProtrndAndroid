@@ -4,18 +4,28 @@ import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "Notifications")
 data class Notification(
     @PrimaryKey
+    @SerializedName("id")
     val id: String,
+    @SerializedName("identifier")
     val identifier: String,
+    @SerializedName("item_id")
     val item_id: String,
+    @SerializedName("message")
     val message: String,
+    @SerializedName("receiverid")
     val receiverid: String,
+    @SerializedName("senderid")
     val senderid: String,
+    @SerializedName("time")
     val time: String,
+    @SerializedName("type")
     val type: String,
+    @SerializedName("viewed")
     val viewed: Boolean
 ) : Parcelable {
     constructor(parcel: Parcel) : this(

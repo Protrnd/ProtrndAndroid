@@ -60,7 +60,9 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
             if (following) {
                 lifecycleScope.launch {
                     when (viewModel.follow(profileId)) {
-                        is Resource.Success -> {}
+                        is Resource.Success -> {
+                            profile?.let { sendFollowNotification(it, currentUserProfile) }
+                        }
                         else -> {}
                     }
                 }
@@ -100,7 +102,7 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
             is Resource.Loading -> {}
             is Resource.Failure -> {
                 if (result.isNetworkError) {
-                    binding.root.snackbar("An error ") {
+                    binding.root.snackbar("An error occurred") {
                         lifecycleScope.launch { getProfileByName(usernameIntent) }
                     }
                 } else {
@@ -110,7 +112,6 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
             else -> {}
         }
     }
-
 
     private suspend fun getProfileById() {
         when (val result = viewModel.getProfileById(profileId)) {

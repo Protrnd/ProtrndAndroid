@@ -4,21 +4,34 @@ import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "Profiles")
 data class Profile(
+    @SerializedName("acctype")
     var acctype: String = "",
+    @SerializedName("bgimg")
     var bgimg: String = "",
+    @SerializedName("disabled")
     var disabled: Boolean = false,
+    @SerializedName("email")
     var email: String = "",
+    @SerializedName("fullname")
     var fullname: String = "",
     @PrimaryKey
+    @SerializedName("id")
     var id: String = "",
+    @SerializedName("identifier")
     var identifier: String = "",
+    @SerializedName("location")
     var location: String? = "",
+    @SerializedName("phone")
     var phone: String? = "",
+    @SerializedName("profileimg")
     var profileimg: String = "",
+    @SerializedName("regdate")
     var regdate: String = "",
+    @SerializedName("username")
     var username: String = ""
 ) : Parcelable {
     constructor(parcel: Parcel) : this(

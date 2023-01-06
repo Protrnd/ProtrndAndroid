@@ -24,20 +24,19 @@ class ProtrndAPIDataSource {
     ): API {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(
-                OkHttpClient.Builder()
-                    .addInterceptor { chain ->
-                        chain.proceed(chain.request().newBuilder().also {
-                            it.addHeader("Authorization", "Bearer $authToken")
-                        }.build())
+            .client(OkHttpClient.Builder()
+                .addInterceptor { chain ->
+                    chain.proceed(chain.request().newBuilder().also {
+                        it.addHeader("Authorization", "Bearer $authToken")
+                    }.build())
+                }
+                .also { client -> //Only needed during debugging
+                    if (BuildConfig.DEBUG) {
+                        val logging = HttpLoggingInterceptor()
+                        logging.setLevel(HttpLoggingInterceptor.Level.BODY)
+                        client.addInterceptor(logging)
                     }
-                    .also { client -> //Only needed during debugging
-                        if (BuildConfig.DEBUG) {
-                            val logging = HttpLoggingInterceptor()
-                            logging.setLevel(HttpLoggingInterceptor.Level.BODY)
-                            client.addInterceptor(logging)
-                        }
-                    }.build()
+                }.build()
             )
             .addConverterFactory(GsonConverterFactory.create())
             .build()

@@ -3,12 +3,14 @@ package protrnd.com.ui.post
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import protrnd.com.data.NetworkConnectionLiveData
 import protrnd.com.data.models.Post
 import protrnd.com.data.models.Profile
 import protrnd.com.data.network.api.PostApi
@@ -25,18 +27,11 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
     private var post: Post? = null
     private var postMap: HashMap<String, Post> = HashMap()
     private var postId = ""
+    private var isFromNotification = false
     private val otherProfileHash = HashMap<String, Profile>()
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
-        var isFromNotification = false
-        binding.navBackBtn.setOnClickListener {
-            if (isFromNotification)
-                startNewActivityFromAuth(HomeActivity::class.java)
-            else
-                finishActivity()
-        }
-
         if (intent != null && intent.extras != null) {
             val bundle = intent.extras!!
             postId = bundle.getString("post_id").toString()
@@ -45,10 +40,24 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
             }
         }
 
+        NetworkConnectionLiveData(this).observe(this) { isConnected ->
+            if (isConnected) {
+                lifecycleScope.launch {
+                    loadPostData()
+                }
+            } else {
+                Toast.makeText(this, "An Error Occurred", Toast.LENGTH_SHORT).show()
+                goBack()
+            }
+        }
+
+        binding.navBackBtn.setOnClickListener {
+            goBack()
+        }
+
         if (currentUserProfile.profileimg.isNotEmpty())
-            Glide.with(applicationContext).load(currentUserProfile.profileimg).diskCacheStrategy(
-                DiskCacheStrategy.ALL
-            ).circleCrop()
+            Glide.with(applicationContext).load(currentUserProfile.profileimg)
+                .diskCacheStrategy(DiskCacheStrategy.ALL).circleCrop()
                 .into(binding.navImage)
         binding.navName.text = currentUserProfile.username
 
@@ -62,10 +71,6 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
                 otherProfileHash["otherProfile"]!!,
                 currentUserProfile
             )
-        }
-
-        lifecycleScope.launch {
-            loadPostData()
         }
 
         binding.commentBtn.setOnClickListener {
@@ -101,42 +106,51 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
                         postMap["post"] = result
                         post = postMap["post"]
                         otherProfileHash["otherProfile"] = otherProfile.value.data
-                        binding.bindPostDetails(
-                            usernameTv = binding.username,
+                        bindPostDetails(
+                            tabLayout = binding.tabLayout,
                             fullnameTv = binding.fullname,
+                            usernameTv = binding.username,
                             locationTv = binding.location,
                             captionTv = binding.captionTv,
                             post = post!!,
                             profileImage = binding.postOwnerImage,
                             imagesPager = binding.imagesViewPager,
                             postOwnerProfile = otherProfile.value.data,
-                            tabLayout = binding.tabLayout,
                             timeText = binding.timeUploaded,
                             activity = this
                         )
                         binding.postResult.visible(true)
                         binding.shimmerLayout.visible(false)
                     }
-                    is Resource.Failure -> {
-                        binding.root.snackbar("An error occurred, please try again") { lifecycleScope.launch { loadPostData() } }
-                    }
-                    else -> {
+                    is Resource.Loading -> {
                         binding.postResult.visible(false)
                         binding.shimmerLayout.visible(true)
                     }
+                    else -> {
+                        binding.root.snackbar("An error occurred, please try again") { goBack() }
+                    }
                 }
             }
-            else -> {
+            is Resource.Loading -> {
                 binding.postResult.visible(false)
                 binding.shimmerLayout.visible(true)
+            }
+            else -> {
+                binding.root.snackbar("An error occurred, please try again") { goBack() }
             }
         }
 
         viewModel.setupLikes(
             postId,
-            this,
             binding.likesCount,
             binding.likeToggle
         )
+    }
+
+    private fun goBack() {
+        if (isFromNotification)
+            startNewActivityFromAuth(HomeActivity::class.java)
+        else
+            finishActivity()
     }
 }

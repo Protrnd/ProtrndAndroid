@@ -46,7 +46,7 @@ abstract class BaseActivity<B : ViewBinding, VM : ViewModel, R : BaseRepository>
         val factory = ViewModelFactory(getActivityRepository())
         viewModel = ViewModelProvider(this, factory)[getViewModel()]
         onViewReady(savedInstanceState, intent)
-        Thread.setDefaultUncaughtExceptionHandler { _, _ ->
+        Thread.setDefaultUncaughtExceptionHandler { _, e ->
             binding.root.handleUnCaughtException()
         }
     }

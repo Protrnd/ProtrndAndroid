@@ -22,7 +22,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel, HomeReposi
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
         val bundle = intent!!.extras
-        Thread.setDefaultUncaughtExceptionHandler { _, _ ->
+        Thread.setDefaultUncaughtExceptionHandler { _, e ->
             binding.root.handleUnCaughtException()
         }
         if (bundle != null && bundle.containsKey("post_id")) {

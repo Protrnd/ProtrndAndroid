@@ -35,10 +35,9 @@ class LoginFragment : BaseFragment<AuthViewModel, FragmentLoginBinding, AuthRepo
                     binding.loginBtn.enable(false)
                 }
                 is Resource.Success -> {
-                    viewModel.saveAndStartHomeFragment(
+                    saveAndStartHomeFragment(
                         it.value.data.toString(),
                         lifecycleScope,
-                        viewLifecycleOwner,
                         requireActivity(),
                         settingsPreferences
                     )

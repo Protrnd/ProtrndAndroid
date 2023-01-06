@@ -1,3 +1,10 @@
 package protrnd.com.data.models
 
-data class Login(var email: String, var password: String)
+import com.google.gson.annotations.SerializedName
+
+data class Login(
+    @SerializedName("email")
+    var email: String,
+    @SerializedName("password")
+    var password: String
+)

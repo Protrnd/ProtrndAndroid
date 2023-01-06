@@ -99,16 +99,16 @@ class NewPromotionActivity :
         val adapter = SelectedLocationAdapter(selectedLocations)
         binding.locationRv.adapter = adapter
         binding.resultsView.visible(true)
-        binding.bindPostDetails(
-            usernameTv = binding.promotionsUsername,
+        bindPostDetails(
+            tabLayout = binding.tabLayout,
             fullnameTv = binding.fullname,
-            captionTv = binding.promotionsCaptionTv,
+            usernameTv = binding.promotionsUsername,
             locationTv = binding.promotionsLocation,
-            imagesPager = binding.promotionsImagesViewPager,
-            postOwnerProfile = currentUserProfile,
+            captionTv = binding.promotionsCaptionTv,
             post = post,
             profileImage = binding.promotionsPostOwnerImage,
-            tabLayout = binding.tabLayout,
+            imagesPager = binding.promotionsImagesViewPager,
+            postOwnerProfile = currentUserProfile,
             timeText = binding.promotionTimeUploaded,
             activity = this
         )

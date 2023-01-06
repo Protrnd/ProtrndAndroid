@@ -118,7 +118,6 @@ class HashTagResultsActivity :
                     if (isNetworkAvailable())
                         viewModel.setupLikes(
                             postData.id,
-                            this@HashTagResultsActivity,
                             holder.view.likesCount,
                             holder.view.likeToggle
                         )

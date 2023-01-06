@@ -20,16 +20,16 @@ class PostsViewHolder(val view: PostItemBinding) : RecyclerView.ViewHolder(view.
         currentProfile: Profile
     ) {
         //loads image from network using coil extension function
-        view.bindPostDetails(
-            usernameTv = view.username,
+        bindPostDetails(
+            tabLayout = view.tabLayout,
             fullnameTv = view.fullname,
+            usernameTv = view.username,
             locationTv = view.location,
             captionTv = view.captionTv,
             post = item,
             profileImage = view.postOwnerImage,
             imagesPager = view.imagesViewPager,
             postOwnerProfile = postOwnerProfile,
-            tabLayout = view.tabLayout,
             timeText = view.timeUploaded,
             activity = activity
         )

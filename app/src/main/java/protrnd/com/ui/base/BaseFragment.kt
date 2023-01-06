@@ -1,7 +1,6 @@
 package protrnd.com.ui.base
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,7 +34,6 @@ abstract class BaseFragment<VM : ViewModel, B : ViewBinding, R : BaseRepository>
         val factory = ViewModelFactory(getFragmentRepository())
         viewModel = ViewModelProvider(this, factory)[getViewModel()]
         Thread.setDefaultUncaughtExceptionHandler { _, e ->
-            e.localizedMessage?.let { Log.i("EREOE", it.toString()) }
             binding.root.handleUnCaughtException()
         }
         return binding.root

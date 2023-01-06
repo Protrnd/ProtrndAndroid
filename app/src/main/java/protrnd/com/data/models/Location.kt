@@ -2,11 +2,15 @@ package protrnd.com.data.models
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
 import java.util.*
 
 data class Location(
+    @SerializedName("cities")
     val cities: List<String> = arrayListOf(),
+    @SerializedName("id")
     val id: String = UUID.randomUUID().toString(),
+    @SerializedName("state")
     val state: String = ""
 ) : Parcelable {
     constructor(parcel: Parcel) : this(

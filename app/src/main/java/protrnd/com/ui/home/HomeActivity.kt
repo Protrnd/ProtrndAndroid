@@ -6,9 +6,11 @@ import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -18,6 +20,12 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.messaging.FirebaseMessaging
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.DexterBuilder
+import com.karumi.dexter.MultiplePermissionsReport
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import protrnd.com.R
 import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.network.api.PostApi
@@ -37,6 +45,11 @@ import protrnd.com.ui.visible
 class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeRepository>() {
 
     var lmState: Parcelable? = null
+    private lateinit var dexter: DexterBuilder
+    private var resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            dexter.check()
+        }
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
@@ -55,6 +68,34 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
         t.add(R.id.fragmentContainerView, profileFragment, "P")
         t.add(R.id.fragmentContainerView, homeFragment, "H")
         t.commit()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            dexter = Dexter.withContext(this)
+                .withPermissions(
+                    Manifest.permission.POST_NOTIFICATIONS
+                ).withListener(object : MultiplePermissionsListener {
+                    override fun onPermissionsChecked(report: MultiplePermissionsReport) {
+                        report.let {
+                            if (!report.areAllPermissionsGranted()) {
+                                val requestNotificationIntent =
+                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        val uri = Uri.fromParts("package", packageName, null)
+                                        data = uri
+                                    }
+                                resultLauncher.launch(requestNotificationIntent)
+                            }
+                        }
+                    }
+
+                    override fun onPermissionRationaleShouldBeShown(
+                        permissions: MutableList<PermissionRequest>?,
+                        token: PermissionToken?
+                    ) {
+                        token?.continuePermissionRequest()
+                    }
+                })
+            dexter.check()
+        }
 
         chipNavigationBar.setItemSelected(R.id.home)
         chipNavigationBar.setOnItemSelectedListener {

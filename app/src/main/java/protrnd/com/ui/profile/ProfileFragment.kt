@@ -148,14 +148,9 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         }
 
         NetworkConnectionLiveData(context ?: return)
-            .observe(viewLifecycleOwner) { isConnected ->
-                if (!isConnected) {
-                    loadView()
-                    return@observe
-                }
+            .observe(viewLifecycleOwner) {
                 loadView()
             }
-
 
         loadingDialog = Dialog(requireContext())
         loadingDialog.setCanceledOnTouchOutside(false)
@@ -238,12 +233,13 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         val username = "@${thisActivity.currentUserProfile.username}"
         binding.profileUsername.text = username
         if (thisActivity.currentUserProfile.profileimg.isNotEmpty())
-            Glide.with(this)
-                .load(thisActivity.currentUserProfile.profileimg).circleCrop()
+            Glide.with(requireActivity())
+                .load(thisActivity.currentUserProfile.profileimg)
+                .circleCrop()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(binding.profileImage)
         if (thisActivity.currentUserProfile.bgimg.isNotEmpty())
-            Glide.with(this)
+            Glide.with(requireActivity())
                 .load(thisActivity.currentUserProfile.bgimg)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(binding.bgImage)
@@ -260,18 +256,20 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
                 viewModel,
                 thisActivity.currentUserProfile
             )
-            binding.postsRv.showUserPostsInGrid(
-                requireContext(), viewModel,
-                thisActivity.currentUserProfile
-            )
-            val thumbnailAdapter = binding.postsRv.adapter as ImageThumbnailPostAdapter
-            thumbnailAdapter.imageClickListener(object : ImagePostItemClickListener {
-                override fun postItemClickListener(post: Post) {
-                    startActivity(Intent(requireContext(), PostActivity::class.java).apply {
-                        this.putExtra("post_id", post.identifier)
-                    })
-                }
-            })
+            if (requireActivity().isNetworkAvailable()) {
+                binding.postsRv.showUserPostsInGrid(
+                    requireContext(), viewModel,
+                    thisActivity.currentUserProfile
+                )
+                val thumbnailAdapter = binding.postsRv.adapter as ImageThumbnailPostAdapter
+                thumbnailAdapter.imageClickListener(object : ImagePostItemClickListener {
+                    override fun postItemClickListener(post: Post) {
+                        startActivity(Intent(requireContext(), PostActivity::class.java).apply {
+                            this.putExtra("post_id", post.identifier)
+                        })
+                    }
+                })
+            }
         }
     }
 }

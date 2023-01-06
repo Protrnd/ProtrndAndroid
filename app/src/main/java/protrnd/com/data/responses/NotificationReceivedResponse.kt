@@ -6,12 +6,14 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.media.RingtoneManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import protrnd.com.R
+import protrnd.com.ui.home.HomeActivity
 import protrnd.com.ui.post.PostActivity
 import java.lang.Integer.MAX_VALUE
 import java.util.*
@@ -25,7 +27,7 @@ class NotificationReceivedResponse : FirebaseMessagingService() {
                 message.notification!!.title.toString(),
                 message.notification!!.body.toString(),
                 message.data["type"]!!,
-                message.data["id"]!!
+                message.data["post_id"]!!
             )
         }
     }
@@ -36,9 +38,15 @@ class NotificationReceivedResponse : FirebaseMessagingService() {
         action: String,
         id: String
     ) {
-        val intent = Intent(this, PostActivity::class.java).apply {
-            putExtra("post_id", id)
-            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val intent = if (action == "Post") {
+            Intent(this, PostActivity::class.java).apply {
+                putExtra("post_id", id)
+                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            }
+        } else {
+            Intent(this, HomeActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            }
         }
 
         val requestCode = Date().time / 1000L % MAX_VALUE
@@ -53,14 +61,12 @@ class NotificationReceivedResponse : FirebaseMessagingService() {
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.drawable.notification_received_ic)
-            .setColor(resources.getColor(R.color.app_blue))
+            .setColor(Color.parseColor("#2D264B"))
             .setContentTitle(title)
             .setContentText(messageBody)
             .setAutoCancel(true)
             .setSound(defaultSoundUri)
-
-        if (action == "Post")
-            notificationBuilder.setContentIntent(pendingIntent)
+            .setContentIntent(pendingIntent)
 
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

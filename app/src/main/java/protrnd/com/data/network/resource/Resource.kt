@@ -3,7 +3,7 @@ package protrnd.com.data.network.resource
 import okhttp3.ResponseBody
 
 sealed class Resource<out T>(
-    val data: T? = null,
+    var data: @UnsafeVariance T? = null,
     val error: Throwable? = null
 ) {
     data class Success<out T>(val value: T) : Resource<T>(value)

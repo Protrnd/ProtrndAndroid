@@ -31,6 +31,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.Window
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatToggleButton
 import androidx.appcompat.widget.Toolbar
@@ -43,7 +44,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.CompositePageTransformer
 import androidx.viewpager2.widget.MarginPageTransformer
 import androidx.viewpager2.widget.ViewPager2
@@ -72,7 +72,6 @@ import protrnd.com.databinding.ConfirmationLayoutBinding
 import protrnd.com.ui.adapter.CommentsAdapter
 import protrnd.com.ui.adapter.ImageThumbnailPostAdapter
 import protrnd.com.ui.adapter.PostImagesAdapter
-import protrnd.com.ui.auth.AuthViewModel
 import protrnd.com.ui.auth.AuthenticationActivity
 import protrnd.com.ui.auth.LoginFragment
 import protrnd.com.ui.home.HomeActivity
@@ -135,33 +134,33 @@ fun String.setSpannableBold(section: String, start: Int = 0): Spannable {
     return span
 }
 
-fun HomeViewModel.getProfile() {
+suspend fun HomeViewModel.getProfile() {
     this.getCurrentProfile()
 }
 
-fun AuthViewModel.saveAndStartHomeFragment(
+fun saveAndStartHomeFragment(
     token: String,
     scope: CoroutineScope,
-    lifecycleOwner: LifecycleOwner,
     activity: Activity,
     preferences: SettingsPreferences
 ) {
-    scope.launch {
-        this@saveAndStartHomeFragment.saveAuthToken(token)
-    }
     val api = ProtrndAPIDataSource().buildAPI(ProfileApi::class.java, token)
     val postsApi = ProtrndAPIDataSource().buildAPI(PostApi::class.java, token)
     val lvm = HomeViewModel(HomeRepository(api, postsApi))
-    lvm.getProfile()
-    lvm.profile.observe(lifecycleOwner) { profileResponse ->
-        when (profileResponse) {
+
+    scope.launch {
+        when (val profileResponse = lvm.getCurrentProfile()) {
             is Resource.Success -> {
                 scope.launch {
+                    preferences.saveAuthToken(token)
                     preferences.saveProfile(profileResponse.value.data)
                     activity.startNewActivityFromAuth(HomeActivity::class.java)
                 }
             }
-            else -> {}
+            is Resource.Failure -> {
+            }
+            else -> {
+            }
         }
     }
 }
@@ -186,47 +185,35 @@ fun String.setSpannableColor(section: String, start: Int = 0): Spannable {
 
 suspend fun HomeViewModel.setupLikes(
     postId: String,
-    lifecycleOwner: LifecycleOwner,
     likesCountTv: TextView,
     likeToggle: AppCompatToggleButton
 ) {
-    when (val likesCount = this.getLikesCount(postId)) {
-        is Resource.Success -> {
-            withContext(Dispatchers.Main) {
-                val count = likesCount.value.data as Double
-                val likes =
-                    if (count > 1) "${count.toInt()} likes" else "${count.toInt()} like"
-                likesCountTv.text = likes
-            }
-        }
-        else -> {}
+    val likesCount = this.getLikesCount(postId)
+    withContext(Dispatchers.Main) {
+        val count = likesCount.data!!.data as Double
+        val likes =
+            if (count > 1) "${count.toInt()} likes" else "${count.toInt()} like"
+        likesCountTv.text = likes
     }
 
     val isLiked = this.postIsLiked(postId)
     withContext(Dispatchers.Main) {
-        isLiked.observe(lifecycleOwner) {
-            when (it) {
-                is Resource.Success -> {
-                    likeToggle.isChecked = it.value.data
-                }
-                else -> {}
-            }
-        }
+        likeToggle.isChecked = isLiked.data!!.data
     }
 }
 
-fun sendCommentNotification(otherProfileName: Profile, currentProfile: Profile, id: String) {
-    val title = "Hi ${otherProfileName.username}"
+fun sendCommentNotification(otherProfile: Profile, currentProfile: Profile, id: String) {
+    val title = "Hi ${otherProfile.username}"
     val body = "${currentProfile.username} just commented on your post"
     val notificationData = NotificationData(currentProfile.username, "Post", id, body)
-    sendNotification(otherProfileName, title, notificationData)
+    sendNotification(otherProfile, title, notificationData)
 }
 
-fun sendLikeNotification(otherProfileName: Profile, currentProfile: Profile, id: String) {
-    val title = "Hi ${otherProfileName.username}"
+fun sendLikeNotification(otherProfile: Profile, currentProfile: Profile, id: String) {
+    val title = "Hi ${otherProfile.username}"
     val body = "${currentProfile.username} just liked your post"
     val notificationData = NotificationData(currentProfile.username, "Post", id, body)
-    sendNotification(otherProfileName, title, notificationData)
+    sendNotification(otherProfile, title, notificationData)
 }
 
 fun sendUploadNotification(currentProfile: Profile, id: String) {
@@ -237,6 +224,13 @@ fun sendUploadNotification(currentProfile: Profile, id: String) {
         "Error uploading"
     val notificationData = NotificationData(currentProfile.username, "Upload", id, body)
     sendNotification(currentProfile, title, notificationData)
+}
+
+fun sendFollowNotification(otherProfile: Profile, currentProfile: Profile) {
+    val title = "Hi ${otherProfile.username}"
+    val body = "${currentProfile.username} just followed you"
+    val notificationData = NotificationData(currentProfile.username, "Follow", "", body)
+    sendNotification(otherProfile, title, notificationData)
 }
 
 inline fun <reified T : Parcelable> Intent.getParcelableArrayList(key: String): ArrayList<T>? =
@@ -283,20 +277,12 @@ fun likePost(
     currentUserProfile: Profile
 ) {
     val liked = likeToggle.isChecked
-    var likesResult = likesCount.text.toString()
-    likesResult = if (likesResult.contains("likes"))
-        likesResult.replace(" likes", "")
-    else
-        likesResult.replace(" like", "")
-    var count = likesResult.toInt()
     scope.launch {
         if (liked) {
-            count += 1
-            val likes = if (count > 1) "$count likes" else "$count like"
-            likesCount.text = likes
             when (viewModel.likePost(postId)) {
                 is Resource.Success -> {
                     withContext(Dispatchers.Main) {
+                        viewModel.setupLikes(postId, likesCount, likeToggle)
                         if (otherProfile != currentUserProfile)
                             sendLikeNotification(
                                 otherProfile,
@@ -304,15 +290,15 @@ fun likePost(
                                 postId
                             )
                     }
+
                 }
                 else -> {}
             }
         } else {
-            count -= 1
-            val likes = if (count > 1) "$count likes" else "$count like"
-            likesCount.text = likes
             when (viewModel.unlikePost(postId)) {
-                is Resource.Success -> {}
+                is Resource.Success -> {
+                    viewModel.setupLikes(postId, likesCount, likeToggle)
+                }
                 else -> {}
             }
         }
@@ -421,7 +407,8 @@ private fun HomeViewModel.loadComments(postId: String) {
     this.getComments(postId)
 }
 
-fun ViewBinding.bindPostDetails(
+@RequiresApi(Build.VERSION_CODES.O)
+fun bindPostDetails(
     tabLayout: TabLayout,
     fullnameTv: TextView,
     usernameTv: TextView,
@@ -442,14 +429,12 @@ fun ViewBinding.bindPostDetails(
         captionTv.text = caption
         captionTv.setTags(postOwnerProfile.username, activity)
 
-
         if (postOwnerProfile.profileimg.isNotEmpty()) {
-            Glide.with(this.root.context)
+            Glide.with(profileImage)
                 .load(postOwnerProfile.profileimg)
                 .placeholder(R.drawable.default_profile_ic)
                 .circleCrop()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .error(R.drawable.default_profile_ic)
                 .into(profileImage)
         }
     }
@@ -626,12 +611,12 @@ fun View.snackbar(message: String, action: (() -> Unit)? = null) {
     snackbar.show()
 }
 
-fun reload(action: (() -> Unit)? = null) {
-    action.let {
-        if (it != null)
-            it()
-    }
-}
+//fun reload(action: (() -> Unit)? = null) {
+//    action.let {
+//        if (it != null)
+//            it()
+//    }
+//}
 
 fun View.visible(isVisible: Boolean) {
     visibility = if (isVisible) View.VISIBLE else View.GONE
@@ -640,6 +625,10 @@ fun View.visible(isVisible: Boolean) {
 fun View.enable(enabled: Boolean) {
     isEnabled = enabled
     alpha = if (enabled) 1f else 0.5f
+}
+
+interface RecyclerViewReadyCallback {
+    fun onLayoutReady()
 }
 
 fun Fragment.handleAPIError(failure: Resource.Failure, retry: (() -> Unit)? = null) {
@@ -660,7 +649,11 @@ fun Fragment.handleAPIError(failure: Resource.Failure, retry: (() -> Unit)? = nu
         }
         else -> {
             val error = Gson().fromJson(failure.errorBody?.string(), BasicResponseBody::class.java)
-            requireView().snackbar(error.message)
+            if (this is LoginFragment && failure.errorCode == 404) {
+                requireView().snackbar("Account does not exist please sign up!")
+            } else {
+                requireView().snackbar(error.message)
+            }
         }
     }
 }
@@ -737,6 +730,7 @@ fun String.formatNumber(): String {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun String.getAgo(): CharSequence {
     val pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
     val sdf = SimpleDateFormat(pattern, Locale.ENGLISH)

@@ -22,7 +22,7 @@ import protrnd.com.data.pagingsource.PostsPagingSource
 class HomeRepository(
     private val api: ProfileApi,
     private val postsApi: PostApi,
-    db: PostDatabase? = null,
+    val db: PostDatabase? = null,
     profileDatabase: ProfileDatabase? = null
 ) :
     BaseRepository() {
@@ -36,10 +36,26 @@ class HomeRepository(
         pagingSourceFactory = { PostsPagingSource(postsApi) }
     ).liveData
 
+//    fun getPostsPageNetworkResource() = networkBoundResource(
+//        query = { postDao.getAllPosts() },
+//        fetch = {
+//            delay(2000)
+//            getPostsPage()
+//        },
+//        saveFetchResult = {
+//            db?.withTransaction {
+//                postDao.deleteAllPosts()
+////                postDao.insertPosts()
+//            }
+//        }
+//    )
+
     fun getHashTagPage(word: String) = Pager(
         config = PagingConfig(pageSize = 10, maxSize = 100, enablePlaceholders = false),
         pagingSourceFactory = { HashTagsPagingSource(postsApi, word) }
     ).liveData
+
+    fun retry() = PostsPagingSource(postsApi).invalidate()
 
     suspend fun savePostResult(posts: List<Post>) {
         postDao?.deleteAllPosts()

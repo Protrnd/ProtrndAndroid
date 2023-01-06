@@ -23,7 +23,6 @@ class ImageListViewHolder(val view: PostImageItemBinding) : RecyclerView.ViewHol
     fun bind(imageUrl: String) {
         Glide.with(view.postImage).load(imageUrl)
             .placeholder(R.color.black)
-            .error(R.color.black)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(view.postImage)
         if (imageUrl.contains(".mp4"))
@@ -39,6 +38,22 @@ class ImageListViewHolder(val view: PostImageItemBinding) : RecyclerView.ViewHol
                 binding.videoView.setVideoPath(imageUrl)
                 binding.videoView.isDrawingCacheEnabled = true
                 binding.videoView.start()
+                var isPlaying = true
+                binding.videoView.setOnClickListener {
+                    if (isPlaying) {
+                        isPlaying = false
+                        binding.videoView.pause()
+                    } else {
+                        isPlaying = true
+                        binding.videoView.resume()
+                    }
+                }
+                binding.videoView.setOnCompletionListener {
+                    binding.videoView.stopPlayback()
+                    binding.videoView.clearFocus()
+                    bottomSheet.dismiss()
+                    this.itemView.showSystemUI((this.itemView.context as Activity).window)
+                }
                 binding.closeVideo.setOnClickListener {
                     binding.videoView.stopPlayback()
                     binding.videoView.clearFocus()

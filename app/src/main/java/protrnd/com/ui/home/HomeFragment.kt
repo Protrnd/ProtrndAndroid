@@ -4,21 +4,17 @@ import android.app.Dialog
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.Window
+import android.os.Handler
+import android.os.Looper
+import android.view.*
 import android.widget.Toast
-import androidx.lifecycle.Observer
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import protrnd.com.data.NetworkConnectionLiveData
 import protrnd.com.data.models.Location
 import protrnd.com.data.models.Post
@@ -42,6 +38,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     private lateinit var dialog: Dialog
     private val locationHash = HashMap<String, List<String>>()
     private lateinit var thisActivity: HomeActivity
+    private lateinit var recyclerViewReadyCallback: RecyclerViewReadyCallback
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -49,44 +46,50 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
         postsLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         binding.postsRv.layoutManager = postsLayoutManager
+        if (thisActivity.lmState != null) {
+            binding.postsRv.layoutManager!!.onRestoreInstanceState(thisActivity.lmState)
+            thisActivity.lmState = null
+        }
+
         binding.postsRv.apply {
             adapter = PostsPagingAdapter()
             this@HomeFragment.adapter = adapter as PostsPagingAdapter
         }
-        if (thisActivity.lmState != null)
-            binding.postsRv.layoutManager!!.onRestoreInstanceState(thisActivity.lmState)
 
-        binding.postsRv.post {
-            NetworkConnectionLiveData(context ?: return@post)
-                .observe(viewLifecycleOwner, Observer { isConnected ->
-                    if (!isConnected) {
-                        if (!snapshotExists()) {
-                            getStoredDataFromLocalDB()
-                            setupRecyclerView()
-                        }
-                        return@Observer
-                    }
-                    setupData()
+        recyclerViewReadyCallback = object : RecyclerViewReadyCallback {
+            override fun onLayoutReady() {
+                if (!snapshotExists())
                     setupRecyclerView()
-                    adapter.refresh()
-                })
-        }
-
-        binding.root.setOnRefreshListener {
-            if (binding.root.isRefreshing) {
-                if (thisActivity.isNetworkAvailable()) {
-                    adapter.notifyDataSetChanged()
-                } else {
-                    binding.root.snackbar("Please check your network connection")
-                }
-                binding.root.isRefreshing = false
             }
         }
 
-//        binding.postsRv.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
-//            val cp = postsLayoutManager.findFirstVisibleItemPosition()
-//            Log.i("CP",cp.toString())
-//        }
+        binding.postsRv.viewTreeObserver.addOnGlobalLayoutListener(object :
+            ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                recyclerViewReadyCallback.onLayoutReady()
+                binding.postsRv.viewTreeObserver.removeOnGlobalLayoutListener(this)
+            }
+        })
+
+        if (requireActivity().isNetworkAvailable()) {
+            setupData()
+        } else {
+            getStoredDataFromLocalDB()
+        }
+
+        binding.root.setOnRefreshListener {
+            if (thisActivity.isNetworkAvailable()) {
+                adapter.notifyDataSetChanged()
+            } else {
+                binding.root.snackbar("Please check your network connection")
+            }
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (binding.root.isRefreshing) {
+                    binding.root.isRefreshing = false
+                }
+            }, 3000)
+        }
 
         dialog = Dialog(requireContext())
         val locationPickerBinding = LocationPickerBinding.inflate(layoutInflater)
@@ -163,6 +166,9 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
                 userName = thisActivity.currentUserProfile.username
             )
         )
+        lifecycleScope.launch {
+            settingsPreferences.saveProfile(thisActivity.currentUserProfile)
+        }
     }
 
     private fun loadPage() {
@@ -172,14 +178,9 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
         lifecycleScope.launch { requestPosts() }
     }
 
-    private suspend fun requestPosts() {
-        withContext(Dispatchers.Main) {
-            viewModel.getPostByPage().observe(viewLifecycleOwner) {
-                binding.shimmerLayout.stopShimmerAnimation()
-                binding.shimmerLayout.visible(false)
-                binding.postsRv.visible(true)
-                adapter.submitData(viewLifecycleOwner.lifecycle, it)
-            }
+    private fun requestPosts() {
+        viewModel.getPostByPage().observe(viewLifecycleOwner) {
+            adapter.submitData(viewLifecycleOwner.lifecycle, it)
         }
     }
 
@@ -190,13 +191,26 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     private fun setupRecyclerView() {
         adapter.setupRecyclerResults(object : PostsPagingAdapter.SetupRecyclerResultsListener {
             override fun setupLikes(holder: PostsViewHolder, postData: Post) {
-                lifecycleScope.launch { setupPostLikes(holder, postData) }
+                NetworkConnectionLiveData(context ?: return)
+                    .observe(viewLifecycleOwner) { isConnected ->
+                        if (isConnected) {
+                            lifecycleScope.launch {
+                                setupPostLikes(holder, postData)
+                            }
+                        }
+                    }
             }
 
             override fun setupData(holder: PostsViewHolder, postData: Post) {
-                lifecycleScope.launch {
-                    setupPosts(holder, postData)
-                }
+                NetworkConnectionLiveData(context ?: return)
+                    .observe(viewLifecycleOwner) {
+                        lifecycleScope.launch {
+                            setupPosts(holder, postData)
+                        }
+                        binding.shimmerLayout.stopShimmerAnimation()
+                        binding.shimmerLayout.visible(false)
+                        binding.postsRv.visible(true)
+                    }
             }
 
             override fun showCommentSection(postData: Post) {
@@ -249,17 +263,14 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     private fun getStoredDataFromLocalDB() {
         viewModel.getSavedPosts()?.asLiveData()?.observe(viewLifecycleOwner) { saved ->
             if (saved.isNotEmpty()) {
-                binding.shimmerLayout.stopShimmerAnimation()
-                binding.shimmerLayout.visible(false)
-                binding.postsRv.visible(true)
                 adapter.submitData(viewLifecycleOwner.lifecycle, PagingData.from(saved))
             }
         }
     }
 
     override fun onPause() {
-        super.onPause()
         savePosts()
+        super.onPause()
     }
 
     private fun savePosts() {
@@ -267,8 +278,8 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
             val postItems = adapter.snapshot().items
             if (postItems.isNotEmpty())
                 viewModel.savePosts(postItems)
-            thisActivity.lmState = postsLayoutManager.onSaveInstanceState()!!
         }
+        thisActivity.lmState = postsLayoutManager.onSaveInstanceState()!!
     }
 
     private fun snapshotExists(): Boolean {
@@ -334,7 +345,6 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     suspend fun setupPostLikes(holder: PostsViewHolder, postData: Post) {
         viewModel.setupLikes(
             postData.id,
-            viewLifecycleOwner,
             holder.view.likesCount,
             holder.view.likeToggle
         )

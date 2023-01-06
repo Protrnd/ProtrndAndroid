@@ -13,7 +13,10 @@ import protrnd.com.data.models.Profile
 import protrnd.com.data.models.ProfileDTO
 import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.HomeRepository
-import protrnd.com.data.responses.*
+import protrnd.com.data.responses.BasicResponseBody
+import protrnd.com.data.responses.GetCommentsResponseBody
+import protrnd.com.data.responses.GetLocationResponseBody
+import protrnd.com.data.responses.ProfileResponseBody
 
 class HomeViewModel(
     private val repository: HomeRepository
@@ -34,10 +37,7 @@ class HomeViewModel(
     val comments: LiveData<Resource<GetCommentsResponseBody>>
         get() = _comments
 
-    fun getCurrentProfile() = viewModelScope.launch {
-        _profile.value = Resource.Loading()
-        _profile.value = repository.getCurrentProfile()
-    }
+    suspend fun getCurrentProfile() = repository.getCurrentProfile()
 
     fun updateProfile(profileDTO: ProfileDTO) = viewModelScope.launch {
         _profile.value = Resource.Loading()
@@ -47,6 +47,8 @@ class HomeViewModel(
     fun getProfile(id: String) = repository.getProfile(id)
 
     fun getPostByPage() = repository.getPostsPage().cachedIn(viewModelScope)
+
+    fun retry() = repository.retry()
 
     suspend fun savePosts(posts: List<Post>) = repository.savePostResult(posts)
 
@@ -66,12 +68,7 @@ class HomeViewModel(
 
     suspend fun likePost(id: String) = repository.likePost(id)
 
-    suspend fun postIsLiked(id: String): LiveData<Resource<LikeResponseBody>> {
-        val postIsLikedI: MutableLiveData<Resource<LikeResponseBody>> = MutableLiveData()
-        val postIsLiked: LiveData<Resource<LikeResponseBody>> = postIsLikedI
-        postIsLikedI.postValue(repository.isPostLiked(id))
-        return postIsLiked
-    }
+    suspend fun postIsLiked(id: String) = repository.isPostLiked(id)
 
     suspend fun unlikePost(id: String) = repository.unlikePost(id)
 

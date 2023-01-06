@@ -9,6 +9,7 @@ import protrnd.com.databinding.PostItemBinding
 import protrnd.com.ui.viewholder.PostsViewHolder
 
 class PostsPagingAdapter : PagingDataAdapter<Post, PostsViewHolder>(PostComparator()) {
+    private var recyclerResultsListener: SetupRecyclerResultsListener? = null
 
     class PostComparator : DiffUtil.ItemCallback<Post>() {
         override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean =
@@ -16,8 +17,6 @@ class PostsPagingAdapter : PagingDataAdapter<Post, PostsViewHolder>(PostComparat
 
         override fun areContentsTheSame(oldItem: Post, newItem: Post): Boolean = oldItem == newItem
     }
-
-    private var recyclerResultsListener: SetupRecyclerResultsListener? = null
 
     interface SetupRecyclerResultsListener {
         fun setupLikes(holder: PostsViewHolder, postData: Post)
