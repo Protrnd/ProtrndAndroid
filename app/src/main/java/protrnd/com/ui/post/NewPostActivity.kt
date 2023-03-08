@@ -64,8 +64,6 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
             val outputUri = input[1]
 
             val uCrop = UCrop.of(inputUri, outputUri)
-                .withAspectRatio(4f, 3f)
-                .withMaxResultSize(1920, 1440)
             return uCrop.getIntent(context)
         }
 

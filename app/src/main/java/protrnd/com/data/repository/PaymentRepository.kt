@@ -1,3 +1,5 @@
 package protrnd.com.data.repository
 
-class PaymentRepository : BaseRepository()
+class PaymentRepository : BaseRepository() {
+
+}

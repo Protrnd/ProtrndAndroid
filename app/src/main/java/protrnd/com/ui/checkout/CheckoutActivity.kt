@@ -42,7 +42,6 @@ class CheckoutActivity :
             val expiryYear = cardExpiryArray[1].toInt()
 
             val card = Card(cardNumber, expiryMonth, expiryYear, cvv)
-
             val charge = Charge()
             charge.amount = amount
             charge.email = currentUserProfile.email

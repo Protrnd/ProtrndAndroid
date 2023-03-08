@@ -79,7 +79,8 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
 
         binding.root.setOnRefreshListener {
             if (thisActivity.isNetworkAvailable()) {
-                adapter.notifyDataSetChanged()
+                adapter.submitData(lifecycle, PagingData.empty())
+                requestPosts()
             } else {
                 binding.root.snackbar("Please check your network connection")
             }
