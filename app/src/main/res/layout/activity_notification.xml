@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context=".ui.notification.NotificationActivity">
 
@@ -11,35 +12,24 @@
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:elevation="20dp">
-
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/app_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/notifications_tabs"
+            android:layout_width="wrap_content"
+            style="@style/AppTabLayout"
+            android:minWidth="250dp"
+            app:tabIndicatorHeight="4dp"
+            app:tabIndicatorColor="@color/main_pink"
+            app:tabSelectedTextColor="@color/black"
+            app:tabTextColor="@color/main_grey"
+            android:layout_height="wrap_content"/>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/nested_scroll"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/notifications_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
-
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/notification_recycler"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingBottom="50dp" />
-
-            <!--            <ProgressBar-->
-            <!--                android:id="@+id/progress_bar"-->
-            <!--                android:layout_width="wrap_content"-->
-            <!--                android:layout_height="wrap_content"-->
-            <!--                android:layout_gravity="center" />-->
-        </androidx.appcompat.widget.LinearLayoutCompat>
-    </androidx.core.widget.NestedScrollView>
+        android:layout_height="match_parent"/>
 </androidx.appcompat.widget.LinearLayoutCompat>

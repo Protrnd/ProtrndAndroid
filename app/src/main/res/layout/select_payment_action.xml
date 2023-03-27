@@ -26,7 +26,7 @@
                 android:fontFamily="@font/dm_sans_medium"
                 android:gravity="start"
                 android:text="@string/send_or_receive"
-                android:textColor="@color/app_blue"
+                android:textColor="@color/black"
                 android:textSize="15sp" />
 
             <GridLayout
@@ -63,7 +63,7 @@
                         android:fontFamily="@font/dm_sans_bold"
                         android:gravity="center"
                         android:text="@string/receive"
-                        android:textColor="@color/app_blue"
+                        android:textColor="@color/black"
                         android:textSize="20sp" />
                 </LinearLayout>
 
@@ -93,7 +93,7 @@
                         android:fontFamily="@font/dm_sans_bold"
                         android:gravity="center"
                         android:text="@string/send"
-                        android:textColor="@color/app_blue"
+                        android:textColor="@color/black"
                         android:textSize="20sp" />
                 </LinearLayout>
             </GridLayout>

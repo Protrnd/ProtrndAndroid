@@ -24,7 +24,6 @@ class NotificationAdapter(
     val activity: Activity,
     val lifecycleOwner: LifecycleOwner
 ) : PagingDataAdapter<Notification, NotificationsViewHolder>(NotificationComparator()) {
-
     class NotificationComparator : DiffUtil.ItemCallback<Notification>() {
         override fun areItemsTheSame(oldItem: Notification, newItem: Notification): Boolean =
             oldItem.id == newItem.id

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
+    <color name="main_grey">#8E8E8E</color>
+    <color name="light_grey">#EBEBEB</color>
+    <color name="dark_grey">#474552</color>
+    <color name="lightest_grey">#F5F5F5</color>
+    <color name="main_purple">#2D264B</color>
+    <color name="main_pink">#E02A45</color>
+    <color name="weird">#A33B4A</color>
+    <color name="bright_pink">#FADCE0</color>
+    <color name="black">#13101F</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="shimmer_color">#F6F6F6</color>
-    <color name="app_background">#FAFAFA</color>
-    <color name="app_blue">#2D264B</color>
-    <color name="pink_light">#FBE6E9</color>
-    <color name="pink_dark">#E02A45</color>
+    <color name="success">#1CC900</color>
+    <color name="error">#FF0C08</color>
 </resources>

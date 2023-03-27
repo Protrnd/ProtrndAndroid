@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.github.satoshun.coroutine.autodispose.lifecycle.autoDisposeScope
+import com.google.android.material.tabs.TabLayoutMediator
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -36,6 +37,7 @@ import protrnd.com.databinding.LoadingLayoutBinding
 import protrnd.com.databinding.SelectImageDialogBinding
 import protrnd.com.ui.*
 import protrnd.com.ui.adapter.ImageThumbnailPostAdapter
+import protrnd.com.ui.adapter.ProfileTabsAdapter
 import protrnd.com.ui.adapter.listener.ImagePostItemClickListener
 import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.home.HomeActivity
@@ -49,73 +51,73 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
     private lateinit var loadingDialog: Dialog
     private lateinit var thisActivity: HomeActivity
 
-    private val getProfileImageContent =
-        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-            if (uri != null) {
-                val outputUri = File(requireActivity().filesDir, "${Date().time}.jpg").toUri()
-                val listUri = listOf(uri, outputUri)
-                cropProfileImage.launch(listUri)
-            }
-        }
+//    private val getProfileImageContent =
+//        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+//            if (uri != null) {
+//                val outputUri = File(requireActivity().filesDir, "${Date().time}.jpg").toUri()
+//                val listUri = listOf(uri, outputUri)
+//                cropProfileImage.launch(listUri)
+//            }
+//        }
 
-    private val cropProfileImage = registerForActivityResult(cropImagePicker(1f, 1f, 1080)) { uri ->
-        if (uri != null && uri != Uri.EMPTY) {
-            Glide.with(requireContext()).load(uri).into(binding.profileImage)
-            loadingDialog.show()
+//    private val cropProfileImage = registerForActivityResult(cropImagePicker(1f, 1f, 1080)) { uri ->
+//        if (uri != null && uri != Uri.EMPTY) {
+//            Glide.with(requireContext()).load(uri).into(binding.profileImage)
+//            loadingDialog.show()
+//
+//            autoDisposeScope.launch {
+//                val uploadResult = viewModel.uploadImage(
+//                    uri,
+//                    thisActivity.currentUserProfile.username,
+//                    requireContext().getFileTypes(listOf(uri))[0]
+//                )
+//                withContext(Dispatchers.Main) {
+//                    uploadResult.observe(viewLifecycleOwner) { url ->
+//                        if (url.isEmpty()) {
+//                            binding.root.snackbar("Error")
+//                        } else {
+//                            uploadUrl(profileUrl = url)
+//                        }
+//                    }
+//                    loadingDialog.dismiss()
+//                }
+//            }
+//            Glide.with(requireContext()).load(uri).circleCrop().into(binding.profileImage)
+//        }
+//    }
 
-            autoDisposeScope.launch {
-                val uploadResult = viewModel.uploadImage(
-                    uri,
-                    thisActivity.currentUserProfile.username,
-                    requireContext().getFileTypes(listOf(uri))[0]
-                )
-                withContext(Dispatchers.Main) {
-                    uploadResult.observe(viewLifecycleOwner) { url ->
-                        if (url.isEmpty()) {
-                            binding.root.snackbar("Error")
-                        } else {
-                            uploadUrl(profileUrl = url)
-                        }
-                    }
-                    loadingDialog.dismiss()
-                }
-            }
-            Glide.with(requireContext()).load(uri).circleCrop().into(binding.profileImage)
-        }
-    }
+//    private val cropBannerImage = registerForActivityResult(cropImagePicker(16f, 9f, 1920)) { uri ->
+//        if (uri != null && uri != Uri.EMPTY) {
+//            loadingDialog.show()
+//            Glide.with(requireContext()).load(uri).into(binding.bgImage)
+//            autoDisposeScope.launch {
+//                val result = viewModel.uploadImage(
+//                    uri,
+//                    thisActivity.currentUserProfile.username,
+//                    requireActivity().getFileTypes(listOf(uri))[0]
+//                )
+//                withContext(Dispatchers.Main) {
+//                    result.observe(viewLifecycleOwner) { url ->
+//                        if (url.isEmpty()) {
+//                            binding.root.snackbar("Error")
+//                        } else {
+//                            uploadUrl(backgroundUrl = url)
+//                        }
+//                    }
+//                    loadingDialog.dismiss()
+//                }
+//            }
+//        }
+//    }
 
-    private val cropBannerImage = registerForActivityResult(cropImagePicker(16f, 9f, 1920)) { uri ->
-        if (uri != null && uri != Uri.EMPTY) {
-            loadingDialog.show()
-            Glide.with(requireContext()).load(uri).into(binding.bgImage)
-            autoDisposeScope.launch {
-                val result = viewModel.uploadImage(
-                    uri,
-                    thisActivity.currentUserProfile.username,
-                    requireActivity().getFileTypes(listOf(uri))[0]
-                )
-                withContext(Dispatchers.Main) {
-                    result.observe(viewLifecycleOwner) { url ->
-                        if (url.isEmpty()) {
-                            binding.root.snackbar("Error")
-                        } else {
-                            uploadUrl(backgroundUrl = url)
-                        }
-                    }
-                    loadingDialog.dismiss()
-                }
-            }
-        }
-    }
-
-    private val getBannerImageContent =
-        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-            if (uri != null) {
-                val outputUri = File(requireActivity().filesDir, "${Date().time}.jpg").toUri()
-                val listUri = listOf(uri, outputUri)
-                cropBannerImage.launch(listUri)
-            }
-        }
+//    private val getBannerImageContent =
+//        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+//            if (uri != null) {
+//                val outputUri = File(requireActivity().filesDir, "${Date().time}.jpg").toUri()
+//                val listUri = listOf(uri, outputUri)
+//                cropBannerImage.launch(listUri)
+//            }
+//        }
 
     private fun cropImagePicker(ratioX: Float, ratioY: Float, width: Int) =
         object : ActivityResultContract<List<Uri>, Uri>() {
@@ -143,55 +145,61 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         thisActivity = activity as HomeActivity
 
         binding.root.setOnRefreshListener {
-            loadView()
             binding.root.isRefreshing = false
         }
 
-        NetworkConnectionLiveData(context ?: return)
-            .observe(viewLifecycleOwner) {
-                loadView()
-            }
+        val profileTabsAdapter = ProfileTabsAdapter(childFragmentManager,lifecycle)
+        binding.profileTabsPager.adapter = profileTabsAdapter
+        val tabTexts = arrayListOf("Posts 54", "Tagged", "Promotions")
+        TabLayoutMediator(binding.tabItems, binding.profileTabsPager) { tab, position ->
+            tab.text = tabTexts[position]
+        }.attach()
 
-        loadingDialog = Dialog(requireContext())
-        loadingDialog.setCanceledOnTouchOutside(false)
-        val loadingLayoutBinding = LoadingLayoutBinding.inflate(layoutInflater)
-        loadingDialog.setContentView(loadingLayoutBinding.root)
-        val loadingWindow: Window = loadingDialog.window!!
-        loadingWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        loadingWindow.setLayout(
-            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        )
+//        NetworkConnectionLiveData(context ?: return)
+//            .observe(viewLifecycleOwner) {
+//                loadView()
+//            }
 
-        requireActivity().checkStoragePermissions()
-
-        val dialog = Dialog(requireContext())
-        val selectBinding = SelectImageDialogBinding.inflate(layoutInflater)
-        dialog.setContentView(selectBinding.root)
-        val window: Window = dialog.window!!
-        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        window.setLayout(
-            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-
-        binding.bgImage.setOnClickListener {
-            val request = "Want to upload a new background image?"
-            selectBinding.actionRequest.text = request
-            selectBinding.acceptBtn.setOnClickListener {
-                getBannerImageContent.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                dialog.dismiss()
-            }
-            dialog.show()
-        }
-
-        binding.profileImage.setOnClickListener {
-            val request = "Want to upload a new profile photo?"
-            selectBinding.actionRequest.text = request
-            selectBinding.acceptBtn.setOnClickListener {
-                getProfileImageContent.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-                dialog.dismiss()
-            }
-            dialog.show()
-        }
+//        loadingDialog = Dialog(requireContext())
+//        loadingDialog.setCanceledOnTouchOutside(false)
+//        val loadingLayoutBinding = LoadingLayoutBinding.inflate(layoutInflater)
+//        loadingDialog.setContentView(loadingLayoutBinding.root)
+//        val loadingWindow: Window = loadingDialog.window!!
+//        loadingWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+//        loadingWindow.setLayout(
+//            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+//        )
+//
+//        requireActivity().checkStoragePermissions()
+//
+//        val dialog = Dialog(requireContext())
+//        val selectBinding = SelectImageDialogBinding.inflate(layoutInflater)
+//        dialog.setContentView(selectBinding.root)
+//        val window: Window = dialog.window!!
+//        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+//        window.setLayout(
+//            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+//        )
+//
+//        binding.bgImage.setOnClickListener {
+//            val request = "Want to upload a new background image?"
+//            selectBinding.actionRequest.text = request
+//            selectBinding.acceptBtn.setOnClickListener {
+//                getBannerImageContent.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+//                dialog.dismiss()
+//            }
+//            dialog.show()
+//        }
+//
+//        binding.profileImage.setOnClickListener {
+//            val request = "Want to upload a new profile photo?"
+//            selectBinding.actionRequest.text = request
+//            selectBinding.acceptBtn.setOnClickListener {
+//                getProfileImageContent.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+//                dialog.dismiss()
+//            }
+//            dialog.show()
+//        }
     }
 
     override fun getViewModel() = HomeViewModel::class.java
@@ -207,69 +215,68 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         return HomeRepository(api, postsApi)
     }
 
-    private fun uploadUrl(backgroundUrl: String? = null, profileUrl: String? = null) {
-        val dto = ProfileDTO(
-            profileImage = profileUrl ?: thisActivity.currentUserProfile.profileimg,
-            backgroundImageUrl = backgroundUrl ?: thisActivity.currentUserProfile.bgimg,
-            phone = thisActivity.currentUserProfile.phone!!,
-            accountType = thisActivity.currentUserProfile.acctype,
-            location = thisActivity.currentUserProfile.location!!,
-            email = thisActivity.currentUserProfile.email,
-            fullName = thisActivity.currentUserProfile.fullname,
-            userName = thisActivity.currentUserProfile.username
-        )
+//    private fun uploadUrl(backgroundUrl: String? = null, profileUrl: String? = null) {
+//        val dto = ProfileDTO(
+//            profileImage = profileUrl ?: thisActivity.currentUserProfile.profileimg,
+//            backgroundImageUrl = backgroundUrl ?: thisActivity.currentUserProfile.bgimg,
+//            phone = thisActivity.currentUserProfile.phone!!,
+//            accountType = thisActivity.currentUserProfile.acctype,
+//            location = thisActivity.currentUserProfile.location!!,
+//            email = thisActivity.currentUserProfile.email,
+//            fullName = thisActivity.currentUserProfile.fullname,
+//            userName = thisActivity.currentUserProfile.username
+//        )
+//
+//        viewModel.updateProfile(dto)
+//        thisActivity.currentUserProfile.bgimg = dto.backgroundImageUrl
+//        thisActivity.currentUserProfile.profileimg = dto.profileImage
+//
+//        lifecycleScope.launch {
+//            settingsPreferences.saveProfile(thisActivity.currentUserProfile)
+//        }
+//    }
 
-        viewModel.updateProfile(dto)
-        thisActivity.currentUserProfile.bgimg = dto.backgroundImageUrl
-        thisActivity.currentUserProfile.profileimg = dto.profileImage
-
-        lifecycleScope.launch {
-            settingsPreferences.saveProfile(thisActivity.currentUserProfile)
-        }
-    }
-
-    private fun loadView() {
-        binding.profileFullName.text = thisActivity.currentUserProfile.fullname
-        val username = "@${thisActivity.currentUserProfile.username}"
-        binding.profileUsername.text = username
-        if (thisActivity.currentUserProfile.profileimg.isNotEmpty())
-            Glide.with(requireActivity())
-                .load(thisActivity.currentUserProfile.profileimg)
-                .circleCrop()
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(binding.profileImage)
-        if (thisActivity.currentUserProfile.bgimg.isNotEmpty())
-            Glide.with(requireActivity())
-                .load(thisActivity.currentUserProfile.bgimg)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(binding.bgImage)
-
-        binding.profileShimmer.visible(false)
-        binding.profileView.visible(true)
-
-        lifecycleScope.launch {
-            binding.followersCount.showFollowersCount(
-                viewModel,
-                thisActivity.currentUserProfile
-            )
-            binding.followingCount.showFollowingCount(
-                viewModel,
-                thisActivity.currentUserProfile
-            )
-            if (requireActivity().isNetworkAvailable()) {
-                binding.postsRv.showUserPostsInGrid(
-                    requireContext(), viewModel,
-                    thisActivity.currentUserProfile
-                )
-                val thumbnailAdapter = binding.postsRv.adapter as ImageThumbnailPostAdapter
-                thumbnailAdapter.imageClickListener(object : ImagePostItemClickListener {
-                    override fun postItemClickListener(post: Post) {
-                        startActivity(Intent(requireContext(), PostActivity::class.java).apply {
-                            this.putExtra("post_id", post.identifier)
-                        })
-                    }
-                })
-            }
-        }
-    }
+//    private fun loadView() {
+//        binding.profileFullName.text = thisActivity.currentUserProfile.fullname
+//        val username = "@${thisActivity.currentUserProfile.username}"
+//        binding.profileUsername.text = username
+//        if (thisActivity.currentUserProfile.profileimg.isNotEmpty())
+//            Glide.with(requireActivity())
+//                .load(thisActivity.currentUserProfile.profileimg)
+//                .circleCrop()
+//                .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                .into(binding.profileImage)
+//        if (thisActivity.currentUserProfile.bgimg.isNotEmpty())
+//            Glide.with(requireActivity())
+//                .load(thisActivity.currentUserProfile.bgimg)
+//                .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                .into(binding.bgImage)
+//
+//        binding.profileView.visible(true)
+//
+//        lifecycleScope.launch {
+//            binding.followersCount.showFollowersCount(
+//                viewModel,
+//                thisActivity.currentUserProfile
+//            )
+//            binding.followingCount.showFollowingCount(
+//                viewModel,
+//                thisActivity.currentUserProfile
+//            )
+//            if (requireActivity().isNetworkAvailable()) {
+//                binding.postsRv.showUserPostsInGrid(
+//                    requireContext(), viewModel,
+//                    thisActivity.currentUserProfile
+//                )
+//                val thumbnailAdapter = binding.postsRv.adapter as ImageThumbnailPostAdapter
+//                thumbnailAdapter.imageClickListener(object : ImagePostItemClickListener {
+//                    override fun postItemClickListener(post: Post) {
+//                        startActivity(Intent(requireContext(), PostActivity::class.java).apply {
+//                            this.putExtra("post_id", post.identifier)
+//                        })
+//                    }
+//                })
+//            }
+//        }
+//    }
 }

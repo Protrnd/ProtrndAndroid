@@ -2,13 +2,13 @@
     <!-- Base application theme. -->
     <style name="Theme.Protrnd" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/shimmer_color</item>
+        <item name="colorPrimary">@color/light_grey</item>
         <item name="colorPrimaryVariant">@color/white</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/app_blue</item>
-        <item name="colorSecondaryVariant">@color/app_blue</item>
-        <item name="colorOnSecondary">@color/pink_light</item>
+        <item name="colorSecondary">@color/main_purple</item>
+        <item name="colorSecondaryVariant">@color/main_purple</item>
+        <item name="colorOnSecondary">@color/bright_pink</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
@@ -32,4 +32,13 @@
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowSoftInputMode">adjustResize</item>
     </style>
+
+    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
+        <item name="windowSplashScreenAnimationDuration">300</item>
+        <item name="postSplashScreenTheme">@style/Theme.Protrnd</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
 </resources>

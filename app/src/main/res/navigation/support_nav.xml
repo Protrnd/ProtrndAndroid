@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/support_nav"
+    app:startDestination="@id/supportFragment">
+
+    <fragment
+        android:id="@+id/supportFragment"
+        android:name="protrnd.com.ui.support.SupportFragment"
+        android:label="fragment_support"
+        tools:layout="@layout/fragment_support" >
+        <action
+            android:id="@+id/action_supportFragment_to_supportAmountFragment"
+            app:destination="@id/supportAmountFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/supportAmountFragment"
+        android:name="protrnd.com.ui.support.SupportAmountFragment"
+        android:label="fragment_support_amount"
+        tools:layout="@layout/fragment_support_amount" >
+        <action
+            android:id="@+id/action_supportAmountFragment_to_choosePaymentMethodFragment"
+            app:destination="@id/chooseSupportPaymentMethodFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/chooseSupportPaymentMethodFragment"
+        android:name="protrnd.com.ui.payment.ChoosePaymentMethodFragment"
+        android:label="fragment_choose_support_payment_method"
+        tools:layout="@layout/fragment_choose_payment_method" >
+        <action
+            android:id="@+id/action_chooseSupportPaymentMethodFragment_to_supportPaymentDetailsFragment"
+            app:destination="@id/supportPaymentDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/supportPaymentDetailsFragment"
+        android:name="protrnd.com.ui.payment.PaymentDetailsFragment"
+        android:label="fragment_support_payment_details"
+        tools:layout="@layout/fragment_payment_details" >
+        <action
+            android:id="@+id/action_supportPaymentDetailsFragment_to_paymentCompleteFragment2"
+            app:destination="@id/paymentCompleteFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/paymentCompleteFragment"
+        android:name="protrnd.com.ui.payment.PaymentCompleteFragment"
+        android:label="fragment_payment_complete"
+        tools:layout="@layout/fragment_payment_complete" />
+
+</navigation>

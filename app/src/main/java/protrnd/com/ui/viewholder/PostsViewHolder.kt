@@ -20,19 +20,18 @@ class PostsViewHolder(val view: PostItemBinding) : RecyclerView.ViewHolder(view.
         currentProfile: Profile
     ) {
         //loads image from network using coil extension function
-        bindPostDetails(
-            tabLayout = view.tabLayout,
-            fullnameTv = view.fullname,
-            usernameTv = view.username,
-            locationTv = view.location,
-            captionTv = view.captionTv,
-            post = item,
-            profileImage = view.postOwnerImage,
-            imagesPager = view.imagesViewPager,
-            postOwnerProfile = postOwnerProfile,
-            timeText = view.timeUploaded,
-            activity = activity
-        )
+//        bindPostDetails(
+//            tabLayout = view.tabLayout,
+//            fullnameTv = view.fullname,
+//            locationTv = view.location,
+//            captionTv = view.captionTv,
+//            post = item,
+//            profileImage = view.postOwnerImage,
+//            imagesPager = view.imagesViewPager,
+//            postOwnerProfile = postOwnerProfile,
+//            timeText = view.timeUploaded,
+//            activity = activity
+//        )
 
         view.shareBtn.setOnClickListener {
             itemView.context.showFeatureComingSoonDialog()
@@ -43,8 +42,7 @@ class PostsViewHolder(val view: PostItemBinding) : RecyclerView.ViewHolder(view.
         }
 
         if (currentProfile != postOwnerProfile) {
-            view.promoteText.text = "Support"
-            view.promoteText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.support_ic, 0)
+            view.promoteSupport.text = "Support"
         }
 
         if (view.captionTv.lineCount > 3)
@@ -65,7 +63,7 @@ class PostsViewHolder(val view: PostItemBinding) : RecyclerView.ViewHolder(view.
             }
         }
 
-        view.promoteBtn.setOnClickListener {
+        view.promoteSupport.setOnClickListener {
             itemView.context.showFeatureComingSoonDialog()
 //            if(currentProfile == postOwnerProfile) {
 //                val i = Intent(it.context, NewPromotionActivity::class.java).also { intent ->

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".ui.promotion.PromotionBannerFragment">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Promotion Banner"
+        android:textColor="@color/black"
+        android:textSize="@dimen/subheading"
+        android:fontFamily="@font/dmsans_bold"/>
+
+    <TextView
+        android:id="@+id/new_image_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:drawablePadding="8dp"
+        android:padding="8dp"
+        android:textSize="@dimen/label"
+        android:fontFamily="@font/dmsans_medium"
+        android:textColor="@color/black"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/pink_light_outlined_to_deep_filled_selector"
+        android:text="Please click to select a new promotion banner"
+        app:drawableStartCompat="@drawable/add_image_ic" />
+
+    <ImageView
+        android:id="@+id/promotion_image"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:layout_marginTop="12dp"
+        android:background="@color/lightest_grey"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/continue_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="12dp"
+        android:fontFamily="@font/dmsans_medium"
+        android:background="@drawable/button_ripple"
+        android:text="@string/continue_text"
+        android:textColor="@color/white"
+        tools:ignore="DuplicateSpeakableTextCheck" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>

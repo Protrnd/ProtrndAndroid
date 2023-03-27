@@ -10,5 +10,5 @@
     android:fontFamily="@font/dmsans_mediumitalic"
     android:gravity="center_vertical"
     android:padding="@dimen/padding_10"
-    android:textColor="@color/app_blue"
-    app:drawableEndCompat="@drawable/remove_ic"></TextView>
+    android:textColor="@color/black"
+    app:drawableEndCompat="@drawable/remove_ic" />

@@ -36,7 +36,7 @@
     <string name="save_changes">Save changes</string>
     <string name="cancel_button">Cancel Button</string>
     <string name="select_to_add_images_or_videos">Select to add images or videos</string>
-    <string name="caption">Caption</string>
+    <string name="add_caption">Add a caption…</string>
     <string name="scale_image">Scale Image</string>
     <string name="remove">Remove</string>
     <string name="tag_text">\@username</string>
@@ -62,12 +62,13 @@
     <string name="login_here">Get started with us today and start exploring. Already have an account? Login here</string>
     <string name="name">Name</string>
     <string name="at_tag">\@</string>
-    <string name="username_with_at">Username \'@\'</string>
-    <string name="verify_otp">Verify OTP</string>
+    <string name="username_with_at">Username (@username)</string>
+    <string name="enter_otp">Enter your OTP</string>
     <string name="business_details">Business Details</string>
-    <string name="business_fullname">Business Full Name</string>
-    <string name="business_username_at">Business Username \'@\'</string>
-    <string name="enter_the_one_time_password_sent_to_your_email_to_verify_your_account">Enter the One-Time-Password sent to your email to verify your account.</string>
+    <string name="business_name">Business Name</string>
+    <string name="grow_business">Ready to grow your business? Let\'s start by creating an account, so you can manage your business from anywhere! \uD83D\uDE03</string>
+    <string name="business_username_at">Business Username (@username)</string>
+    <string name="verify_otp">Please input the one-time-password sent to your email address so we can verify your email.</string>
     <string name="fullname">Full Name</string>
     <string name="signup">Sign Up</string>
     <string name="video_player_closer">Video player closer</string>
@@ -76,4 +77,178 @@
     <string name="send_or_receive">Want to send or receive money with ease?</string>
     <string name="feature_coming_soon">Feature coming soon......</string>
     <string name="no_likes">0 likes</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="get_started">Get Started</string>
+    <string name="explore">Explore\nExplore lifestyles, food, and culture from all around the globe</string>
+    <string name="business_text">Business\nPromote your business, trend, make and receive payments securely.</string>
+    <string name="use_protrnd">How would you like to use Protrnd?</string>
+    <string name="hey_there">Hey there,</string>
+    <string name="already_have_an_account_login">Already have an account? Login</string>
+    <string name="create_account">Create Account</string>
+    <string name="keep_me_signed_in">Keep me signed in</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="forgot_password_">Forgot Password</string>
+    <string name="send_reset">Send Reset</string>
+    <string name="back_to_create_account">Back to Create Account</string>
+    <string name="already_have_an_account">Already have an account? Log in here</string>
+    <string name="nigeria">Nigeria</string>
+    <string name="country">Country</string>
+    <string name="target_area_level">Target Area Level</string>
+    <string name="basic">Basic</string>
+    <string name="advanced">Advanced</string>
+    <string name="enter_a_location_to_promote_to">Enter a Location to promote to</string>
+    <string name="rivers">Rivers</string>
+    <string name="enter_state">Enter State</string>
+    <string name="enter_city">Enter City</string>
+    <string name="e_g_bonny">e.g Bonny</string>
+    <string name="choose_payment_plan">Choose Payment Plan</string>
+    <string name="no_recurring_charge">Please note that there are no recurring charges on this payment</string>
+    <string name="choose_payment_method">Choose Payment Method</string>
+    <string name="credit_debit_card">Credit / Debit Card</string>
+    <string name="e_g_name">e.g John Basten</string>
+    <string name="e_g_card_no">e.g 0000000000</string>
+    <string name="expiry_date">Expiry Date</string>
+    <string name="e_g_ex_date">e.g 12/24</string>
+    <string name="cvv_security_code">CVV (Security Code)</string>
+    <string name="cvv">123</string>
+    <string name="card_number">Card Number</string>
+    <string name="promote_your_post">Promote Your Post</string>
+    <string name="promote_post">Promote your post to make it trend and reach your clients</string>
+    <string name="protrnd_wallet">Protrnd Wallet</string>
+    <string name="support_your_favs">Support Your Favs</string>
+    <string name="show_love_and_support">Show love and support your favourite people and products.</string>
+    <string name="support_amount">Support Amount</string>
+    <string name="support_value">0+</string>
+    <string name="how_big_is_your_love">How Big is your love?</string>
+    <string name="you_re_post_is_going_viral_click_here_to_find_out_what_to_do_next_or_continue_exploring">You’re post is going viral, click here to find out what to do next or continue exploring..</string>
+    <string name="continue_exploring">Continue Exploring</string>
+    <string name="congratulations_you_re_trnding">Congratulations you’re trnding</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="protrnd_location">Lagos, Nigeria</string>
+    <string name="profile_description">Content Creator | Affiliate Marketer | I talk about design and how to make money.</string>
+    <string name="protrnd">Protrnd</string>
+    <string name="withdraw">Withdraw</string>
+    <string name="transaction_history">Transaction History</string>
+    <string name="view_all">View All</string>
+    <string name="secured_by_paystack">Secured by paystack</string>
+    <string name="remember_card_details">Remember Card Details</string>
+    <string name="send_money">Send Money</string>
+    <string name="send_amount">Send Amount</string>
+    <string name="_0">0+</string>
+    <string name="how_much_would_you_like_to_send">How much would you like to Send?</string>
+    <string name="quick_send">Quick Send using Qr</string>
+    <string name="how_would_you_like_to_send">How would you like to send?</string>
+    <string name="scan_qr_code">Scan Qr Code</string>
+    <string name="protrnd_id">Protrnd ID</string>
+    <string name="enter_profile_ic">Enter the receiver’s Profile ID</string>
+    <string name="profile_id">Receiver’s Profile ID</string>
+    <string name="at_protrnd">\@protrnd</string>
+    <string name="top_up">Top Up</string>
+    <string name="top_up_amount">Top Up Amount</string>
+    <string name="how_much_would_you_like_to_top_up">How much would you like to top up?</string>
+    <string name="top_up_successful">You’ve Topped up Successfully</string>
+    <string name="how_much_would_you_like_to_withdraw">How much would you like to withdraw?</string>
+    <string name="select_bank_name">Select Bank Name</string>
+    <string name="bank_name">Bank Name</string>
+    <string name="account_no">1234567890</string>
+    <string name="account_number">Account Number</string>
+    <string name="input_payment_details">Input Payment Details</string>
+    <string name="card_holder_name">Card Holder Name</string>
+    <string name="enter_withdrawal_account_details">Enter Withdrawal Account Details</string>
+    <string name="done">Done</string>
+    <string name="another_happy_withdrawal">Another Happy Withdrawal</string>
+    <string name="withdraw_amount">Withdraw Amount</string>
+    <string-array name="locations">
+        <item>Country</item>
+        <item>State</item>
+        <item>City</item>
+    </string-array>
+    <string-array name="states">
+        <item>Abia</item>
+        <item>Adamawa</item>
+        <item>Akwa Ibom</item>
+        <item>Anambra</item>
+        <item>Bauchi</item>
+        <item>Bayelsa</item>
+        <item>Benue</item>
+        <item>Borno</item>
+        <item>Cross River</item>
+        <item>Delta</item>
+        <item>Ebonyi</item>
+        <item>Edo</item>
+        <item>Ekiti</item>
+        <item>Enugu</item>
+        <item>Gombe</item>
+        <item>Imo</item>
+        <item>Jigawa</item>
+        <item>Kaduna</item>
+        <item>Kano</item>
+        <item>Katsina</item>
+        <item>Kebbi</item>
+        <item>Kogi</item>
+        <item>Kwara</item>
+        <item>Lagos</item>
+        <item>Nasarawa</item>
+        <item>Niger</item>
+        <item>Ogun</item>
+        <item>Ondo</item>
+        <item>Osun</item>
+        <item>Oyo</item>
+        <item>Plateau</item>
+        <item>Rivers</item>
+        <item>Sokoto</item>
+        <item>Taraba</item>
+        <item>Yobe</item>
+        <item>Zamfara</item>
+    </string-array>
+    <string name="title_activity_transaction_history">TransactionHistoryActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="transaction_details">Transaction Details</string>
+    <string name="tag_people">Tag People</string>
+    <string name="time_ago">19 minutes ago</string>
+    <string name="comment_caption">Me and my friends using protrnd</string>
+    <string name="type_your_message">Type your message</string>
+    <string name="comments">Comments</string>
+    <string name="posted_by_protrnd">Posted by Protrnd</string>
+    <string name="trnding_near_you">Trnding near you</string>
+    <string name="no_of_trndrs_liked_this_post">126 trndrs liked this post</string>
+    <string name="default_caption">Me and my friends enjoying Protrnd</string>
+    <string name="more">more</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="amount">₦22,600</string>
+    <string name="report_an_issue">Report an Issue</string>
+    <string name="share">Share</string>
+    <string name="method">Method</string>
+    <string name="source">Source</string>
+    <string name="time">Time</string>
+    <string name="time_of_transaction">March 23, 2023 - 9:45 am</string>
+    <string name="narration">Narration</string>
+    <string name="narration_content">See front boss</string>
+    <string name="transaction_id">Transaction ID</string>
+    <string name="transaction_id_default">t43rt54trg</string>
+    <string name="i_m_tagging">I\'m Tagging</string>
+    <string name="max_10_people">max 10 people</string>
+    <string name="messages">Messages</string>
+    <string name="default_chat_message">Have you used Protrnd?</string>
+    <string name="_2">2</string>
+    <string name="message">Message</string>
+    <string name="set_as_recurring_plan">Set as recurring plan</string>
+    <string name="duration">Duration</string>
+    <string name="location_s">Location(s)</string>
+    <string name="total">Total</string>
+    <string name="subscription_details">Subscription Details</string>
+    <string name="targeted">Targeted</string>
+    <string name="promote_to_people_in_a_specific_city_or_state">Promote to people in a specific city or state</string>
+    <string name="mass">Mass</string>
+    <string name="promote_to_everyone_the_more_the_merrier">Promote to everyone. The more the merrier.</string>
+    <string name="choose_promotion_method">Choose Promotion Method</string>
 </resources>

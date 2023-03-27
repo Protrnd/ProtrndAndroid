@@ -17,8 +17,10 @@ import android.view.MenuItem
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.navigation.NavigationBarView
 import com.google.firebase.messaging.FirebaseMessaging
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.DexterBuilder
@@ -34,13 +36,14 @@ import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityHomeBinding
 import protrnd.com.databinding.SelectPaymentActionBinding
 import protrnd.com.ui.base.BaseActivity
+import protrnd.com.ui.chat.ChatFragment
 import protrnd.com.ui.finishActivity
 import protrnd.com.ui.notification.NotificationActivity
-import protrnd.com.ui.post.NewPostActivity
 import protrnd.com.ui.profile.ProfileFragment
 import protrnd.com.ui.showFeatureComingSoonDialog
 import protrnd.com.ui.startAnimation
 import protrnd.com.ui.visible
+import protrnd.com.ui.wallet.WalletFragment
 
 class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeRepository>() {
 
@@ -50,24 +53,40 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             dexter.check()
         }
+    var previousFragment: Fragment? = null
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
         setSupportActionBar(binding.toolbar)
-        registerMessaging()
-        requestNotificationsPermissions()
+//        registerMessaging()
+//        requestNotificationsPermissions()
         val actionBar = supportActionBar!!
         actionBar.setDisplayShowHomeEnabled(true)
         actionBar.setIcon(R.drawable.launcher_outlined_ic)
         actionBar.title = " Protrnd"
-        val chipNavigationBar = binding.bottomNav
+        val bottomNav = binding.bottomNav
         val homeFragment = HomeFragment()
         val profileFragment = ProfileFragment()
-        val fm = supportFragmentManager
-        val t = fm.beginTransaction()
-        t.add(R.id.fragmentContainerView, profileFragment, "P")
-        t.add(R.id.fragmentContainerView, homeFragment, "H")
-        t.commit()
+        val walletFragment = WalletFragment()
+        val chatFragment = ChatFragment()
+        homeFragment.showFragment("H")
+        bottomNav.setOnItemSelectedListener {
+            when (it.itemId) {
+                R.id.profile -> {
+                    profileFragment.showFragment("P")
+                }
+                R.id.home -> {
+                    homeFragment.showFragment("H")
+                }
+                R.id.wallet -> {
+                    walletFragment.showFragment("W")
+                }
+                R.id.communication -> {
+                    chatFragment.showFragment("C")
+                }
+            }
+            true
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             dexter = Dexter.withContext(this)
@@ -97,24 +116,19 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
             dexter.check()
         }
 
-        chipNavigationBar.setItemSelected(R.id.home)
-        chipNavigationBar.setOnItemSelectedListener {
-            showHomeFragment(homeFragment, profileFragment)
-        }
+//        bottomNav.setItemSelected(R.id.home)
+//        bottomNav.setOnItemSelectedListener {
+//            showHomeFragment(homeFragment, profileFragment)
+//        }
 
-        binding.fab.setOnClickListener {
-            startActivity(Intent(this, NewPostActivity::class.java))
-            startAnimation()
-        }
-
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (homeFragment.isHidden)
-                    chipNavigationBar.setItemSelected(R.id.home)
-                else
-                    finishActivity()
-            }
-        })
+//        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+//            override fun handleOnBackPressed() {
+//                if (homeFragment.isHidden)
+//                    bottomNav.setItemSelected(R.id.home)
+//                else
+//                    finishActivity()
+//            }
+//        })
     }
 
     override fun getActivityBinding(inflater: LayoutInflater) =
@@ -153,35 +167,35 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
                 startActivity(Intent(this, NotificationActivity::class.java))
                 startAnimation()
             }
-            R.id.scan_btn -> {
-                binding.dimBg.visible(true)
-                binding.bottomNav.visible(false)
-                val dialog = BottomSheetDialog(this, R.style.BottomSheetTheme)
-                val qrBinding = SelectPaymentActionBinding.inflate(layoutInflater)
-                dialog.setContentView(qrBinding.root)
-                qrBinding.receiveMoneyBtn.setOnClickListener {
-                    dialog.dismiss()
-                    this.showFeatureComingSoonDialog()
-                }
-                qrBinding.sendMoneyBtn.setOnClickListener {
-                    dialog.dismiss()
-                    this.showFeatureComingSoonDialog()
-                }
-                dialog.setCanceledOnTouchOutside(true)
-                dialog.setOnCancelListener {
-                    dialog.behavior.state = BottomSheetBehavior.STATE_COLLAPSED
-                    binding.dimBg.visible(false)
-                    binding.bottomNav.visible(true)
-                }
-                dialog.setOnDismissListener {
-                    dialog.behavior.state = BottomSheetBehavior.STATE_COLLAPSED
-                    binding.dimBg.visible(false)
-                    binding.bottomNav.visible(true)
-                }
-                dialog.show()
-                dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                dialog.behavior.peekHeight = Resources.getSystem().displayMetrics.heightPixels
-            }
+//            R.id.scan_btn -> {
+//                binding.dimBg.visible(true)
+//                binding.bottomNav.visible(false)
+//                val dialog = BottomSheetDialog(this, R.style.BottomSheetTheme)
+//                val qrBinding = SelectPaymentActionBinding.inflate(layoutInflater)
+//                dialog.setContentView(qrBinding.root)
+//                qrBinding.receiveMoneyBtn.setOnClickListener {
+//                    dialog.dismiss()
+//                    this.showFeatureComingSoonDialog()
+//                }
+//                qrBinding.sendMoneyBtn.setOnClickListener {
+//                    dialog.dismiss()
+//                    this.showFeatureComingSoonDialog()
+//                }
+//                dialog.setCanceledOnTouchOutside(true)
+//                dialog.setOnCancelListener {
+//                    dialog.behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+//                    binding.dimBg.visible(false)
+//                    binding.bottomNav.visible(true)
+//                }
+//                dialog.setOnDismissListener {
+//                    dialog.behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+//                    binding.dimBg.visible(false)
+//                    binding.bottomNav.visible(true)
+//                }
+//                dialog.show()
+//                dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+//                dialog.behavior.peekHeight = Resources.getSystem().displayMetrics.heightPixels
+//            }
         }
         return true
     }
@@ -190,16 +204,53 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeReposi
         FirebaseMessaging.getInstance().subscribeToTopic(currentUserProfile.identifier)
     }
 
-    private fun showHomeFragment(homeFragment: HomeFragment, profileFragment: ProfileFragment) {
-        val fragmentM = supportFragmentManager.beginTransaction()
+    private fun Fragment.showFragment(tag: String) {
+        val fm = supportFragmentManager
+        val fragment = fm.findFragmentByTag(tag)
+        val ft = fm.beginTransaction()
             .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
-        if (homeFragment.isHidden) {
-            fragmentM.show(homeFragment)
-            fragmentM.hide(profileFragment)
-        } else {
-            fragmentM.hide(homeFragment)
-            fragmentM.show(profileFragment)
+        if (previousFragment != null)
+            ft.hide(previousFragment!!)
+        if (this is HomeFragment) {
+            if (fragment != null && fragment is HomeFragment) {
+                ft.show(this)
+            } else {
+                ft.add(R.id.fragmentContainerView, this, tag)
+            }
+        } else if (this is WalletFragment) {
+            if (fragment != null && fragment is WalletFragment) {
+                ft.show(this)
+            } else {
+                ft.add(R.id.fragmentContainerView, this, tag)
+            }
+        } else if (this is ProfileFragment) {
+            if (fragment != null && fragment is ProfileFragment) {
+                ft.show(this)
+            } else {
+                ft.add(R.id.fragmentContainerView, this, tag)
+            }
+        } else if (this is ChatFragment) {
+            if (fragment != null && fragment is ChatFragment) {
+                ft.show(this)
+            } else {
+                ft.add(R.id.fragmentContainerView, this, tag)
+            }
         }
-        fragmentM.commit()
+        previousFragment = this
+        ft.commit()
     }
+//    private fun showHomeFragment(homeFragment: HomeFragment, profileFragment: ProfileFragment, walletFragment: WalletFragment) {
+//        val fragmentM = supportFragmentManager.beginTransaction()
+//            .setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out)
+//        if (homeFragment.isHidden) {
+//            fragmentM.show(homeFragment)
+//            fragmentM.hide(profileFragment)
+//            fragmentM.hide(walletFragment)
+//        } else {
+//            fragmentM.hide(walletFragment)
+//            fragmentM.hide(homeFragment)
+//            fragmentM.show(profileFragment)
+//        }
+//        fragmentM.commit()
+//    }
 }

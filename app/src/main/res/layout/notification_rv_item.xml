@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/padding_10"
         android:maxLines="1"
-        android:textColor="@color/app_blue"
+        android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@id/notification_time"
         app:layout_constraintStart_toEndOf="@id/profile_image"
@@ -35,7 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/padding_10"
-        android:textColor="@color/app_blue"
+        android:textColor="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/profile_image"
         app:layout_constraintTop_toBottomOf="@id/notification_message" />
@@ -45,6 +45,6 @@
         android:layout_height="1dp"
         android:layout_marginTop="15dp"
         android:alpha="0.3"
-        android:background="@color/app_blue"
+        android:background="@color/black"
         app:layout_constraintTop_toBottomOf="@id/notification_time" />
 </androidx.constraintlayout.widget.ConstraintLayout>

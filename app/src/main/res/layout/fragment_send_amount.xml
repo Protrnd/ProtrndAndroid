@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.wallet.send.SendAmountFragment"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/send_money"
+        android:textSize="@dimen/heading_2"
+        android:textColor="@color/main_pink"
+        android:fontFamily="@font/dm_sans_bold"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/how_much_would_you_like_to_send"
+        android:layout_marginTop="24dp"
+        android:textSize="@dimen/subheading"
+        android:fontFamily="@font/dmsans_medium"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/send_amount"
+        android:textSize="@dimen/label"
+        android:textColor="@color/main_purple"
+        android:fontFamily="@font/dm_sans_medium"
+        android:layout_marginTop="24dp"/>
+
+    <EditText
+        android:id="@+id/amount_input"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:autofillHints="emailAddress"
+        android:importantForAutofill="yes"
+        android:inputType="numberDecimal"
+        android:layout_marginTop="8dp"
+        android:labelFor="@+id/email_et"
+        android:textSize="@dimen/body"
+        android:background="@drawable/input_field_main_purp"
+        android:drawableStart="@drawable/naira_ic"
+        android:textColor="#2D264B"
+        android:hint="@string/_0"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:gravity="center_vertical"
+        android:drawablePadding="2dp"
+        android:textColorHint="@color/main_grey"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <TextView
+        android:id="@+id/quick_send_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/quick_send"
+        android:gravity="center"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:layout_marginTop="24dp"
+        android:textColor="@color/main_pink"
+        android:textSize="@dimen/subheading"
+        android:fontFamily="@font/dm_sans_bold"
+        android:background="@drawable/pink_light_filled_12"
+        app:drawableStartCompat="@drawable/qr_scan_pink_ic"
+        app:drawableEndCompat="@drawable/arrow_short_right_ic" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/continue_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="36dp"
+        android:fontFamily="@font/dmsans_medium"
+        android:background="@drawable/button_elevation"
+        android:text="@string/continue_text"
+        android:textColor="@color/white"
+        tools:ignore="DuplicateSpeakableTextCheck" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>

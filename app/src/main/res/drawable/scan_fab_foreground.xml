@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/main_pink"/>
+        </shape>
+    </item>
+
+    <item android:drawable="@drawable/qr_scan_white_ic"
+        android:bottom="18dp"
+        android:top="18dp"
+        android:start="17dp"
+        android:end="17dp" />
+</layer-list>

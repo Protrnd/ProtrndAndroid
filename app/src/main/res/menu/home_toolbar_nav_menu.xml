@@ -6,9 +6,4 @@
         android:icon="@drawable/notification_ic"
         android:title="@string/notification"
         app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/scan_btn"
-        android:icon="@drawable/scan_ic"
-        android:title="@string/scan"
-        app:showAsAction="always" />
 </menu>

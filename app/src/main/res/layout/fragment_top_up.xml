@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:orientation="vertical"
+    tools:context=".ui.wallet.topup.TopUpFragment">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/top_up"
+        android:textSize="@dimen/heading_2"
+        android:textColor="@color/main_pink"
+        android:fontFamily="@font/dm_sans_bold"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/how_much_would_you_like_to_top_up"
+        android:layout_marginTop="24dp"
+        android:textSize="@dimen/subheading"
+        android:fontFamily="@font/dmsans_medium"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/top_up_amount"
+        android:textSize="@dimen/label"
+        android:textColor="@color/main_purple"
+        android:fontFamily="@font/dm_sans_medium"
+        android:layout_marginTop="24dp"/>
+
+    <EditText
+        android:id="@+id/amount_input"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:autofillHints="emailAddress"
+        android:importantForAutofill="yes"
+        android:inputType="numberDecimal"
+        android:layout_marginTop="8dp"
+        android:labelFor="@+id/email_et"
+        android:textSize="@dimen/body"
+        android:background="@drawable/input_field_main_purp"
+        android:drawableStart="@drawable/naira_ic"
+        android:textColor="#2D264B"
+        android:hint="@string/_0"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:gravity="center_vertical"
+        android:drawablePadding="2dp"
+        android:textColorHint="@color/main_grey"
+        tools:ignore="SpeakableTextPresentCheck" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/continue_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="36dp"
+        android:fontFamily="@font/dmsans_medium"
+        android:background="@drawable/button_elevation"
+        android:text="@string/continue_text"
+        android:textColor="@color/white"
+        tools:ignore="DuplicateSpeakableTextCheck" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>

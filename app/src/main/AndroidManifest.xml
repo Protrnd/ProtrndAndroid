@@ -22,6 +22,28 @@
         android:theme="@style/Theme.Protrnd"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity
+            android:name=".ui.chat.ChatContentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.wallet.TransactionHistoryActivity"
+            android:exported="false"
+            android:label="@string/title_activity_transaction_history"
+            android:theme="@style/Theme.Protrnd.NoActionBar" />
+        <activity
+            android:name=".ui.auth.ForgotPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.onboarding.WelcomeActivity"
+            android:exported="true"
+            android:theme="@style/Theme.App.SplashScreen">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
@@ -36,7 +58,6 @@
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
-
         <service
             android:name=".data.UploadService"
             android:exported="false" />
@@ -44,10 +65,9 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/notification_received_ic" />
-
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/app_blue" />
+            android:resource="@color/black" />
 
         <receiver
             android:name="com.google.firebase.iid.FirebaseInstanceIdReceiver"
@@ -89,13 +109,14 @@
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name=".ui.post.PostActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
-
         <activity
             android:name=".ui.notification.NotificationActivity"
             android:exported="false"
@@ -157,17 +178,14 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:exported="true"
+            android:exported="false"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
     </application>
+
 </manifest>

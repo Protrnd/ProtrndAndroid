@@ -17,10 +17,10 @@ class ImageThumbnailPostAdapter(private val posts: List<Post>) :
     )
 
     override fun onBindViewHolder(holder: ImageThumbnailViewHolder, position: Int) {
-        holder.bind(posts[position])
-        holder.itemView.setOnClickListener {
-            imagePostItemClickListener.postItemClickListener(post = posts[position])
-        }
+        holder.bind(posts[position].uploadurls[0])
+//        holder.itemView.setOnClickListener {
+//            imagePostItemClickListener.postItemClickListener(post = posts[position])
+//        }
     }
 
     override fun getItemCount(): Int = posts.size

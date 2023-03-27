@@ -84,5 +84,4 @@ class CheckoutActivity :
     override fun getActivityRepository(): PaymentRepository {
         return PaymentRepository()
     }
-
 }

@@ -3,12 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="10dp">
+    android:paddingTop="20dp"
+    android:paddingBottom="12dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/profile_details_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
@@ -16,7 +21,7 @@
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:contentDescription="@string/profile_image"
-            android:src="@drawable/default_profile_ic"
+            android:background="@drawable/round_bg"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -25,100 +30,79 @@
             android:id="@+id/fullname"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="8dp"
             android:layout_marginEnd="10dp"
-            android:fontFamily="@font/dm_sans_bold"
+            android:fontFamily="@font/dmsans_medium"
             android:maxLines="1"
-            android:textColor="#2D264B"
-            android:textSize="15sp"
-            app:layout_constraintBottom_toTopOf="@id/username"
-            app:layout_constraintEnd_toStartOf="@id/time_uploaded"
+            android:textColor="@color/black"
+            android:text="@string/protrnd"
+            android:drawablePadding="5dp"
+            android:textSize="@dimen/body"
+            app:layout_constraintBottom_toTopOf="@+id/location"
             app:layout_constraintStart_toEndOf="@+id/post_owner_image"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="spread_inside" />
+            app:layout_constraintVertical_chainStyle="spread"
+            app:drawableEndCompat="@drawable/business_badge_ic" />
 
-        <TextView
-            android:id="@+id/username"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:layout_marginEnd="10dp"
-            android:fontFamily="@font/dm_sans_bold"
-            android:maxLines="1"
-            android:textColor="#8E8E8E"
-            android:textSize="13sp"
-            app:layout_constraintBottom_toTopOf="@id/location"
-            app:layout_constraintEnd_toStartOf="@id/time_uploaded"
-            app:layout_constraintStart_toEndOf="@+id/post_owner_image"
-            app:layout_constraintTop_toBottomOf="@id/fullname"
-            app:layout_constraintVertical_chainStyle="packed" />
 
         <TextView
             android:id="@+id/location"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
             android:layout_marginEnd="10dp"
-            android:textColor="#2D264B"
-            android:textSize="13sp"
+            android:text="@string/protrnd_location"
+            android:textColor="@color/dark_grey"
+            android:fontFamily="@font/dmsans_regular"
+            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/time_uploaded"
-            app:layout_constraintStart_toEndOf="@+id/post_owner_image"
-            app:layout_constraintTop_toBottomOf="@id/username" />
+            app:layout_constraintStart_toStartOf="@+id/fullname"
+            app:layout_constraintTop_toBottomOf="@+id/fullname" />
 
-        <TextView
-            android:id="@+id/time_uploaded"
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#8E8E8E"
+            android:src="@drawable/more_vert_ic"
+            android:contentDescription="@string/more"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="@id/profile_details_layout" />
-
-    <RelativeLayout
-        android:id="@+id/post_layout"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/images_view_pager"
         android:layout_width="match_parent"
-        android:layout_height="280dp"
-        app:layout_constraintTop_toTopOf="@+id/guideline">
+        android:layout_height="375dp"
+        android:layout_marginTop="5dp"
+        android:orientation="horizontal"
+        android:background="@color/light_grey"
+        android:padding="5dp"
+        app:layout_constraintTop_toBottomOf="@+id/caption_view" />
 
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/images_view_pager"
-            android:layout_width="match_parent"
-            android:layout_height="280dp"
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal"
-            android:padding="5dp" />
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tab_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_gravity="bottom"
-            android:background="@android:color/transparent"
-            app:tabBackground="@drawable/tab_selector"
-            app:tabGravity="center"
-            app:tabIndicatorHeight="0dp"
-            app:tabMaxWidth="15dp" />
-    </RelativeLayout>
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
+        android:background="@android:color/transparent"
+        app:layout_constraintEnd_toStartOf="@+id/promote_support"
+        app:layout_constraintStart_toEndOf="@+id/buttons_grid"
+        app:layout_constraintTop_toTopOf="@+id/buttons_grid"
+        app:tabBackground="@drawable/tab_selector"
+        app:tabGravity="center"
+        app:tabIndicatorHeight="0dp"
+        app:tabMaxWidth="15dp" />
 
     <GridLayout
         android:id="@+id/buttons_grid"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="16dp"
         android:columnCount="4"
         android:rowCount="1"
         android:useDefaultMargins="true"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/post_layout">
+        app:layout_constraintTop_toBottomOf="@id/images_view_pager">
 
         <androidx.appcompat.widget.AppCompatToggleButton
             android:id="@+id/like_toggle"
@@ -144,7 +128,8 @@
             android:layout_row="0"
             android:layout_column="2"
             android:contentDescription="@string/share_button"
-            android:src="@drawable/share_ic" />
+            android:src="@drawable/share_ic"
+            app:tint="@color/main_purple" />
 
         <ImageView
             android:id="@+id/send_text_btn"
@@ -156,49 +141,56 @@
             android:src="@drawable/send_text_ic" />
     </GridLayout>
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/promote_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="5dp"
-        app:cardBackgroundColor="#F4DCEE"
-        app:cardCornerRadius="50dp"
-        app:cardElevation="5dp"
+    <TextView
+        android:id="@+id/promote_support"
+        android:layout_width="107dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/rounded_corners_gradient_50"
+        android:drawablePadding="10dp"
+        android:elevation="5dp"
+        android:gravity="start|center"
+        android:paddingStart="10dp"
+        android:paddingEnd="0dp"
+        android:text="@string/promote"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        app:drawableStartCompat="@drawable/promote_ic"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/post_layout">
-
-        <TextView
-            android:id="@+id/promote_text"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
-            android:background="#F4DCEE"
-            android:drawablePadding="10dp"
-            android:gravity="center"
-            android:text="@string/promote"
-            android:textColor="#F94FC9"
-            android:textStyle="bold"
-            app:drawableEndCompat="@drawable/promote_ic" />
-    </androidx.cardview.widget.CardView>
+        app:layout_constraintTop_toBottomOf="@id/images_view_pager" />
 
     <TextView
         android:id="@+id/likes_count"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="12dp"
         android:fontFamily="@font/dm_sans_medium"
-        android:text="@string/no_likes"
-        android:textColor="#2D264B"
+        android:textSize="14sp"
+        android:text="@string/no_of_trndrs_liked_this_post"
+        android:layout_marginStart="16dp"
+        android:textColor="@color/black"
         app:layout_constraintTop_toBottomOf="@id/buttons_grid" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/dm_sans"
+        android:textSize="11sp"
+        android:text="@string/time_ago"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/likes_count" />
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/caption_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        app:layout_constraintTop_toBottomOf="@id/likes_count">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp"
+        app:layout_constraintTop_toBottomOf="@id/profile_details_layout">
 
         <TextView
             android:id="@+id/caption_tv"
@@ -208,7 +200,8 @@
             android:focusable="true"
             android:fontFamily="@font/dm_sans"
             android:maxLines="3"
-            android:textColor="#2D264B"
+            android:text="@string/default_caption"
+            android:textColor="@color/main_purple"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -216,14 +209,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/view_more"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@color/light_grey"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/caption_tv" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:layout_marginTop="@dimen/padding_10"
-        app:layout_constraintTop_toBottomOf="@id/caption_view" />
+<!--    <View-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="0.5dp"-->
+<!--        android:layout_marginTop="@dimen/padding_10"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/caption_view" />-->
 </androidx.constraintlayout.widget.ConstraintLayout>

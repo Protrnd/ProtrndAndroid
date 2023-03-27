@@ -10,13 +10,13 @@ import protrnd.com.databinding.ProfilePostRvItemBinding
 
 class ImageThumbnailViewHolder(val view: ProfilePostRvItemBinding) :
     RecyclerView.ViewHolder(view.root) {
-    fun bind(post: Post) {
+    fun bind(thumbnail: String) {
         view.root.layoutParams = ViewGroup.LayoutParams(
-            (Resources.getSystem().displayMetrics.widthPixels / 3.15).toInt(),
-            (Resources.getSystem().displayMetrics.widthPixels / 3.15).toInt()
+            (Resources.getSystem().displayMetrics.widthPixels / 3),
+            (Resources.getSystem().displayMetrics.widthPixels / 3)
         )
         Glide.with(view.root.context)
-            .load(post.uploadurls[0])
+            .load(thumbnail)
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(view.imageThumbnail)
     }

@@ -6,172 +6,198 @@
     android:layout_height="match_parent"
     tools:context=".ui.post.NewPostActivity">
 
-    <RelativeLayout
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:elevation="@dimen/padding_10"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        app:layout_constraintTop_toTopOf="parent">
+    <ImageView
+        android:id="@+id/cancel_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/cancel_button"
+        android:padding="16dp"
+        android:background="@drawable/ripple_bg"
+        android:src="@drawable/cancel_ic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageButton
-            android:id="@+id/cancel_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
+    <TextView
+        android:id="@+id/post_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:padding="16dp"
+        android:fontFamily="@font/dm_sans_bold"
+        android:text="@string/post"
+        android:background="@drawable/ripple_bg"
+        android:textColor="@color/main_pink"
+        android:textSize="@dimen/subheading"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/post_btn">
+
+        <ImageView
+            android:id="@+id/imageView5"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:contentDescription="@string/profile"
             android:background="@drawable/round_bg"
-            android:contentDescription="@string/cancel_button"
-            android:padding="10dp"
-            android:src="@drawable/cancel_ic" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/post_btn"
+            android:id="@+id/textView8"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:background="@drawable/button_elevation"
-            android:paddingStart="20dp"
-            android:paddingTop="@dimen/padding_10"
-            android:paddingEnd="20dp"
-            android:paddingBottom="@dimen/padding_10"
-            android:text="@string/post"
-            android:textColor="@color/white"
-            tools:ignore="RelativeOverlap" />
-    </RelativeLayout>
+            android:layout_marginStart="8dp"
+            android:drawablePadding="5dp"
+            android:fontFamily="@font/dmsans_medium"
+            android:text="@string/protrnd"
+            android:textColor="@color/black"
+            android:textSize="@dimen/body"
+            app:drawableEndCompat="@drawable/business_badge_ic"
+            app:layout_constraintStart_toEndOf="@+id/imageView5"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/dm_sans"
+            android:text="@string/add_location"
+            android:textColor="@color/dark_grey"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="@+id/imageView5"
+            app:layout_constraintStart_toStartOf="@+id/textView8"
+            app:layout_constraintTop_toBottomOf="@+id/textView8" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="12dp"
         android:fillViewport="true"
-        app:layout_constraintBottom_toTopOf="@+id/tags_recyclerview"
-        app:layout_constraintTop_toBottomOf="@id/toolbar">
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/uploads_card"
+            <EditText
+                android:id="@+id/caption_et"
                 android:layout_width="match_parent"
-                android:layout_height="280dp"
-                android:layout_margin="20dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:background="@drawable/image_layout"
+                android:layout_height="wrap_content"
+                android:autofillHints="emailAddress"
+                android:hint="@string/add_caption"
+                android:background="@android:color/transparent"
+                android:importantForAutofill="no"
+                android:inputType="textMultiLine"
+                android:labelFor="@+id/email_et"
+                android:maxLines="5"
+                android:paddingStart="16dp"
+                android:textSize="@dimen/label"
+                android:paddingEnd="16dp"
+                android:textColorHint="@color/main_grey"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:textColor="@color/black" />
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/uploads_vp"
+                android:layout_width="match_parent"
+                android:layout_height="375dp"
+                android:background="@color/lightest_grey"
+                android:contentDescription="@string/banner_image"
+                android:scaleType="centerCrop"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent" />
 
-                <androidx.viewpager2.widget.ViewPager2
-                    android:id="@+id/uploads_vp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="@string/banner_image"
-                    android:scaleType="centerCrop"
-                    android:visibility="gone" />
-
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp">
                 <TextView
-                    android:id="@+id/select_to_add_tv"
+                    android:id="@+id/tag_people_btn"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:fontFamily="@font/dm_sans_bold"
-                    android:text="@string/select_to_add_images_or_videos"
-                    android:textColor="#2D264B"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
+                    android:layout_height="36dp"
+                    android:background="@drawable/pink_deep_border_outlined_50"
+                    android:text="@string/tag_people"
+                    android:textSize="@dimen/label"
+                    android:textColor="@color/main_pink"
+                    android:fontFamily="@font/dm_sans"
+                    android:gravity="center"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    app:drawableStartCompat="@drawable/user_filled_ic" />
                 <com.google.android.material.tabs.TabLayout
                     android:id="@+id/tab_layout"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_gravity="bottom"
+                    android:layout_gravity="center_vertical"
                     android:background="@android:color/transparent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:tabBackground="@drawable/tab_selector"
                     app:tabGravity="center"
                     app:tabIndicatorHeight="0dp"
                     app:tabMaxWidth="15dp" />
-
-                <ImageView
-                    android:id="@+id/scale_image"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_gravity="bottom|end"
-                    android:layout_margin="@dimen/padding_10"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="@string/scale_image"
-                    android:src="@drawable/zoom_ic"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/caption_il"
-                style="@style/TextInputLayoutStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="20dp"
-                android:layout_marginBottom="100dp"
-                android:backgroundTint="@color/focused_state_edittext_background"
-                app:boxBackgroundColor="#FEFEFE"
-                app:boxBackgroundMode="outline"
-                app:boxCornerRadiusBottomEnd="10dp"
-                app:boxCornerRadiusBottomStart="10dp"
-                app:boxCornerRadiusTopEnd="10dp"
-                app:boxCornerRadiusTopStart="10dp"
-                app:boxStrokeWidth="1.5dp"
-                app:errorEnabled="true"
-                app:hintEnabled="false">
-
-                <EditText
-                    android:id="@+id/caption_et"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:autofillHints="emailAddress"
-                    android:hint="@string/caption"
-                    android:importantForAutofill="no"
-                    android:inputType="textMultiLine"
-                    android:labelFor="@+id/email_et"
-                    android:maxHeight="200dp"
-                    android:textColor="#2D264B" />
-            </com.google.android.material.textfield.TextInputLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:background="@drawable/rounded_corners_gradient_50"
+                    android:text="@string/promote"
+                    android:fontFamily="@font/dm_sans"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:gravity="center"
+                    android:textSize="@dimen/label"
+                    android:drawablePadding="8dp"
+                    android:textColor="@color/white"
+                    app:drawableStartCompat="@drawable/promote_ic" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.core.widget.NestedScrollView>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/tags_recyclerview"
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/add_image_btn"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        android:src="@drawable/add_image_ic"
+        android:padding="16dp"
+        android:background="@drawable/ripple_bg"
+        android:contentDescription="@string/upload_images"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:tint="@color/main_pink" />
 
-    <com.facebook.shimmer.ShimmerFrameLayout
-        android:id="@+id/shimmer_profiles"
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/add_location_btn"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:auto_start="true"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:contentDescription="@string/upload_images"
+        android:padding="16dp"
+        android:background="@drawable/ripple_bg"
+        android:src="@drawable/add_location_ic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/main_pink" />
 
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:visibility="gone">
-
-            <include layout="@layout/profile_tag_shimmer" />
-
-            <include layout="@layout/profile_tag_shimmer" />
-
-            <include layout="@layout/profile_tag_shimmer" />
-        </androidx.appcompat.widget.LinearLayoutCompat>
-    </com.facebook.shimmer.ShimmerFrameLayout>
+    <View
+        android:id="@+id/alpha_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        android:alpha="0.5"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -30,7 +30,7 @@ class NotificationsViewHolder(val view: NotificationRvItemBinding) :
         view.notificationTime.text = timeText
         view.notificationMessage.text = notification.message
         if (!notification.viewed)
-            view.root.setBackgroundColor(view.root.context.getColor(R.color.pink_light))
+            view.root.setBackgroundColor(view.root.context.getColor(R.color.bright_pink))
         this.itemView.autoDisposeScope.launch {
             when (val profile = viewModel.getProfileById(notification.senderid)) {
                 is Resource.Success -> {

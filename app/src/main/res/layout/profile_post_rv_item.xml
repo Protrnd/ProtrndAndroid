@@ -2,8 +2,7 @@
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@android:color/transparent"
-    android:elevation="@dimen/padding_10">
+    android:background="@android:color/transparent">
 
     <ImageView
         android:id="@+id/image_thumbnail"
@@ -11,6 +10,5 @@
         android:layout_height="match_parent"
         android:background="@color/white"
         android:contentDescription="@string/post_image_result"
-        android:paddingTop="3.15dp"
         android:scaleType="centerCrop" />
 </androidx.appcompat.widget.LinearLayoutCompat>

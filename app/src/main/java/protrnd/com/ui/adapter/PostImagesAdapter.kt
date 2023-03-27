@@ -26,7 +26,7 @@ class PostImagesAdapter(
 
     override fun onBindViewHolder(holder: ImageListViewHolder, position: Int) {
         if (images != null) {
-            holder.bind(images[position])
+//            holder.bind(images[position])
         }
         if (uri != null) {
             when (activity) {

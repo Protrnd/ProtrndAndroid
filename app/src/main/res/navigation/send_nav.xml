@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/send_nav"
+    app:startDestination="@id/sendAmountFragment">
+
+    <fragment
+        android:id="@+id/sendAmountFragment"
+        android:name="protrnd.com.ui.wallet.send.SendAmountFragment"
+        android:label="fragment_send_amount"
+        tools:layout="@layout/fragment_send_amount" >
+        <action
+            android:id="@+id/action_sendAmountFragment_to_QRScannerFragment"
+            app:destination="@id/QRScannerFragment" />
+        <action
+            android:id="@+id/action_sendAmountFragment_to_sendTypeFragment"
+            app:destination="@id/sendTypeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/sendTypeFragment"
+        android:name="protrnd.com.ui.wallet.send.SendTypeFragment"
+        android:label="fragment_send_type"
+        tools:layout="@layout/fragment_send_type" >
+        <action
+            android:id="@+id/action_sendTypeFragment_to_QRScannerFragment"
+            app:destination="@id/QRScannerFragment" />
+        <action
+            android:id="@+id/action_sendTypeFragment_to_enterProfileIDFragment"
+            app:destination="@id/enterProfileIDFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/QRScannerFragment"
+        android:name="protrnd.com.ui.wallet.send.QRScannerFragment"
+        android:label="fragment_qr_scanner"
+        tools:layout="@layout/fragment_qr_scanner" >
+        <action
+            android:id="@+id/action_QRScannerFragment_to_profileResultFragment"
+            app:destination="@id/profileResultFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/enterProfileIDFragment"
+        android:name="protrnd.com.ui.wallet.send.EnterProfileIDFragment"
+        android:label="fragment_enter_profile_i_d"
+        tools:layout="@layout/fragment_enter_profile_i_d" >
+        <action
+            android:id="@+id/action_enterProfileIDFragment_to_profileResultFragment"
+            app:destination="@id/profileResultFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/profileResultFragment"
+        android:name="protrnd.com.ui.wallet.send.ProfileResultFragment"
+        android:label="fragment_profile_result"
+        tools:layout="@layout/fragment_profile_result" />
+</navigation>

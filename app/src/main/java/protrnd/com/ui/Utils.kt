@@ -7,17 +7,18 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.media.MediaMetadataRetriever
 import android.net.*
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.TextPaint
+import android.text.*
 import android.text.format.DateUtils
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
@@ -80,10 +81,12 @@ import protrnd.com.ui.profile.ProfileActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
+
 
 const val REQUEST_PERMISSION_CODE = 7192
 
@@ -163,6 +166,21 @@ fun saveAndStartHomeFragment(
             }
         }
     }
+}
+
+fun TextView.setGradient() {
+    val paint = this.paint
+    val width = paint.measureText(this.text.toString())
+    val textShader: Shader = LinearGradient(0f, 0f, width, this.textSize, intArrayOf(
+        Color.parseColor("#170246"),
+        Color.parseColor("#1F0342"),
+        Color.parseColor("#38073A"),
+        Color.parseColor("#600D2C"),
+        Color.parseColor("#961519"),
+        Color.parseColor("#CA1E07")
+    ), null, Shader.TileMode.CLAMP)
+
+    this.paint.shader = textShader
 }
 
 fun String.setSpannableColor(section: String, start: Int = 0): Spannable {
@@ -306,12 +324,12 @@ fun likePost(
 }
 
 fun Context.showCommentSection(
-    viewModel: HomeViewModel,
-    lifecycleOwner: LifecycleOwner,
-    scope: CoroutineScope,
-    otherProfile: Profile,
-    currentProfile: Profile,
-    postId: String
+    viewModel: HomeViewModel? = null,
+    lifecycleOwner: LifecycleOwner? = null,
+    scope: CoroutineScope? = null,
+    otherProfile: Profile? = null,
+    currentProfile: Profile? = null,
+    postId: String? = null
 ) {
     try {
         val bottomSheet = BottomSheetDialog(this, R.style.BottomSheetTheme)
@@ -320,81 +338,82 @@ fun Context.showCommentSection(
         bottomSheet.setContentView(bottomSheetBinding.root)
         bottomSheet.setCanceledOnTouchOutside(true)
         bottomSheetBinding.commentSection.layoutManager = LinearLayoutManager(this)
-        viewModel.loadComments(postId)
-        viewModel.comments.observe(lifecycleOwner) { comments ->
-            when (comments) {
-                is Resource.Success -> {
-                    if (comments.value.data.isNotEmpty()) {
-                        bottomSheetBinding.commentSection.visible(true)
-                        bottomSheetBinding.noCommentsTv.visible(false)
-                        val commentsText = "${comments.value.data.size} Comments"
-                        bottomSheetBinding.commentsCount.text = commentsText
-                        val commentAdapter = CommentsAdapter(
-                            viewModel = viewModel,
-                            comments = comments.value.data
-                        )
-                        commentAdapter.clickListener(object : CommentsAdapter.ClickListener {
-                            override fun clickProfile(profileId: String) {
-                                this@showCommentSection.startActivity(
-                                    Intent(
-                                        this@showCommentSection,
-                                        ProfileActivity::class.java
-                                    ).also { intent ->
-                                        intent.putExtra("profile_id", profileId)
-                                    })
-                            }
-                        })
-                        bottomSheetBinding.commentSection.adapter = commentAdapter
-                    }
-                }
-                is Resource.Failure -> {
-                    if (comments.isNetworkError) {
-                        bottomSheetBinding.root.snackbar("Error loading comments") {
-                            viewModel.loadComments(
-                                postId
-                            )
-                        }
-                    }
-                }
-                else -> {}
-            }
-        }
+        bottomSheetBinding.commentSection.adapter = CommentsAdapter()
+//        viewModel.loadComments(postId)
+//        viewModel.comments.observe(lifecycleOwner) { comments ->
+//            when (comments) {
+//                is Resource.Success -> {
+//                    if (comments.value.data.isNotEmpty()) {
+//                        bottomSheetBinding.commentSection.visible(true)
+//                        bottomSheetBinding.noCommentsTv.visible(false)
+//                        val commentsText = "${comments.value.data.size} Comments"
+//                        bottomSheetBinding.commentsCount.text = commentsText
+//                        val commentAdapter = CommentsAdapter(
+//                            viewModel = viewModel,
+//                            comments = comments.value.data
+//                        )
+//                        commentAdapter.clickListener(object : CommentsAdapter.ClickListener {
+//                            override fun clickProfile(profileId: String) {
+//                                this@showCommentSection.startActivity(
+//                                    Intent(
+//                                        this@showCommentSection,
+//                                        ProfileActivity::class.java
+//                                    ).also { intent ->
+//                                        intent.putExtra("profile_id", profileId)
+//                                    })
+//                            }
+//                        })
+//                        bottomSheetBinding.commentSection.adapter = commentAdapter
+//                    }
+//                }
+//                is Resource.Failure -> {
+//                    if (comments.isNetworkError) {
+//                        bottomSheetBinding.root.snackbar("Error loading comments") {
+//                            viewModel.loadComments(
+//                                postId
+//                            )
+//                        }
+//                    }
+//                }
+//                else -> {}
+//            }
+//        }
 
-        bottomSheetBinding.sendComment.setOnClickListener {
-            val commentContent = bottomSheetBinding.commentInput.text.toString().trim()
-            if (commentContent.isNotEmpty()) {
-                bottomSheetBinding.sendComment.enable(false)
-                val comment = CommentDTO(comment = commentContent, postid = postId)
-                scope.launch {
-                    when (val result = viewModel.addComment(comment)) {
-                        is Resource.Success -> {
-                            withContext(Dispatchers.Main) {
-                                bottomSheetBinding.sendComment.enable(true)
-                                if (result.value.successful) {
-                                    if (otherProfile != currentProfile)
-                                        sendCommentNotification(
-                                            otherProfile,
-                                            currentProfile,
-                                            postId
-                                        )
-                                    bottomSheetBinding.commentInput.text.clear()
-                                    viewModel.getComments(postId)
-                                }
-                            }
-                        }
-                        is Resource.Loading -> {
-                            bottomSheetBinding.sendComment.enable(false)
-                        }
-                        is Resource.Failure -> {
-                            bottomSheetBinding.sendComment.enable(true)
-                        }
-                        else -> {}
-                    }
-                }
-            } else {
-                bottomSheetBinding.inputField.error = "This field cannot be empty"
-            }
-        }
+//        bottomSheetBinding.sendComment.setOnClickListener {
+//            val commentContent = bottomSheetBinding.commentInput.text.toString().trim()
+//            if (commentContent.isNotEmpty()) {
+//                bottomSheetBinding.sendComment.enable(false)
+//                val comment = CommentDTO(comment = commentContent, postid = postId)
+//                scope.launch {
+//                    when (val result = viewModel.addComment(comment)) {
+//                        is Resource.Success -> {
+//                            withContext(Dispatchers.Main) {
+//                                bottomSheetBinding.sendComment.enable(true)
+//                                if (result.value.successful) {
+//                                    if (otherProfile != currentProfile)
+//                                        sendCommentNotification(
+//                                            otherProfile,
+//                                            currentProfile,
+//                                            postId
+//                                        )
+//                                    bottomSheetBinding.commentInput.text.clear()
+//                                    viewModel.getComments(postId)
+//                                }
+//                            }
+//                        }
+//                        is Resource.Loading -> {
+//                            bottomSheetBinding.sendComment.enable(false)
+//                        }
+//                        is Resource.Failure -> {
+//                            bottomSheetBinding.sendComment.enable(true)
+//                        }
+//                        else -> {}
+//                    }
+//                }
+//            } else {
+//                bottomSheetBinding.inputField.error = "This field cannot be empty"
+//            }
+//        }
         if (!bottomSheet.isShowing)
             bottomSheet.show()
         bottomSheet.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -411,7 +430,6 @@ private fun HomeViewModel.loadComments(postId: String) {
 fun bindPostDetails(
     tabLayout: TabLayout,
     fullnameTv: TextView,
-    usernameTv: TextView,
     locationTv: TextView,
     captionTv: TextView,
     post: Post,
@@ -423,7 +441,7 @@ fun bindPostDetails(
 ) {
     if (postOwnerProfile != null) {
         val username = "@${postOwnerProfile.username}"
-        usernameTv.text = username
+//        usernameTv.text = username
         fullnameTv.text = postOwnerProfile.fullname
         val caption = postOwnerProfile.username + " ${post.caption}"
         captionTv.text = caption
@@ -456,6 +474,10 @@ fun bindPostDetails(
     imagesPager.setPageTransformer(transformer)
 
     TabLayoutMediator(tabLayout, imagesPager) { _, _ -> }.attach()
+}
+
+fun Int.formatAmount(): String {
+    return NumberFormat.getNumberInstance(Locale.US).format(this)
 }
 
 private fun TextView.setTags(section: String, activity: Activity) {
@@ -552,15 +574,19 @@ suspend fun RecyclerView.showUserPostsInGrid(
 ) {
     when (val posts = viewModel.getProfilePosts(profile.identifier)) {
         is Resource.Success -> {
-            val gridlayout = GridLayoutManager(context, 3)
-            this.layoutManager = gridlayout
-            val thumbnailsAdapter = ImageThumbnailPostAdapter(posts.value.data)
-            thumbnailsAdapter.stateRestorationPolicy =
-                RecyclerView.Adapter.StateRestorationPolicy.PREVENT
-            this.adapter = thumbnailsAdapter
+            addThumbnailGrid3(context, posts.value.data)
         }
         else -> {}
     }
+}
+
+fun RecyclerView.addThumbnailGrid3(context: Context, thumbnails: List<Post>) {
+    val gridlayout = GridLayoutManager(context, 3)
+    this.layoutManager = gridlayout
+    val thumbnailsAdapter = ImageThumbnailPostAdapter(thumbnails)
+    thumbnailsAdapter.stateRestorationPolicy =
+        RecyclerView.Adapter.StateRestorationPolicy.PREVENT
+    this.adapter = thumbnailsAdapter
 }
 
 suspend fun TextView.showFollowersCount(viewModel: HomeViewModel, profile: Profile) {

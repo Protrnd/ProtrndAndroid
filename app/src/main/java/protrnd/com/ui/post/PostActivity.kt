@@ -62,26 +62,27 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
         binding.navName.text = currentUserProfile.username
 
         binding.likeToggle.setOnClickListener {
-            likePost(
-                binding.likeToggle,
-                binding.likesCount,
-                lifecycleScope,
-                viewModel,
-                postId,
-                otherProfileHash["otherProfile"]!!,
-                currentUserProfile
-            )
+//            likePost(
+//                binding.likeToggle,
+//                binding.likesCount,
+//                lifecycleScope,
+//                viewModel,
+//                postId,
+//                otherProfileHash["otherProfile"]!!,
+//                currentUserProfile
+//            )
         }
 
         binding.commentBtn.setOnClickListener {
-            this.showCommentSection(
-                viewModel,
-                this,
-                lifecycleScope,
-                otherProfileHash["otherProfile"]!!,
-                currentUserProfile,
-                postId
-            )
+            showCommentSection()
+//            this.showCommentSection(
+//                viewModel,
+//                this,
+//                lifecycleScope,
+//                otherProfileHash["otherProfile"]!!,
+//                currentUserProfile,
+//                postId
+//            )
         }
     }
 
@@ -109,7 +110,6 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
                         bindPostDetails(
                             tabLayout = binding.tabLayout,
                             fullnameTv = binding.fullname,
-                            usernameTv = binding.username,
                             locationTv = binding.location,
                             captionTv = binding.captionTv,
                             post = post!!,

@@ -9,8 +9,8 @@ import protrnd.com.ui.getAgo
 
 class CommentViewHolder(val view: CommentsRvLayoutBinding) : RecyclerView.ViewHolder(view.root) {
     fun bind(comment: Comment, profile: Profile) {
-        val username = "@${profile.username}"
-        view.username.text = username
+//        val username = "@${profile.username}"
+//        view.username.text = username
         view.fullname.text = profile.fullname
         if (profile.profileimg.isNotEmpty())
             Glide.with(view.root.context)

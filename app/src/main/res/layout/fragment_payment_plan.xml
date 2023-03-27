@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".ui.promotion.PaymentPlanFragment"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/subheading"
+        android:fontFamily="@font/dm_sans_medium"
+        android:textColor="@color/black"
+        android:text="@string/choose_payment_plan"/>
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp">
+        <RadioButton
+            android:id="@+id/weekly_plan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:textSize="@dimen/body"
+            android:fontFamily="@font/dm_sans"
+            android:textColor="@color/black"
+            android:background="@drawable/pink_light_outlined_to_deep_filled_selector"
+            android:button="@android:color/transparent"/>
+        <RadioButton
+            android:id="@+id/monthly_plan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:layout_marginTop="16dp"
+            android:textSize="@dimen/body"
+            android:checked="true"
+            android:fontFamily="@font/dm_sans"
+            android:textColor="@color/black"
+            android:background="@drawable/pink_light_outlined_to_deep_filled_selector"
+            android:button="@android:color/transparent"/>
+    </RadioGroup>
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/set_as_recurring"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:layout_marginTop="8dp"
+        app:switchPadding="8dp"
+        android:visibility="gone"
+        app:thumbTint="@color/switch_btn_color"
+        android:text="@string/set_as_recurring_plan"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/continue_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="12dp"
+        android:fontFamily="@font/dmsans_medium"
+        android:background="@drawable/button_ripple"
+        android:text="@string/continue_text"
+        android:textColor="@color/white"
+        tools:ignore="DuplicateSpeakableTextCheck" />
+</androidx.appcompat.widget.LinearLayoutCompat>

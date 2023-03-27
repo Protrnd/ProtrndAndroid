@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@drawable/launcher_background">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/onboarding_1_img"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <RadioButton
+                android:id="@+id/button_1"
+                android:layout_width="30dp"
+                android:layout_height="10dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/pager_toggle_state"
+                android:button="@android:color/transparent"
+                android:checked="true"
+                android:clickable="false" />
+
+            <RadioButton
+                android:id="@+id/button_2"
+                android:layout_width="30dp"
+                android:layout_height="10dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/pager_toggle_state"
+                android:button="@android:color/transparent"
+                android:checked="false"
+                android:clickable="false" />
+
+            <RadioButton
+                android:id="@+id/button_3"
+                android:layout_width="30dp"
+                android:layout_height="10dp"
+                android:layout_marginEnd="5dp"
+                android:background="@drawable/pager_toggle_state"
+                android:button="@android:color/transparent"
+                android:checked="false"
+                android:clickable="false" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/swipe"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="Swipe >>"
+            android:fontFamily="@font/dm_sans"
+            android:textSize="16sp"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="60sp"
+        android:fontFamily="@font/dm_sans_bold"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="20dp"
+        android:textColor="#2D264B"
+        android:text="Discover awesome stuff"/>
+</androidx.appcompat.widget.LinearLayoutCompat>

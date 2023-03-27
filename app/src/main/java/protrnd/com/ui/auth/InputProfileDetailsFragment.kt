@@ -28,19 +28,18 @@ class InputProfileDetailsFragment :
         registerFragment = fragmentHost.parentFragment as RegisterFragment
         binding.continueBtn.enable(false)
         val base = registerFragment.requireActivity() as AuthenticationActivity
-        binding.loginHereTv.setOnClickListener {
+        binding.loginText.setOnClickListener {
             base.startFragment(RegisterFragmentDirections.actionRegisterFragmentToLoginFragment())
         }
 
-        binding.loginHereTv.text =
-            binding.loginHereTv.text.toString().setSpannableColor("Login here", 72)
+        binding.detailsHeader.setGradient()
+        binding.loginText.text = binding.loginText.text.toString().setSpannableColor("Login", 25)
 
         if (registerFragment.verifyOTP.registerDto?.accountType == "business") {
-            binding.detailsHeader.text = getString(R.string.business_details)
-            binding.nameTv.text = getString(R.string.business_fullname)
+            binding.nameTv.text = getString(R.string.business_name)
             binding.usernameTv.text = getString(R.string.business_username_at)
+            binding.accountIdentifier.text = getString(R.string.grow_business)
         } else {
-            binding.detailsHeader.text = getString(R.string.signup)
             binding.nameTv.text = getString(R.string.fullname)
             binding.usernameTv.text = getString(R.string.username_with_at)
         }

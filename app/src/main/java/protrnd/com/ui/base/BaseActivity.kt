@@ -36,13 +36,14 @@ abstract class BaseActivity<B : ViewBinding, VM : ViewModel, R : BaseRepository>
         this.checkStoragePermissions()
 
         profilePreferences = SettingsPreferences(this)
-        val profile = runBlocking { profilePreferences.profile.first() }
-        val authToken = runBlocking { profilePreferences.authToken.first() }
-        if (authToken != null && profile != null) {
-            currentUserProfile = Gson().fromJson(profile, Profile::class.java)
-        } else {
-            startNewActivityFromAuth(AuthenticationActivity::class.java)
-        }
+        //TODO:Please fix when launching
+//        val profile = runBlocking { profilePreferences.profile.first() }
+//        val authToken = runBlocking { profilePreferences.authToken.first() }
+//        if (authToken != null && profile != null) {
+//            currentUserProfile = Gson().fromJson(profile, Profile::class.java)
+//        } else {
+//            startNewActivityFromAuth(AuthenticationActivity::class.java)
+//        }
         val factory = ViewModelFactory(getActivityRepository())
         viewModel = ViewModelProvider(this, factory)[getViewModel()]
         onViewReady(savedInstanceState, intent)

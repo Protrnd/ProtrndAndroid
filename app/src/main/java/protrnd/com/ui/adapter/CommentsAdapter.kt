@@ -13,7 +13,7 @@ import protrnd.com.databinding.CommentsRvLayoutBinding
 import protrnd.com.ui.home.HomeViewModel
 import protrnd.com.ui.viewholder.CommentViewHolder
 
-class CommentsAdapter(private val comments: List<Comment>, val viewModel: HomeViewModel) :
+class CommentsAdapter(private val comments: List<Comment>? = null, val viewModel: HomeViewModel? = null) :
     RecyclerView.Adapter<CommentViewHolder>() {
 
     interface ClickListener {
@@ -27,24 +27,24 @@ class CommentsAdapter(private val comments: List<Comment>, val viewModel: HomeVi
     )
 
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
-        val comment = comments[position]
-        holder.itemView.autoDisposeScope.launch {
-            when (val result = viewModel.getProfileById(comment.userid)) {
-                is Resource.Success -> {
-                    withContext(Dispatchers.Main) {
-                        holder.bind(comment, result.value.data)
-                    }
-                }
-                else -> {}
-            }
-        }
-
-        holder.view.profileImage.setOnClickListener {
-            clickProfile?.clickProfile(comment.userid)
-        }
+        val comment = comments!![position]
+//        holder.itemView.autoDisposeScope.launch {
+//            when (val result = viewModel.getProfileById(comment.userid)) {
+//                is Resource.Success -> {
+//                    withContext(Dispatchers.Main) {
+//                        holder.bind(comment, result.value.data)
+//                    }
+//                }
+//                else -> {}
+//            }
+//        }
+//
+//        holder.view.profileImage.setOnClickListener {
+//            clickProfile?.clickProfile(comment.userid)
+//        }
     }
 
-    override fun getItemCount(): Int = comments.size
+    override fun getItemCount(): Int = 15
 
     fun clickListener(clickListener: ClickListener) {
         clickProfile = clickListener

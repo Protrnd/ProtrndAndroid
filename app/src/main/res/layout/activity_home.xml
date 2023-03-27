@@ -34,32 +34,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/app_toolbar" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="20dp"
-            android:contentDescription="@string/add_post"
-            android:src="@drawable/camera_ic"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.ismaeldivita.chipnavigation.ChipNavigationBar
+    <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:layout_gravity="bottom"
-        android:background="@color/white"
+        android:layout_height="wrap_content"
+        app:menu="@menu/home_chip_menu"
         android:elevation="50dp"
-        app:cnb_addBottomInset="false"
-        app:cnb_addLeftInset="false"
-        app:cnb_addRightInset="false"
-        app:cnb_addTopInset="false"
-        app:cnb_badgeColor="@color/app_blue"
-        app:cnb_menuResource="@menu/home_chip_menu"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:labelVisibilityMode="unlabeled"
+        android:layout_gravity="bottom"/>
 
     <View
         android:id="@+id/dim_bg"

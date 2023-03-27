@@ -1,28 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/shimmer_color"
+    android:background="@color/white"
     android:orientation="vertical"
-    android:paddingTop="@dimen/padding_10">
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/profile_details_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/padding_10"
-        android:layout_marginEnd="@dimen/padding_10"
-        android:layout_marginBottom="5dp"
-        app:layout_constraintTop_toTopOf="parent">
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp">
 
         <ImageView
             android:id="@+id/profile_image"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:contentDescription="@string/profile_image"
-            android:src="@drawable/default_profile_ic"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:background="@drawable/round_bg"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -30,56 +23,60 @@
             android:id="@+id/fullname"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="8dp"
             android:layout_marginEnd="10dp"
-            android:fontFamily="@font/dm_sans_bold"
+            android:fontFamily="@font/dmsans_medium"
             android:maxLines="1"
-            android:textColor="#2D264B"
-            android:textSize="15sp"
-            app:layout_constraintBottom_toTopOf="@id/username"
+            android:text="@string/protrnd"
+            android:textColor="@color/black"
+            android:textSize="@dimen/body"
             app:layout_constraintEnd_toStartOf="@id/date_time"
             app:layout_constraintStart_toEndOf="@+id/profile_image"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed" />
 
         <TextView
-            android:id="@+id/username"
+            android:id="@+id/comment_content"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:layout_marginEnd="10dp"
-            android:fontFamily="@font/dm_sans_bold"
-            android:maxLines="1"
-            android:textColor="#8E8E8E"
-            android:textSize="13sp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="@dimen/padding_10"
+            android:textColor="@color/main_purple"
+            android:textSize="12sp"
+            android:text="@string/comment_caption"
             app:layout_constraintEnd_toStartOf="@id/date_time"
-            app:layout_constraintStart_toEndOf="@+id/profile_image"
-            app:layout_constraintTop_toBottomOf="@id/fullname"
-            app:layout_constraintVertical_chainStyle="packed" />
+            app:layout_constraintStart_toStartOf="@+id/fullname"
+            app:layout_constraintTop_toBottomOf="@id/fullname" />
+
 
         <TextView
             android:id="@+id/date_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#8E8E8E"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:text="@string/time_ago"
+            android:textColor="@color/dark_grey"
+            android:textSize="11sp"
+            app:layout_constraintBottom_toBottomOf="@+id/comment_content"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <TextView
-        android:id="@+id/comment_content"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/padding_10"
-        android:layout_marginEnd="@dimen/padding_10"
-        android:textColor="@color/app_blue"
-        android:textSize="15sp" />
+        <androidx.appcompat.widget.AppCompatToggleButton
+            android:id="@+id/like_toggle"
+            android:layout_width="20dp"
+            android:layout_height="18dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/heart_state"
+            android:button="@android:color/transparent"
+            android:textColor="@android:color/transparent"
+            app:layout_constraintStart_toStartOf="@+id/comment_content"
+            app:layout_constraintTop_toBottomOf="@id/comment_content" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:layout_marginTop="5dp"
-        android:alpha="0.2"
-        android:background="@color/app_blue" />
-</androidx.appcompat.widget.LinearLayoutCompat>
+        <ImageView
+            android:id="@+id/send_text_btn"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="10dp"
+            android:contentDescription="@string/send_text_button"
+            android:src="@drawable/send_text_ic"
+            app:layout_constraintStart_toEndOf="@+id/like_toggle"
+            app:layout_constraintTop_toTopOf="@+id/like_toggle" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

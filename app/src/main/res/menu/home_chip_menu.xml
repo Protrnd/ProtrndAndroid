@@ -5,12 +5,27 @@
         <item
             android:id="@+id/home"
             android:icon="@drawable/home_ic"
-            android:title="@string/home"
+            android:title=""
+            app:showAsAction="always" />
+        <item
+            android:id="@+id/search"
+            android:icon="@drawable/search_ic"
+            android:title=""
+            app:showAsAction="always" />
+        <item
+            android:id="@+id/communication"
+            android:icon="@drawable/communication_ic"
+            android:title=""
+            app:showAsAction="always" />
+        <item
+            android:id="@+id/wallet"
+            android:icon="@drawable/wallet_ic"
+            android:title=""
             app:showAsAction="always" />
         <item
             android:id="@+id/profile"
-            android:icon="@drawable/following_ic"
-            android:title="@string/profile"
+            android:icon="@drawable/profile_ic"
+            android:title=""
             app:showAsAction="always" />
     </group>
 </menu>

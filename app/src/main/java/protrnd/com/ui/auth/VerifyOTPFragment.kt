@@ -32,8 +32,7 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
         binding.input2.requestForFocus(binding.input3, binding.input1)
         binding.input3.requestForFocus(binding.input4, binding.input2)
         binding.input4.requestForFocus(prev = binding.input3)
-        binding.enterOtpTv.text =
-            binding.enterOtpTv.text.toString().setSpannableColor("One-Time-Password", 10)
+        binding.resendCode.text = binding.resendCode.text.toString().setSpannableColor("Click here to resend", 23)
         viewModel.verifyOtpResponse.observe(viewLifecycleOwner) {
             when (it) {
                 is Resource.Success -> {

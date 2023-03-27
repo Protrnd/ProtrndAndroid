@@ -30,7 +30,7 @@ abstract class BaseFragment<VM : ViewModel, B : ViewBinding, R : BaseRepository>
     ): View? {
         settingsPreferences = SettingsPreferences(requireContext())
         binding = getFragmentBinding(inflater, container)
-        lifecycleScope.launch { settingsPreferences.authToken.first() } //This automatically stores the information to memory
+//        lifecycleScope.launch { settingsPreferences.authToken.first() } //This automatically stores the information to memory
         val factory = ViewModelFactory(getFragmentRepository())
         viewModel = ViewModelProvider(this, factory)[getViewModel()]
         Thread.setDefaultUncaughtExceptionHandler { _, e ->

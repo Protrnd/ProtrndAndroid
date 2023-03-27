@@ -68,7 +68,7 @@ class HashTagResultsActivity :
 
     private fun loadPage() {
         //Load first page
-        setupRecyclerView()
+//        setupRecyclerView()
         viewModel.getPostsQueried(hashtag).observe(this) {
             postsAdapter.submitData(lifecycle, it)
         }
@@ -110,72 +110,72 @@ class HashTagResultsActivity :
             }
     }
 
-    private fun setupRecyclerView() {
-        postsAdapter = binding.hashTaggedResultsRv.adapter as PostsPagingAdapter
-        postsAdapter.setupRecyclerResults(object : PostsPagingAdapter.SetupRecyclerResultsListener {
-            override fun setupLikes(holder: PostsViewHolder, postData: Post) {
-                lifecycleScope.launch {
-                    if (isNetworkAvailable())
-                        viewModel.setupLikes(
-                            postData.id,
-                            holder.view.likesCount,
-                            holder.view.likeToggle
-                        )
-                }
-            }
-
-            override fun setupData(holder: PostsViewHolder, postData: Post) {
-                lifecycleScope.launch {
-                    val profileResult = getOtherProfile(postData.profileid)
-                    if (profileResult != null) {
-                        holder.bind(
-                            this@HashTagResultsActivity,
-                            postData,
-                            profileResult,
-                            currentUserProfile
-                        )
-                    }
-                }
-            }
-
-            override fun showCommentSection(postData: Post) {
-                lifecycleScope.launch {
-                    val profileResult = getOtherProfile(postData.profileid)
-                    if (profileResult != null) {
-                        showCommentSection(
-                            viewModel,
-                            this@HashTagResultsActivity,
-                            lifecycleScope,
-                            profileResult,
-                            currentUserProfile,
-                            postData.identifier
-                        )
-                    }
-                }
-            }
-
-            override fun like(holder: PostsViewHolder, postData: Post) {
-                lifecycleScope.launch {
-                    val profileResult = getOtherProfile(postData.profileid)
-                    if (profileResult != null) {
-                        val liked = holder.view.likeToggle.isChecked
-                        if (isNetworkAvailable())
-                            likePost(
-                                holder.view.likeToggle,
-                                holder.view.likesCount,
-                                lifecycleScope,
-                                viewModel,
-                                postData.identifier,
-                                profileResult,
-                                currentUserProfile
-                            )
-                        else
-                            holder.view.likeToggle.isChecked = !liked
-                    }
-                }
-            }
-        })
-    }
+//    private fun setupRecyclerView() {
+//        postsAdapter = binding.hashTaggedResultsRv.adapter as PostsPagingAdapter
+//        postsAdapter.setupRecyclerResults(object : PostsPagingAdapter.SetupRecyclerResultsListener {
+//            override fun setupLikes(holder: PostsViewHolder, postData: Post) {
+//                lifecycleScope.launch {
+//                    if (isNetworkAvailable())
+//                        viewModel.setupLikes(
+//                            postData.id,
+//                            holder.view.likesCount,
+//                            holder.view.likeToggle
+//                        )
+//                }
+//            }
+//
+//            override fun setupData(holder: PostsViewHolder, postData: Post) {
+//                lifecycleScope.launch {
+//                    val profileResult = getOtherProfile(postData.profileid)
+//                    if (profileResult != null) {
+//                        holder.bind(
+//                            this@HashTagResultsActivity,
+//                            postData,
+//                            profileResult,
+//                            currentUserProfile
+//                        )
+//                    }
+//                }
+//            }
+//
+//            override fun showCommentSection(postData: Post) {
+//                lifecycleScope.launch {
+//                    val profileResult = getOtherProfile(postData.profileid)
+//                    if (profileResult != null) {
+//                        showCommentSection(
+//                            viewModel,
+//                            this@HashTagResultsActivity,
+//                            lifecycleScope,
+//                            profileResult,
+//                            currentUserProfile,
+//                            postData.identifier
+//                        )
+//                    }
+//                }
+//            }
+//
+//            override fun like(holder: PostsViewHolder, postData: Post) {
+//                lifecycleScope.launch {
+//                    val profileResult = getOtherProfile(postData.profileid)
+//                    if (profileResult != null) {
+//                        val liked = holder.view.likeToggle.isChecked
+//                        if (isNetworkAvailable())
+//                            likePost(
+//                                holder.view.likeToggle,
+//                                holder.view.likesCount,
+//                                lifecycleScope,
+//                                viewModel,
+//                                postData.identifier,
+//                                profileResult,
+//                                currentUserProfile
+//                            )
+//                        else
+//                            holder.view.likeToggle.isChecked = !liked
+//                    }
+//                }
+//            }
+//        })
+//    }
 
     private fun setupStoredData() {
         if (isNetworkAvailable())

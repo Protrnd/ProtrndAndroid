@@ -102,7 +102,6 @@ class NewPromotionActivity :
         bindPostDetails(
             tabLayout = binding.tabLayout,
             fullnameTv = binding.fullname,
-            usernameTv = binding.promotionsUsername,
             locationTv = binding.promotionsLocation,
             captionTv = binding.promotionsCaptionTv,
             post = post,

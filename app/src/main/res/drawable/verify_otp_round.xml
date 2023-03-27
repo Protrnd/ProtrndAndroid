@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_focused="true">
-        <shape android:shape="oval">
-            <stroke android:width="2dp" android:color="@color/pink_dark" />
-            <solid android:color="@color/pink_light" />
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:bottom="1dp"
+        android:left="-2dp"
+        android:right="-2dp"
+        android:top="-2dp">
+        <shape android:shape="rectangle">
+            <stroke android:width="2dp"
+                android:color="@color/main_pink"/>
         </shape>
     </item>
-
-    <item>
-        <shape android:shape="oval">
-            <solid android:color="@color/white" />
-        </shape>
-    </item>
-
-</selector>
+</layer-list>

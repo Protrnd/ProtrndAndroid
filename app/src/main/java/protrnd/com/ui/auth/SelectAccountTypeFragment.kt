@@ -6,12 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
-import protrnd.com.R
 import protrnd.com.data.network.api.AuthApi
 import protrnd.com.data.repository.AuthRepository
 import protrnd.com.databinding.FragmentSelectAccountTypeBinding
 import protrnd.com.ui.base.BaseFragment
-import protrnd.com.ui.enable
+import protrnd.com.ui.setGradient
+import protrnd.com.ui.setSpannableBold
 import protrnd.com.ui.setSpannableColor
 
 class SelectAccountTypeFragment :
@@ -19,30 +19,26 @@ class SelectAccountTypeFragment :
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.continueBtn.enable(false)
         val fragmentHost = parentFragment as NavHostFragment
         val authActivity = fragmentHost.parentFragment as RegisterFragment
         val base = authActivity.requireActivity() as AuthenticationActivity
-        binding.loginHereTv.setOnClickListener {
+
+        binding.loginTv.setGradient()
+        binding.loginHereTv.setGradient()
+        binding.userAccountBtn.text = binding.userAccountBtn.text.toString().setSpannableBold("Explore")
+        binding.enterpriseAccountBtn.text = binding.enterpriseAccountBtn.text.toString().setSpannableBold("Business")
+        binding.loginText.text = binding.loginText.text.toString().setSpannableColor("Login", 25)
+
+        binding.userAccountBtn.setOnClickListener {
+            authActivity.verifyOTP.registerDto?.accountType = "user"
+            Navigation.findNavController(requireView())
+                .navigate(SelectAccountTypeFragmentDirections.actionSelectAccountTypeFragmentToInputProfileDetailsFragment())
+        }
+        binding.loginText.setOnClickListener {
             base.startFragment(RegisterFragmentDirections.actionRegisterFragmentToLoginFragment())
         }
-
-        binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
-            binding.continueBtn.enable(true)
-            when (checkedId) {
-                R.id.user_account_btn -> {
-                    authActivity.verifyOTP.registerDto?.accountType = "user"
-                }
-                R.id.enterprise_account_btn -> {
-                    authActivity.verifyOTP.registerDto?.accountType = "business"
-                }
-            }
-        }
-
-        binding.loginHereTv.text =
-            binding.loginHereTv.text.toString().setSpannableColor("Login here", 72)
-
-        binding.continueBtn.setOnClickListener {
+        binding.enterpriseAccountBtn.setOnClickListener {
+            authActivity.verifyOTP.registerDto?.accountType = "business"
             Navigation.findNavController(requireView())
                 .navigate(SelectAccountTypeFragmentDirections.actionSelectAccountTypeFragmentToInputProfileDetailsFragment())
         }
