@@ -3,6 +3,8 @@ package protrnd.com.data.responses
 import com.google.gson.annotations.SerializedName
 
 data class ProfilePayload(
+    @SerializedName("role")
+    val role: String,
     @SerializedName("disabled")
     val disabled: Boolean,
     @SerializedName("email")

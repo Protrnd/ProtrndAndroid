@@ -15,10 +15,10 @@ inline fun <ResultType, RequestType> networkBoundResource(
             saveFetchResult(fetch())
             query().map { Resource.Success(it) }
         } catch (e: Throwable) {
-            query().map { Resource.Error(e, it) }
+            query().map { Resource.Failure(true, 500, null, e) }
         }
     } else {
-        query().map { Resource.Success(data) }
+        query().map { Resource.Success(it) }
     }
     emitAll(flow)
 }

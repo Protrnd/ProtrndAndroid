@@ -1,82 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/white"
     android:orientation="vertical"
-    android:paddingTop="12dp"
-    android:paddingBottom="12dp"
     android:paddingStart="16dp"
-    android:paddingEnd="16dp">
+    android:paddingTop="12dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="12dp">
 
-        <ImageView
-            android:id="@+id/profile_image"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:contentDescription="@string/profile_image"
-            android:background="@drawable/round_bg"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <ImageView
+        android:id="@+id/profile_image"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/round_bg"
+        android:contentDescription="@string/profile_image"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/fullname"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="10dp"
-            android:fontFamily="@font/dmsans_medium"
-            android:maxLines="1"
-            android:text="@string/protrnd"
-            android:textColor="@color/black"
-            android:textSize="@dimen/body"
-            app:layout_constraintEnd_toStartOf="@id/date_time"
-            app:layout_constraintStart_toEndOf="@+id/profile_image"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="packed" />
+    <TextView
+        android:id="@+id/fullname"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/dmsans_medium"
+        android:maxLines="1"
+        android:textColor="@color/black"
+        android:textSize="@dimen/body"
+        android:textStyle="normal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/profile_image"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
 
-        <TextView
-            android:id="@+id/comment_content"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/padding_10"
-            android:textColor="@color/main_purple"
-            android:textSize="12sp"
-            android:text="@string/comment_caption"
-            app:layout_constraintEnd_toStartOf="@id/date_time"
-            app:layout_constraintStart_toStartOf="@+id/fullname"
-            app:layout_constraintTop_toBottomOf="@id/fullname" />
+    <TextView
+        android:id="@+id/comment_content"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:fontFamily="@font/dm_sans"
+        android:textColor="@color/main_purple"
+        android:textSize="@dimen/body"
+        app:layout_constraintEnd_toEndOf="@+id/fullname"
+        app:layout_constraintStart_toStartOf="@+id/fullname"
+        app:layout_constraintTop_toBottomOf="@id/fullname" />
 
 
-        <TextView
-            android:id="@+id/date_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/time_ago"
-            android:textColor="@color/dark_grey"
-            android:textSize="11sp"
-            app:layout_constraintBottom_toBottomOf="@+id/comment_content"
-            app:layout_constraintEnd_toEndOf="parent" />
+    <TextView
+        android:id="@+id/date_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/dmsans_medium"
+        android:textColor="@color/dark_grey"
+        android:textSize="10sp"
+        app:layout_constraintStart_toStartOf="@+id/fullname"
+        app:layout_constraintTop_toBottomOf="@+id/comment_content"
+        tools:ignore="SmallSp" />
 
-        <androidx.appcompat.widget.AppCompatToggleButton
-            android:id="@+id/like_toggle"
-            android:layout_width="20dp"
-            android:layout_height="18dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/heart_state"
-            android:button="@android:color/transparent"
-            android:textColor="@android:color/transparent"
-            app:layout_constraintStart_toStartOf="@+id/comment_content"
-            app:layout_constraintTop_toBottomOf="@id/comment_content" />
+    <!--        <androidx.appcompat.widget.AppCompatToggleButton-->
+    <!--            android:id="@+id/like_toggle"-->
+    <!--            android:layout_width="20dp"-->
+    <!--            android:layout_height="18dp"-->
+    <!--            android:layout_marginTop="8dp"-->
+    <!--            android:background="@drawable/heart_state"-->
+    <!--            android:button="@android:color/transparent"-->
+    <!--            android:textColor="@android:color/transparent"-->
+    <!--            app:layout_constraintStart_toStartOf="@+id/comment_content"-->
+    <!--            app:layout_constraintTop_toBottomOf="@id/date_time" />-->
 
-        <ImageView
-            android:id="@+id/send_text_btn"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_marginStart="10dp"
-            android:contentDescription="@string/send_text_button"
-            android:src="@drawable/send_text_ic"
-            app:layout_constraintStart_toEndOf="@+id/like_toggle"
-            app:layout_constraintTop_toTopOf="@+id/like_toggle" />
+    <!--        <ImageView-->
+    <!--            android:id="@+id/send_text_btn"-->
+    <!--            android:layout_width="20dp"-->
+    <!--            android:layout_height="20dp"-->
+    <!--            android:layout_marginStart="10dp"-->
+    <!--            android:contentDescription="@string/send_text_button"-->
+    <!--            android:src="@drawable/send_text_ic"-->
+    <!--            app:layout_constraintStart_toEndOf="@+id/like_toggle"-->
+    <!--            app:layout_constraintTop_toTopOf="@+id/like_toggle" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

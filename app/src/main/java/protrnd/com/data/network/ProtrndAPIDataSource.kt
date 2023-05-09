@@ -10,12 +10,14 @@ import protrnd.com.data.network.api.FCMNotificationApi
 import protrnd.com.data.network.database.NotificationDatabase
 import protrnd.com.data.network.database.PostDatabase
 import protrnd.com.data.network.database.ProfileDatabase
+import protrnd.com.data.network.database.TransactionsDatabase
 import retrofit2.Retrofit
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 
 class ProtrndAPIDataSource {
     companion object {
-        private const val BASE_URL = "https://protrndapi-rxxcn57klq-uc.a.run.app/api/"
+        private const val BASE_URL = "https://protrndapi-x43bb3bjqa-uc.a.run.app/api/"
     }
 
     fun <API> buildAPI(
@@ -38,6 +40,7 @@ class ProtrndAPIDataSource {
                     }
                 }.build()
             )
+            .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(api)
@@ -69,5 +72,9 @@ class ProtrndAPIDataSource {
 
     fun provideNotificationDatabase(application: Application): NotificationDatabase =
         Room.databaseBuilder(application, NotificationDatabase::class.java, "Notification Database")
+            .build()
+
+    fun provideTransactionDatabase(application: Application): TransactionsDatabase =
+        Room.databaseBuilder(application, TransactionsDatabase::class.java, "Transaction Database")
             .build()
 }

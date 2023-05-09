@@ -10,46 +10,51 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/subheading"
-        android:textColor="@color/black"
         android:fontFamily="@font/dm_sans_medium"
-        android:text="@string/choose_payment_method"/>
+        android:text="@string/choose_payment_method"
+        android:textColor="@color/black"
+        android:textSize="@dimen/subheading" />
 
     <RadioGroup
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="36dp">
+
         <RadioButton
+            android:id="@+id/cdc"
             android:layout_width="match_parent"
             android:layout_height="64dp"
-            android:text="@string/credit_debit_card"
+            android:background="@drawable/pink_light_outlined_to_deep_filled_selector"
             android:button="@android:color/transparent"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:gravity="center_vertical"
+            android:checked="true"
             android:drawableStart="@drawable/card_ic"
-            android:drawablePadding="@dimen/padding_10"
             android:drawableEnd="@drawable/payment_method_selector"
-            android:textColor="@color/black"
-            android:textSize="@dimen/body"
+            android:drawablePadding="@dimen/padding_10"
             android:fontFamily="@font/dm_sans"
-            android:background="@drawable/pink_light_outlined_to_deep_filled_selector"/>
-        <RadioButton
-            android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:text="@string/protrnd_wallet"
-            android:button="@android:color/transparent"
+            android:gravity="center_vertical"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:gravity="center_vertical"
-            android:drawableStart="@drawable/launcher_outlined_ic"
-            android:drawablePadding="@dimen/padding_10"
-            android:drawableEnd="@drawable/payment_method_selector"
+            android:text="@string/credit_debit_card"
             android:textColor="@color/black"
+            android:textSize="@dimen/body" />
+
+        <RadioButton
+            android:id="@+id/wallet"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
             android:layout_marginTop="16dp"
-            android:textSize="@dimen/body"
+            android:background="@drawable/pink_light_outlined_to_deep_filled_selector"
+            android:button="@android:color/transparent"
+            android:drawableStart="@drawable/launcher_outlined_ic"
+            android:drawableEnd="@drawable/payment_method_selector"
+            android:drawablePadding="@dimen/padding_10"
             android:fontFamily="@font/dm_sans"
-            android:background="@drawable/pink_light_outlined_to_deep_filled_selector"/>
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="@string/protrnd_wallet"
+            android:textColor="@color/black"
+            android:textSize="@dimen/body" />
     </RadioGroup>
 
     <androidx.appcompat.widget.AppCompatButton
@@ -58,8 +63,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="36dp"
-        android:fontFamily="@font/dmsans_medium"
         android:background="@drawable/button_elevation"
+        android:fontFamily="@font/dmsans_medium"
         android:text="@string/continue_text"
         android:textColor="@color/white"
         tools:ignore="DuplicateSpeakableTextCheck" />

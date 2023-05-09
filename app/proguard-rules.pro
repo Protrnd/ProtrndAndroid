@@ -35,3 +35,7 @@
 }
 
 -keep class com.google.api.** { *; }
+
+-dontwarn com.gowtham.library**
+-keep class com.gowtham.library** { *; }
+-keep interface com.gowtham.library** { *; }

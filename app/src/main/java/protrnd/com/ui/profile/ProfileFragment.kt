@@ -3,53 +3,49 @@ package protrnd.com.ui.profile
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.net.toUri
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.github.satoshun.coroutine.autodispose.lifecycle.autoDisposeScope
 import com.google.android.material.tabs.TabLayoutMediator
 import com.yalantis.ucrop.UCrop
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import protrnd.com.data.NetworkConnectionLiveData
 import protrnd.com.data.models.Post
-import protrnd.com.data.models.ProfileDTO
+import protrnd.com.data.network.MemoryCache
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
+import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.FragmentProfileBinding
-import protrnd.com.databinding.LoadingLayoutBinding
-import protrnd.com.databinding.SelectImageDialogBinding
 import protrnd.com.ui.*
-import protrnd.com.ui.adapter.ImageThumbnailPostAdapter
 import protrnd.com.ui.adapter.ProfileTabsAdapter
-import protrnd.com.ui.adapter.listener.ImagePostItemClickListener
 import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.home.HomeActivity
-import protrnd.com.ui.home.HomeViewModel
-import protrnd.com.ui.post.PostActivity
-import java.io.File
-import java.util.*
+import protrnd.com.ui.viewmodels.HomeViewModel
+import protrnd.com.ui.wallet.send.SendMoneyBottomSheetFragment
 
 class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, HomeRepository>() {
 
     private lateinit var loadingDialog: Dialog
     private lateinit var thisActivity: HomeActivity
+    private val postsSizeMutable = MutableLiveData<Int>()
+    private val sizeLive: LiveData<Int> = postsSizeMutable
+    private val followersCachedMutable = MutableLiveData<String>()
+    private val followersLive: LiveData<String> = followersCachedMutable
+    private val followingsCachedMutable = MutableLiveData<String>()
+    private val followingsLive: LiveData<String> = followingsCachedMutable
+    private val profilePostsMutableCache = MutableLiveData<MutableList<Post>>()
+    val profilePostsLive: LiveData<MutableList<Post>> = profilePostsMutableCache
 
 //    private val getProfileImageContent =
 //        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -148,12 +144,110 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
             binding.root.isRefreshing = false
         }
 
-        val profileTabsAdapter = ProfileTabsAdapter(childFragmentManager,lifecycle)
+        val profileTabsAdapter = ProfileTabsAdapter(childFragmentManager, lifecycle)
         binding.profileTabsPager.adapter = profileTabsAdapter
-        val tabTexts = arrayListOf("Posts 54", "Tagged", "Promotions")
+
+        val tabTexts = arrayListOf("Posts 0", "Tagged")
+
         TabLayoutMediator(binding.tabItems, binding.profileTabsPager) { tab, position ->
             tab.text = tabTexts[position]
         }.attach()
+
+        sizeLive.observe(viewLifecycleOwner) { size ->
+            val displayText =
+                "Posts $size".setSpannableColor("$size".formatNumber(), "Posts ".length)
+            binding.tabItems.getTabAt(0)?.text = displayText
+        }
+
+        val profilePostsCache = MemoryCache.profilePosts
+        postsSizeMutable.postValue(profilePostsCache.size)
+
+        viewModel.getProfilePosts(currentUserProfile.identifier)
+        viewModel.thumbnails.observe(viewLifecycleOwner) { posts ->
+            when (posts) {
+                is Resource.Success -> {
+                    MemoryCache.profilePosts[currentUserProfile.id] =
+                        posts.value.data.toMutableList()
+                    postsSizeMutable.postValue(posts.value.data.size)
+                    profilePostsMutableCache.postValue(posts.value.data.toMutableList())
+                }
+                else -> {}
+            }
+        }
+
+        val username = "@${currentUserProfile.username}"
+        binding.profileFullName.text = currentUserProfile.fullname
+        binding.profileUsername.text = username
+
+        if (currentUserProfile.profileimg.isNotEmpty())
+            Glide.with(requireView())
+                .load(currentUserProfile.profileimg)
+                .circleCrop()
+                .into(binding.profileImage)
+
+        binding.about.visible(currentUserProfile.about != null && currentUserProfile.about!!.isNotEmpty())
+        binding.about.text = currentUserProfile.about
+        binding.location.text = currentUserProfile.location
+
+        binding.sendMoneyBtn.setOnClickListener {
+            binding.alphaBg.visible(true)
+            val bottomSheet = SendMoneyBottomSheetFragment(this)
+            bottomSheet.show(childFragmentManager, bottomSheet.tag)
+        }
+
+        followersLive.observe(viewLifecycleOwner) {
+            val followersResult = "$it Followers"
+            binding.followersCount.text = followersResult.setSpannableColor(it)
+        }
+
+        val followers = MemoryCache.profileFollowers[currentUserProfile.id]
+        var flw = ""
+        if (followers != null) {
+            flw = followers
+            followersCachedMutable.postValue(flw)
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            when (val fc = viewModel.getFollowersCount(currentUserProfile.id)) {
+                is Resource.Success -> {
+                    if (fc.value.successful) {
+                        val count = "${fc.value.data}".formatNumber()
+                        if (flw != count) {
+                            followersCachedMutable.postValue(count)
+                            MemoryCache.profileFollowers[currentUserProfile.id] = count
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+
+        followingsLive.observe(viewLifecycleOwner) {
+            val followingsResult = "$it Following"
+            binding.followingCount.text = followingsResult.setSpannableColor(it)
+        }
+
+        val followings = MemoryCache.profileFollowings[currentUserProfile.id]
+        var flwng = ""
+        if (followings != null) {
+            flwng = followings
+            followingsCachedMutable.postValue(flwng)
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            when (val fc = viewModel.getFollowingsCount(currentUserProfile.id)) {
+                is Resource.Success -> {
+                    if (fc.value.successful) {
+                        val count = "${fc.value.data}".formatNumber()
+                        if (flw != count) {
+                            followingsCachedMutable.postValue(count)
+                            MemoryCache.profileFollowings[currentUserProfile.id] = count
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
 
 //        NetworkConnectionLiveData(context ?: return)
 //            .observe(viewLifecycleOwner) {
@@ -169,7 +263,7 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
 //        loadingWindow.setLayout(
 //            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
 //        )
-//
+
 //        requireActivity().checkStoragePermissions()
 //
 //        val dialog = Dialog(requireContext())
@@ -209,7 +303,7 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
     ) = FragmentProfileBinding.inflate(inflater)
 
     override fun getFragmentRepository(): HomeRepository {
-        val token = runBlocking { settingsPreferences.authToken.first() }
+        val token = runBlocking { profilePreferences.authToken.first() }
         val api = protrndAPIDataSource.buildAPI(ProfileApi::class.java, token)
         val postsApi = protrndAPIDataSource.buildAPI(PostApi::class.java, token)
         return HomeRepository(api, postsApi)
@@ -236,47 +330,24 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
 //        }
 //    }
 
-//    private fun loadView() {
-//        binding.profileFullName.text = thisActivity.currentUserProfile.fullname
-//        val username = "@${thisActivity.currentUserProfile.username}"
-//        binding.profileUsername.text = username
-//        if (thisActivity.currentUserProfile.profileimg.isNotEmpty())
-//            Glide.with(requireActivity())
-//                .load(thisActivity.currentUserProfile.profileimg)
-//                .circleCrop()
-//                .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                .into(binding.profileImage)
-//        if (thisActivity.currentUserProfile.bgimg.isNotEmpty())
-//            Glide.with(requireActivity())
-//                .load(thisActivity.currentUserProfile.bgimg)
-//                .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                .into(binding.bgImage)
-//
-//        binding.profileView.visible(true)
-//
-//        lifecycleScope.launch {
-//            binding.followersCount.showFollowersCount(
-//                viewModel,
-//                thisActivity.currentUserProfile
-//            )
-//            binding.followingCount.showFollowingCount(
-//                viewModel,
-//                thisActivity.currentUserProfile
-//            )
-//            if (requireActivity().isNetworkAvailable()) {
-//                binding.postsRv.showUserPostsInGrid(
-//                    requireContext(), viewModel,
-//                    thisActivity.currentUserProfile
-//                )
-//                val thumbnailAdapter = binding.postsRv.adapter as ImageThumbnailPostAdapter
-//                thumbnailAdapter.imageClickListener(object : ImagePostItemClickListener {
-//                    override fun postItemClickListener(post: Post) {
-//                        startActivity(Intent(requireContext(), PostActivity::class.java).apply {
-//                            this.putExtra("post_id", post.identifier)
-//                        })
-//                    }
-//                })
-//            }
-//        }
-//    }
+    fun removeAlphaVisibility() {
+        binding.alphaBg.visible(false)
+    }
+
+    fun showAlpha() {
+        binding.alphaBg.visible(true)
+    }
+
+    private fun loadView() {
+        lifecycleScope.launch {
+            binding.followersCount.showFollowersCount(
+                viewModel,
+                thisActivity.currentUserProfile
+            )
+            binding.followingCount.showFollowingCount(
+                viewModel,
+                thisActivity.currentUserProfile
+            )
+        }
+    }
 }

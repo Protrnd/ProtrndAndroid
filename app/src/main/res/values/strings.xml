@@ -111,7 +111,7 @@
     <string name="expiry_date">Expiry Date</string>
     <string name="e_g_ex_date">e.g 12/24</string>
     <string name="cvv_security_code">CVV (Security Code)</string>
-    <string name="cvv">123</string>
+    <string name="cvv">e.g 123</string>
     <string name="card_number">Card Number</string>
     <string name="promote_your_post">Promote Your Post</string>
     <string name="promote_post">Promote your post to make it trend and reach your clients</string>
@@ -119,7 +119,7 @@
     <string name="support_your_favs">Support Your Favs</string>
     <string name="show_love_and_support">Show love and support your favourite people and products.</string>
     <string name="support_amount">Support Amount</string>
-    <string name="support_value">0+</string>
+    <string name="support_value">100+</string>
     <string name="how_big_is_your_love">How Big is your love?</string>
     <string name="you_re_post_is_going_viral_click_here_to_find_out_what_to_do_next_or_continue_exploring">You’re post is going viral, click here to find out what to do next or continue exploring..</string>
     <string name="continue_exploring">Continue Exploring</string>
@@ -159,10 +159,217 @@
     <string name="done">Done</string>
     <string name="another_happy_withdrawal">Another Happy Withdrawal</string>
     <string name="withdraw_amount">Withdraw Amount</string>
+    <string-array name="banks">
+        <item>Access Bank</item>
+        <item>Fidelity Bank</item>
+        <item>First Bank</item>
+        <item>Guaranty Trust Bank</item>
+        <item>Union Bank</item>
+        <item>Zenith Bank</item>
+        <item>Heritage Bank</item>
+        <item>Ecobank Bank</item>
+        <item>Standard Chartered Bank</item>
+        <item>Stanbic IBTC Bank</item>
+        <item>Wema Bank</item>
+        <item>Polaris Bank</item>
+        <item>Keystone Bank</item>
+        <item>Sterling Bank</item>
+        <item>Unity Bank</item>
+        <item>United Bank for Africa (UBA)</item>
+        <item>Kuda Bank</item>
+        <item>Opay</item>
+        <item>Palmpay</item>
+        <item>Sparkle Bank</item>
+    </string-array>
     <string-array name="locations">
         <item>Country</item>
         <item>State</item>
         <item>City</item>
+    </string-array>
+    <string-array name="abia">
+        <item>Aba</item>
+        <item>Umuahia</item>
+        <item>Amaeke</item>
+        <item>Arochukwu</item>
+        <item>Abiriba</item>
+        <item>Ohafia</item>
+        <item>Isuikwuato</item>
+        <item>Umuahia North</item>
+        <item>Alayi</item>
+        <item>Umu-Nneochi</item>
+        <item>Aba South</item>
+        <item>Ndi Elu Nkporo</item>
+        <item>Aba North</item>
+        <item>Ugwunagbo</item>
+        <item>Ukwa West</item>
+        <item>Isiala-Ngwa North</item>
+        <item>Ukwa East</item>
+        <item>Ikwuano</item>
+        <item>Isiala-Ngwa South</item>
+        <item>Obi Ngwa</item>
+        <item>Umukabia</item>
+        <item>Osisioma Ngwa</item>
+        <item>Eluoma</item>
+        <item>Amawom</item>
+        <item>Amaozara</item>
+        <item>Obuohia</item>
+        <item>Elemaga</item>
+        <item>Nkpa</item>
+        <item>Akwete</item>
+        <item>Amuvi</item>
+        <item>Ubakala</item>
+        <item>Ozu Abam</item>
+        <item>Ndoro</item>
+        <item>Owerrinta</item>
+        <item>Bende</item>
+        <item>Obinkita</item>
+        <item>Azumini</item>
+        <item>Okigwe</item>
+        <item>Ovukwu</item>
+        <item>Umudike</item>
+        <item>Isiala Oboro</item>
+        <item>Agbala</item>
+        <item>Uturu</item>
+        <item>Igbere</item>
+    </string-array>
+    <string-array name="adamawa">
+        <item>Yola</item>
+        <item>Mubi</item>
+        <item>Jimeta</item>
+        <item>Michikita</item>
+        <item>Madagali</item>
+        <item>Mubi North</item>
+        <item>Fufore</item>
+        <item>Jada</item>
+        <item>Ganye</item>
+        <item>Girei</item>
+        <item>Gombi</item>
+        <item>Mayo Belwa</item>
+        <item>Hong</item>
+        <item>Demsa</item>
+        <item>Lamurde</item>
+        <item>Guyuk</item>
+        <item>Toungo</item>
+        <item>Yola South</item>
+        <item>Shelleng</item>
+        <item>Yola North</item>
+        <item>Tungo</item>
+        <item>Mubi South</item>
+        <item>Maiha</item>
+        <item>Numan</item>
+        <item>Song</item>
+        <item>Mayo-Belwa</item>
+        <item>Belel</item>
+        <item>Mugulbu</item>
+        <item>Alkalawa</item>
+        <item>Shuwa</item>
+        <item>Mayo Lope</item>
+        <item>Mayo-Banyo</item>
+        <item>Igbariam</item>
+        <item>Ngaoundere</item>
+        <item>Jalingo</item>
+    </string-array>
+    <string-array name="akwa_ibom">
+        <item>Uyo</item>
+        <item>Eket</item>
+        <item>Ikot Ekpene</item>
+        <item>Oron</item>
+        <item>Abak</item>
+        <item>Ibiono Ibom</item>
+        <item>Ibeno</item>
+        <item>Essien udim</item>
+        <item>Mkpat Enin</item>
+        <item>Ikot Abasi</item>
+        <item>Uruan</item>
+        <item>Ibesikpo Asutan</item>
+        <item>Ikono</item>
+        <item>Ikot Okoro</item>
+        <item>Esit Eket</item>
+        <item>Nsit Ibom</item>
+        <item>Nsit Ubium</item>
+        <item>Ikot Ibritan</item>
+        <item>Idu</item>
+        <item>Ntak Ibesit</item>
+        <item>Ekpene Ukim</item>
+        <item>Etim Ekpo</item>
+        <item>Ikot Onwon</item>
+        <item>Ekparakwa</item>
+        <item>Usuk Obio Ediene</item>
+        <item>Oruk Anam</item>
+        <item>Ika</item>
+        <item>Etinan</item>
+        <item>Asanga</item>
+        <item>Eastern Obolo</item>
+        <item>Ukanafun</item>
+        <item>Okobo</item>
+        <item>Onna</item>
+        <item>Anakpa</item>
+        <item>Adadia</item>
+        <item>Mbo</item>
+        <item>Afaha</item>
+        <item>Urue Offong/Oruko</item>
+        <item>Obot Akara</item>
+        <item>Udung Uko</item>
+        <item>Otung</item>
+        <item>Oyuko Ibighi</item>
+        <item>Okobo</item>
+        <item>Eyofin</item>
+        <item>Nsit Atai</item>
+        <item>Ikot Akpan Essien</item>
+        <item>Oyubia</item>
+        <item>Afaha Atai</item>
+        <item>Opobo</item>
+    </string-array>
+    <string-array name="anambra">
+        <item>Awka</item>
+        <item>Onitsha</item>
+        <item>Nnewi</item>
+        <item>Awkuzu</item>
+        <item>Obosi</item>
+        <item>Abagana</item>
+        <item>Otuocha</item>
+        <item>Nibo</item>
+        <item>Ihiala</item>
+        <item>Oba</item>
+        <item>Oyi</item>
+        <item>Agulu</item>
+        <item>Atani</item>
+        <item>Nsugbe</item>
+        <item>Umuawulu</item>
+        <item>Ihembosi</item>
+        <item>Ukwulu</item>
+        <item>Enugwu Ukwu</item>
+        <item>Ayamelum</item>
+        <item>Aguata</item>
+        <item>Igbo Ukwu</item>
+        <item>Ogidi</item>
+        <item>Idemili North</item>
+        <item>Aguleri</item>
+        <item>Ebenebe</item>
+        <item>Uga</item>
+        <item>Amawbia</item>
+        <item>Nkpor</item>
+        <item>Orumba North</item>
+        <item>Ekwulobia</item>
+        <item>Ozubulu</item>
+        <item>Adazi Nnukwu</item>
+        <item>Aguluzigbo</item>
+        <item>Awka Etiti</item>
+        <item>Akpu</item>
+        <item>Nanka</item>
+        <item>Abatete</item>
+        <item>Alor</item>
+        <item>Neni</item>
+        <item>Nzam</item>
+        <item>Oraukwu</item>
+        <item>Nawfia</item>
+        <item>Igbariam</item>
+        <item>Achina</item>
+        <item>Oko Town</item>
+        <item>Ajalli</item>
+        <item>Awka North</item>
+        <item>Eziowelle</item>
+        <item>Ideani</item>
     </string-array>
     <string-array name="states">
         <item>Abia</item>
@@ -203,34 +410,31 @@
         <item>Zamfara</item>
     </string-array>
     <string name="title_activity_transaction_history">TransactionHistoryActivity</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
-
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="transaction_details">Transaction Details</string>
     <string name="tag_people">Tag People</string>
-    <string name="time_ago">19 minutes ago</string>
+    <string name="time_ago">0 minutes ago</string>
     <string name="comment_caption">Me and my friends using protrnd</string>
     <string name="type_your_message">Type your message</string>
     <string name="comments">Comments</string>
-    <string name="posted_by_protrnd">Posted by Protrnd</string>
+    <string name="posted_by">Posted by</string>
     <string name="trnding_near_you">Trnding near you</string>
     <string name="no_of_trndrs_liked_this_post">126 trndrs liked this post</string>
     <string name="default_caption">Me and my friends enjoying Protrnd</string>
     <string name="more">more</string>
     <string name="from">From</string>
     <string name="to">To</string>
-    <string name="amount">₦22,600</string>
+    <string name="promotion">Promotion</string>
+    <string name="amount">₦0</string>
     <string name="report_an_issue">Report an Issue</string>
     <string name="share">Share</string>
     <string name="method">Method</string>
     <string name="source">Source</string>
     <string name="time">Time</string>
-    <string name="time_of_transaction">March 23, 2023 - 9:45 am</string>
+    <string name="time_of_transaction">March 23, 2023 – 9:45 am</string>
     <string name="narration">Narration</string>
     <string name="narration_content">See front boss</string>
     <string name="transaction_id">Transaction ID</string>
@@ -251,4 +455,46 @@
     <string name="mass">Mass</string>
     <string name="promote_to_everyone_the_more_the_merrier">Promote to everyone. The more the merrier.</string>
     <string name="choose_promotion_method">Choose Promotion Method</string>
+    <string name="uploading">Uploading</string>
+    <string name="choose_banner"><b>Choose An Ad Banner</b>\nClick here to upload your banner image.\n(max. 1 image)</string>
+    <string name="banner_note"><b>Note:</b> The banner should communicate your product value and have a clear call to action</string>
+    <string name="choose_what_to_promote">Choose what to promote</string>
+    <string name="recommended_dimensions_for_banners_are_1200_x_640">Recommended dimensions for banners are 1200 x 640.</string>
+    <string name="comments_count">Comments • 0</string>
+    <string name="notification_default_message"><b>Protrnd mentioned you in a post</b>. View Mention. 30 min</string>
+    <string name="total_balance">Total Balance</string>
+    <string name="success">Success</string>
+    <string name="note_protrnd_charges_on_withdrawal">Note: Protrnd charges 5% on each withdrawal</string>
+    <string name="account_name">Account Name</string>
+    <string name="receive_amount_optional">Receive Amount (optional)</string>
+    <string name="sending_22_600_to">Sending <b>₦22,600</b> to</string>
+    <string name="confirm_transaction">Confirm Transaction</string>
+    <string name="funds_have_been_sent_well_done">Funds have been sent, well done</string>
+    <string name="_50">50+</string>
+    <string name="generate_code_with_amount">Generate code with amount</string>
+    <string name="personal">personal</string>
+    <string name="business">business</string>
+    <string name="zero_naira">₦0</string>
+    <string name="start_promoting">Start Promoting</string>
+    <string name="your_transactions_will_be_displayed_here">Your transactions will be displayed here</string>
+    <string name="purpose">Purpose</string>
+    <string name="chat">chat</string>
+    <string name="type_a_message">Type a message</string>
+    <string name="search">Search</string>
+    <string name="no_profile_result">No profile result</string>
+    <string name="sent_amount">Sent Amount:</string>
+    <string name="received_amount">Received Amount:</string>
+    <string name="your_support_has_been_successfully_sent">Your support has been successfully sent</string>
+    <string name="old_balance">Old Balance</string>
+    <string name="new_balance">New Balance</string>
+    <string name="profiles">Profiles</string>
+    <string name="posts">Posts</string>
+    <string name="settings">Settings</string>
+    <string name="input_your_payment_pin">Input your payment pin</string>
+    <string name="please_input_your_payment_pin">Please input your payment pin</string>
+    <string name="receive_funds_quickly_with_qr_code">Receive funds quickly with Qr Code</string>
+    <string-array name="image_video">
+        <item>Images Only</item>
+        <item>Videos Only</item>
+    </string-array>
 </resources>

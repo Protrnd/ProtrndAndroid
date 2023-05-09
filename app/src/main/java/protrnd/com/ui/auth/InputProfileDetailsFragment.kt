@@ -17,6 +17,7 @@ import protrnd.com.data.repository.AuthRepository
 import protrnd.com.databinding.FragmentInputProfileDetailsBinding
 import protrnd.com.ui.*
 import protrnd.com.ui.base.BaseFragment
+import protrnd.com.ui.viewmodels.AuthViewModel
 
 class InputProfileDetailsFragment :
     BaseFragment<AuthViewModel, FragmentInputProfileDetailsBinding, AuthRepository>() {
@@ -53,7 +54,7 @@ class InputProfileDetailsFragment :
                             .navigate(InputProfileDetailsFragmentDirections.actionInputProfileDetailsFragmentToVerifyOTPFragment())
                     } else {
                         if (it.value.statusCode == 400) {
-                            binding.root.snackbar(it.value.message)
+                            binding.root.errorSnackBar(it.value.message)
                         }
                     }
                     binding.continueBtn.enable(true)
@@ -97,7 +98,7 @@ class InputProfileDetailsFragment :
         binding.continueBtn.setOnClickListener {
             if (binding.emailEt.inputNotEmpty() && binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty()) {
                 if (!isValidEmail(binding.emailEt.text.toString().trim())) {
-                    binding.emailIl.error = "Please input a valid email"
+                    binding.emailEt.error = "Please input a valid email"
                 } else if (!binding.usernameEt.usernameNotEmpty()) {
                     binding.usernameEt.error = "This field cannot be left empty"
                 } else {
@@ -147,5 +148,5 @@ class InputProfileDetailsFragment :
     ) = FragmentInputProfileDetailsBinding.inflate(inflater, container, false)
 
     override fun getFragmentRepository() =
-        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), settingsPreferences)
+        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
 }

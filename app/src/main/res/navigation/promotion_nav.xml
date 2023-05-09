@@ -9,16 +9,19 @@
         android:id="@+id/promotionPage1Fragment"
         android:name="protrnd.com.ui.promotion.PromotionPage1Fragment"
         android:label="fragment_promotion_page1"
-        tools:layout="@layout/fragment_promotion_page1" >
+        tools:layout="@layout/fragment_promotion_page1">
         <action
             android:id="@+id/action_promotionPage1Fragment_to_choosePromotionMethodFragment"
             app:destination="@id/choosePromotionMethodFragment" />
+        <argument
+            android:name="postId"
+            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/choosePromotionMethodFragment"
         android:name="protrnd.com.ui.promotion.ChoosePromotionMethodFragment"
         android:label="fragment_choose_promotion_method"
-        tools:layout="@layout/fragment_choose_promotion_method" >
+        tools:layout="@layout/fragment_choose_promotion_method">
         <action
             android:id="@+id/action_choosePromotionMethodFragment_to_promotionLocationFragment"
             app:destination="@id/promotionLocationFragment" />
@@ -27,7 +30,7 @@
         android:id="@+id/promotionLocationFragment"
         android:name="protrnd.com.ui.promotion.PromotionLocationFragment"
         android:label="fragment_promotion_location"
-        tools:layout="@layout/fragment_promotion_location" >
+        tools:layout="@layout/fragment_promotion_location">
         <action
             android:id="@+id/action_promotionLocationFragment_to_paymentPlanFragment"
             app:destination="@id/paymentPlanFragment" />
@@ -36,7 +39,7 @@
         android:id="@+id/paymentPlanFragment"
         android:name="protrnd.com.ui.promotion.PaymentPlanFragment"
         android:label="fragment_payment_plan"
-        tools:layout="@layout/fragment_payment_plan" >
+        tools:layout="@layout/fragment_payment_plan">
         <action
             android:id="@+id/action_paymentPlanFragment_to_promotionSubscriptionDetailsFragment"
             app:destination="@id/promotionSubscriptionDetailsFragment" />
@@ -45,18 +48,18 @@
         android:id="@+id/chooseSupportPaymentMethodFragment"
         android:name="protrnd.com.ui.payment.ChoosePaymentMethodFragment"
         android:label="fragment_choose_support_payment_method"
-        tools:layout="@layout/fragment_choose_payment_method" >
+        tools:layout="@layout/fragment_choose_payment_method">
         <action
-            android:id="@+id/action_chooseSupportPaymentMethodFragment_to_supportPaymentDetailsFragment"
-            app:destination="@id/supportPaymentDetailsFragment" />
+            android:id="@+id/action_chooseSupportPaymentMethodFragment_to_paymentDetailsFragment"
+            app:destination="@id/paymentDetailsFragment" />
     </fragment>
     <fragment
-        android:id="@+id/supportPaymentDetailsFragment"
+        android:id="@+id/paymentDetailsFragment"
         android:name="protrnd.com.ui.payment.PaymentDetailsFragment"
         android:label="fragment_support_payment_details"
-        tools:layout="@layout/fragment_payment_details" >
+        tools:layout="@layout/fragment_payment_details">
         <action
-            android:id="@+id/action_supportPaymentDetailsFragment_to_paymentCompleteFragment"
+            android:id="@+id/action_pPaymentDetailsFragment_to_paymentCompleteFragment"
             app:destination="@id/paymentCompleteFragment" />
     </fragment>
     <fragment
@@ -68,7 +71,7 @@
         android:id="@+id/promotionSubscriptionDetailsFragment"
         android:name="protrnd.com.ui.promotion.PromotionSubscriptionDetailsFragment"
         android:label="fragment_promotion_subscription_details"
-        tools:layout="@layout/fragment_promotion_subscription_details" >
+        tools:layout="@layout/fragment_promotion_subscription_details">
         <action
             android:id="@+id/action_promotionSubscriptionDetailsFragment_to_promotionBannerFragment"
             app:destination="@id/promotionBannerFragment" />
@@ -77,7 +80,7 @@
         android:id="@+id/promotionBannerFragment"
         android:name="protrnd.com.ui.promotion.PromotionBannerFragment"
         android:label="fragment_promotion_banner"
-        tools:layout="@layout/fragment_promotion_banner" >
+        tools:layout="@layout/fragment_promotion_banner">
         <action
             android:id="@+id/action_promotionBannerFragment_to_chooseSupportPaymentMethodFragment"
             app:destination="@id/chooseSupportPaymentMethodFragment" />

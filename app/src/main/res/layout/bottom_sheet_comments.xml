@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bottom_sheet_bg"
-    android:elevation="2dp"
     android:fitsSystemWindows="true">
 
     <androidx.appcompat.widget.LinearLayoutCompat
@@ -25,35 +24,37 @@
             android:id="@+id/comments_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_10"
-            android:text="@string/comments"
             android:layout_marginStart="16dp"
-            android:textSize="20sp"
+            android:layout_marginTop="@dimen/padding_10"
             android:fontFamily="@font/dmsans_bold"
-            android:textColor="@color/black" />
+            android:text="@string/comments_count"
+            android:textColor="@color/black"
+            android:textSize="20sp" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
             android:layout_marginTop="12dp"
+            android:layout_marginEnd="16dp"
             android:layout_marginBottom="12dp">
+
             <TextView
                 android:id="@+id/posted_by"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/posted_by_protrnd"
                 android:fontFamily="@font/dm_sans"
+                android:text="@string/posted_by"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
+                android:id="@+id/time_ago"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/time_ago"
                 android:fontFamily="@font/dm_sans"
+                android:text="@string/time_ago"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -71,19 +72,20 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:gravity="center"
             android:fontFamily="@font/dm_sans"
+            android:gravity="center"
             android:text="@string/no_comments"
+            android:textColor="@color/light_grey"
             android:textSize="20sp" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/light_grey_rect_0"
             android:orientation="horizontal"
             android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:background="@drawable/light_grey_rect_0"
             android:paddingTop="12dp"
+            android:paddingEnd="16dp"
             android:paddingBottom="12dp">
 
             <ImageView
@@ -91,42 +93,43 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="start"
-                android:contentDescription="@string/profile_image"
                 android:background="@drawable/round_bg"
+                android:contentDescription="@string/profile_image"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <EditText
                 android:id="@+id/comment_input"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:minHeight="40dp"
-                android:gravity="center_vertical"
-                android:layout_marginEnd="8dp"
-                android:fontFamily="@font/dm_sans"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
                 android:background="@android:color/transparent"
+                android:fontFamily="@font/dm_sans"
+                android:gravity="center_vertical"
                 android:hint="@string/type_your_message"
                 android:importantForAutofill="no"
                 android:inputType="textMultiLine"
-                android:textColor="@color/main_grey"
+                android:minHeight="40dp"
+                android:textColor="@color/black"
+                android:textColorHint="@color/main_grey"
                 android:textSize="@dimen/body" />
 
             <TextView
                 android:id="@+id/send_comment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/send"
-                android:textSize="14sp"
                 android:layout_gravity="bottom"
+                android:background="@drawable/button_pink_dark_50"
                 android:fontFamily="@font/dmsans_medium"
                 android:paddingStart="10dp"
-                android:paddingEnd="10dp"
                 android:paddingTop="6dp"
+                android:paddingEnd="10dp"
                 android:paddingBottom="6dp"
-                android:background="@drawable/button_pink_dark_50"
-                android:textColor="@color/white"/>
+                android:text="@string/send"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.appcompat.widget.LinearLayoutCompat>

@@ -18,14 +18,14 @@ import protrnd.com.data.network.database.PostDatabase
 import protrnd.com.data.network.database.ProfileDatabase
 import protrnd.com.data.pagingsource.HashTagsPagingSource
 import protrnd.com.data.pagingsource.PostsPagingSource
+import protrnd.com.data.pagingsource.ProfilePostTagsPagingSource
 
 class HomeRepository(
     private val api: ProfileApi,
     private val postsApi: PostApi,
     val db: PostDatabase? = null,
     profileDatabase: ProfileDatabase? = null
-) :
-    BaseRepository() {
+) : BaseRepository() {
 
     private val postDao = db?.postDao()
 
@@ -55,7 +55,16 @@ class HomeRepository(
         pagingSourceFactory = { HashTagsPagingSource(postsApi, word) }
     ).liveData
 
+    fun getProfilePostTagsPage(profileId: String) = Pager(
+        config = PagingConfig(pageSize = 10, maxSize = 100, enablePlaceholders = false),
+        pagingSourceFactory = { ProfilePostTagsPagingSource(postsApi, profileId) }
+    ).liveData
+
     fun retry() = PostsPagingSource(postsApi).invalidate()
+
+    suspend fun searchProfilesByName(name: String) = safeApiCall { api.getProfilesByName(name) }
+
+    suspend fun searchPostsByName(name: String) = safeApiCall { postsApi.getPostsByName(name) }
 
     suspend fun savePostResult(posts: List<Post>) {
         postDao?.deleteAllPosts()
@@ -78,6 +87,8 @@ class HomeRepository(
     suspend fun getCurrentProfile() = safeApiCall { api.getCurrentProfile() }
 
     suspend fun getProfileById(id: String) = safeApiCall { api.getProfileById(id) }
+
+    suspend fun getPromotionsPage(page: Int) = safeApiCall { postsApi.getPromotionsPage(page) }
 
     suspend fun getProfileByUsername(name: String) = safeApiCall { api.getProfileByName(name) }
 

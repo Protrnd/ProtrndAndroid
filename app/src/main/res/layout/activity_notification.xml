@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context=".ui.notification.NotificationActivity">
 
@@ -12,24 +12,26 @@
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:elevation="20dp">
+
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/app_toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/notifications_tabs"
-            android:layout_width="wrap_content"
             style="@style/AppTabLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:minWidth="250dp"
-            app:tabIndicatorHeight="4dp"
             app:tabIndicatorColor="@color/main_pink"
+            app:tabIndicatorHeight="4dp"
             app:tabSelectedTextColor="@color/black"
-            app:tabTextColor="@color/main_grey"
-            android:layout_height="wrap_content"/>
+            app:tabTextColor="@color/main_grey" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/notifications_pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 </androidx.appcompat.widget.LinearLayoutCompat>

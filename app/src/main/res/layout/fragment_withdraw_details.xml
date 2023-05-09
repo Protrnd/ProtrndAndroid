@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp"
     tools:context=".ui.wallet.withdraw.WithdrawDetailsFragment">
@@ -11,50 +11,77 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/enter_withdrawal_account_details"
-        android:textSize="@dimen/subheading"
         android:fontFamily="@font/dmsans_medium"
-        android:textColor="@color/black"/>
+        android:text="@string/enter_withdrawal_account_details"
+        android:textColor="@color/black"
+        android:textSize="@dimen/subheading" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/bank_name"
-        android:layout_marginTop="24dp"/>
+        android:layout_marginTop="24dp"
+        android:text="@string/bank_name" />
 
     <com.skydoves.powerspinner.PowerSpinnerView
+        android:id="@+id/bank_name"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        app:spinner_arrow_drawable="@drawable/arrow_down_ic"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/input_field_main_purp"
+        android:gravity="center_vertical"
+        android:hint="@string/select_bank_name"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:gravity="center_vertical"
-        android:textSize="@dimen/body"
         android:textColor="@color/black"
         android:textColorHint="@color/main_grey"
-        android:hint="@string/select_bank_name"
-        android:background="@drawable/input_field_main_purp"/>
+        android:textSize="@dimen/body"
+        app:spinner_arrow_drawable="@drawable/arrow_down_ic"
+        app:spinner_item_array="@array/banks"
+        app:spinner_popup_background="@drawable/light_grey_rect_0" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/account_number"
-        android:layout_marginTop="24dp"/>
+        android:layout_marginTop="24dp"
+        android:text="@string/account_name" />
 
     <EditText
+        android:id="@+id/account_name"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginTop="8dp"
-        android:hint="@string/account_no"
-        android:textColorHint="@color/main_grey"
-        android:inputType="numberDecimal"
-        android:textColor="@color/black"
-        android:importantForAutofill="no"
+        android:autofillHints="name"
+        android:background="@drawable/input_field_main_purp"
+        android:hint="@string/protrnd"
+        android:inputType="textPersonName"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:textSize="@dimen/body"
-        android:background="@drawable/input_field_main_purp"/>
+        android:textColor="@color/black"
+        android:textColorHint="@color/main_grey"
+        android:textSize="@dimen/body" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/account_number" />
+
+    <EditText
+        android:id="@+id/account_number"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:autofillHints="creditCardNumber"
+        android:background="@drawable/input_field_main_purp"
+        android:hint="@string/account_no"
+        android:importantForAutofill="auto"
+        android:inputType="numberPassword"
+        android:maxLength="10"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textColor="@color/black"
+        android:textColorHint="@color/main_grey"
+        android:textSize="@dimen/body" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/continue_btn"
@@ -62,9 +89,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="24dp"
-        android:fontFamily="@font/dmsans_medium"
         android:background="@drawable/button_elevation"
-        android:text="Withdraw ₦5000"
+        android:fontFamily="@font/dmsans_medium"
         android:textColor="@color/white"
         tools:ignore="DuplicateSpeakableTextCheck" />
 

@@ -3,10 +3,10 @@ package protrnd.com.data.repository
 import protrnd.com.data.models.Login
 import protrnd.com.data.models.RegisterDTO
 import protrnd.com.data.models.VerifyOTP
-import protrnd.com.data.network.SettingsPreferences
+import protrnd.com.data.network.ProfilePreferences
 import protrnd.com.data.network.api.AuthApi
 
-class AuthRepository(private val api: AuthApi, private val preferences: SettingsPreferences) :
+class AuthRepository(private val api: AuthApi, private val preferences: ProfilePreferences) :
     BaseRepository() {
     suspend fun login(email: String, password: String) = safeApiCall {
         api.login("jwt", Login(email, password))

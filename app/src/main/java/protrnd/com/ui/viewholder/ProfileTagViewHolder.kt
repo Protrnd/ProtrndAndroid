@@ -14,5 +14,6 @@ class ProfileTagViewHolder(val view: ProfileTagBinding) : RecyclerView.ViewHolde
         }
         val tagText = "@${profile.username}"
         view.usernameTagTv.text = tagText
+        view.fullnameTagTv.text = profile.fullname
     }
 }

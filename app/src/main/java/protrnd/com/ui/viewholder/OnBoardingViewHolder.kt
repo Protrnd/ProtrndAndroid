@@ -6,10 +6,10 @@ import androidx.recyclerview.widget.RecyclerView
 import protrnd.com.databinding.OnboardingLayoutBinding
 import protrnd.com.ui.setGradient
 
-class OnBoardingViewHolder(val view: OnboardingLayoutBinding): RecyclerView.ViewHolder(view.root) {
+class OnBoardingViewHolder(val view: OnboardingLayoutBinding) : RecyclerView.ViewHolder(view.root) {
     fun bind(position: Int) {
         view.title.setGradient()
-        when(position) {
+        when (position) {
             0 -> {
                 view.swipe.visibility = VISIBLE
                 view.title.text = "Discover awesome stuff"

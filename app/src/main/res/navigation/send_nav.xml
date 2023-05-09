@@ -9,7 +9,7 @@
         android:id="@+id/sendAmountFragment"
         android:name="protrnd.com.ui.wallet.send.SendAmountFragment"
         android:label="fragment_send_amount"
-        tools:layout="@layout/fragment_send_amount" >
+        tools:layout="@layout/fragment_send_amount">
         <action
             android:id="@+id/action_sendAmountFragment_to_QRScannerFragment"
             app:destination="@id/QRScannerFragment" />
@@ -21,7 +21,7 @@
         android:id="@+id/sendTypeFragment"
         android:name="protrnd.com.ui.wallet.send.SendTypeFragment"
         android:label="fragment_send_type"
-        tools:layout="@layout/fragment_send_type" >
+        tools:layout="@layout/fragment_send_type">
         <action
             android:id="@+id/action_sendTypeFragment_to_QRScannerFragment"
             app:destination="@id/QRScannerFragment" />
@@ -33,7 +33,7 @@
         android:id="@+id/QRScannerFragment"
         android:name="protrnd.com.ui.wallet.send.QRScannerFragment"
         android:label="fragment_qr_scanner"
-        tools:layout="@layout/fragment_qr_scanner" >
+        tools:layout="@layout/fragment_qr_scanner">
         <action
             android:id="@+id/action_QRScannerFragment_to_profileResultFragment"
             app:destination="@id/profileResultFragment" />
@@ -42,7 +42,7 @@
         android:id="@+id/enterProfileIDFragment"
         android:name="protrnd.com.ui.wallet.send.EnterProfileIDFragment"
         android:label="fragment_enter_profile_i_d"
-        tools:layout="@layout/fragment_enter_profile_i_d" >
+        tools:layout="@layout/fragment_enter_profile_i_d">
         <action
             android:id="@+id/action_enterProfileIDFragment_to_profileResultFragment"
             app:destination="@id/profileResultFragment" />
@@ -52,4 +52,14 @@
         android:name="protrnd.com.ui.wallet.send.ProfileResultFragment"
         android:label="fragment_profile_result"
         tools:layout="@layout/fragment_profile_result" />
+    <fragment
+        android:id="@+id/confirmSendFragment"
+        android:name="protrnd.com.ui.wallet.send.ConfirmSendFragment"
+        android:label="fragment_confirm_send"
+        tools:layout="@layout/fragment_confirm_send" />
+    <fragment
+        android:id="@+id/sendSuccessFragment"
+        android:name="protrnd.com.ui.wallet.send.SendSuccessFragment"
+        android:label="fragment_send_success"
+        tools:layout="@layout/fragment_send_success" />
 </navigation>

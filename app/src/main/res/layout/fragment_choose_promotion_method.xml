@@ -12,18 +12,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
-        android:textSize="@dimen/subheading"
         android:fontFamily="@font/dmsans_bold"
+        android:text="@string/choose_promotion_method"
         android:textColor="@color/black"
-        android:text="@string/choose_promotion_method" />
+        android:textSize="@dimen/subheading" />
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/targeted_promotion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
         android:background="@drawable/pink_light_border_outlined_12"
-        android:padding="16dp"
-        android:layout_marginTop="36dp">
+        android:padding="16dp">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -44,10 +44,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
+                android:fontFamily="@font/dmsans_medium"
                 android:text="@string/targeted"
                 android:textColor="@color/black"
                 android:textSize="@dimen/subheading"
-                android:fontFamily="@font/dmsans_medium"
                 app:layout_constraintVertical_chainStyle="packed" />
 
             <TextView
@@ -65,10 +65,10 @@
         android:id="@+id/mass_promotion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/pink_light_border_outlined_12"
-        android:padding="16dp"
+        android:layout_marginTop="16dp"
         android:layout_marginBottom="24dp"
-        android:layout_marginTop="16dp">
+        android:background="@drawable/pink_light_border_outlined_12"
+        android:padding="16dp">
 
         <ImageView
             android:layout_width="wrap_content"
@@ -89,8 +89,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:text="@string/mass"
                 android:fontFamily="@font/dmsans_medium"
+                android:text="@string/mass"
                 android:textColor="@color/black"
                 android:textSize="@dimen/subheading"
                 app:layout_constraintVertical_chainStyle="packed" />

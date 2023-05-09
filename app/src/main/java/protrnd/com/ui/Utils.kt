@@ -2,8 +2,10 @@ package protrnd.com.ui
 
 import android.Manifest
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.Dialog
 import android.content.Context
+import android.content.Context.ACTIVITY_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -11,10 +13,8 @@ import android.graphics.LinearGradient
 import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.GradientDrawable
 import android.media.MediaMetadataRetriever
 import android.net.*
-import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
@@ -24,24 +24,27 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
+import android.util.Log
+import android.view.*
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.view.Window
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.annotation.RequiresApi
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatToggleButton
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LifecycleOwner
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.*
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -60,9 +63,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import protrnd.com.R
+import protrnd.com.data.NetworkConnectionLiveData
 import protrnd.com.data.models.*
+import protrnd.com.data.models.Constants.EMPTY_GUID
+import protrnd.com.data.models.Constants.FROM
+import protrnd.com.data.models.Constants.RECEIVE
+import protrnd.com.data.models.Constants.TOP_UP
+import protrnd.com.data.network.MemoryCache
+import protrnd.com.data.network.ProfilePreferences
 import protrnd.com.data.network.ProtrndAPIDataSource
-import protrnd.com.data.network.SettingsPreferences
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.network.resource.Resource
@@ -70,28 +79,367 @@ import protrnd.com.data.repository.HomeRepository
 import protrnd.com.data.responses.BasicResponseBody
 import protrnd.com.databinding.BottomSheetCommentsBinding
 import protrnd.com.databinding.ConfirmationLayoutBinding
-import protrnd.com.ui.adapter.CommentsAdapter
-import protrnd.com.ui.adapter.ImageThumbnailPostAdapter
-import protrnd.com.ui.adapter.PostImagesAdapter
+import protrnd.com.databinding.TransactionDetailsLayoutBinding
+import protrnd.com.ui.adapter.*
+import protrnd.com.ui.adapter.listener.ImagePostItemClickListener
+import protrnd.com.ui.adapter.listener.PromoteSupportListener
 import protrnd.com.ui.auth.AuthenticationActivity
 import protrnd.com.ui.auth.LoginFragment
 import protrnd.com.ui.home.HomeActivity
-import protrnd.com.ui.home.HomeViewModel
+import protrnd.com.ui.post.ForwardPostBottomSheetDialog
+import protrnd.com.ui.post.PostActivity
 import protrnd.com.ui.profile.ProfileActivity
+import protrnd.com.ui.support.SupportBottomSheet
+import protrnd.com.ui.viewholder.PostsViewHolder
+import protrnd.com.ui.viewmodels.HomeViewModel
+import protrnd.com.ui.viewmodels.PaymentViewModel
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.concurrent.Executors
 import kotlin.math.abs
-
 
 const val REQUEST_PERMISSION_CODE = 7192
 
-fun View.handleUnCaughtException() {
-    this.snackbar("An Error occurred, please try again!")
+fun View.handleUnCaughtException(e: Throwable) {
+    Log.e("Unknown Throwable Error", Gson().toJson(e))
+    this.errorSnackBar("An Error occurred!")
+}
+
+fun generateRef(): String {
+    return UUID.randomUUID().toString()
+}
+
+fun RecyclerView.loadPageData(
+    fm: FragmentManager,
+    activity: Activity?,
+    viewModel: HomeViewModel,
+    lifecycleScope: CoroutineScope,
+    context: Context,
+    lifecycleOwner: LifecycleOwner,
+    currentProfile: Profile,
+    fragment: Fragment?,
+    removeAlphaAction: (() -> Unit)?,
+    showAlphaAction: (() -> Unit)?,
+    token: String
+) {
+    val recyclerViewReadyCallback = object : RecyclerViewReadyCallback {
+        override fun onLayoutReady() {
+            NetworkConnectionLiveData(context).observe(lifecycleOwner) {
+                (adapter as PostsPagingAdapter).setupRecyclerView(
+                    activity,
+                    viewModel,
+                    lifecycleOwner,
+                    lifecycleScope,
+                    currentProfile,
+                    context,
+                    fm,
+                    token,
+                    fragment,
+                    removeAlphaAction,
+                    showAlphaAction
+                )
+            }
+        }
+    }
+
+    this.viewTreeObserver.addOnGlobalLayoutListener(object :
+        ViewTreeObserver.OnGlobalLayoutListener {
+        override fun onGlobalLayout() {
+            recyclerViewReadyCallback.onLayoutReady()
+            this@loadPageData.viewTreeObserver.removeOnGlobalLayoutListener(this)
+        }
+    })
+
+    (adapter as PostsPagingAdapter).promoteSupportPost(object : PromoteSupportListener {
+        override fun click(post: Post) {
+            if (currentProfile.id == post.profileid) {
+//                    val bottomSheetPromote = PromotionBottomSheet(this@HomeFragment, post.id)
+//                    binding.alphaBg.visible(true)
+//                    bottomSheetPromote.show(childFragmentManager, bottomSheetPromote.tag)
+            } else {
+                val bottomSheetSupport =
+                    SupportBottomSheet(fragment, post = post, activity = activity)
+                showAlphaAction.let {
+                    it?.invoke()
+                }
+                bottomSheetSupport.show(fm, bottomSheetSupport.tag)
+            }
+        }
+    })
+}
+
+private fun PostsPagingAdapter.setupRecyclerView(
+    activity: Activity?,
+    viewModel: HomeViewModel,
+    lifecycleOwner: LifecycleOwner,
+    lifecycleScope: CoroutineScope,
+    currentUserProfile: Profile,
+    context: Context,
+    fragmentManager: FragmentManager,
+    token: String,
+    fragment: Fragment?,
+    removeAlphaAction: (() -> Unit)?,
+    showAlphaAction: (() -> Unit)?
+) {
+    this.setupRecyclerResults(object : PostsPagingAdapter.SetupRecyclerResultsListener {
+        override fun setupLikes(holder: PostsViewHolder, postData: Post) {
+            lifecycleScope.launch {
+                setupPostLikes(holder, postData, viewModel, lifecycleOwner)
+            }
+        }
+
+        override fun setupData(holder: PostsViewHolder, postData: Post) {
+            lifecycleScope.launch {
+                setupPosts(
+                    holder,
+                    postData,
+                    activity,
+                    currentUserProfile,
+                    viewModel,
+                    lifecycleOwner
+                )
+            }
+
+            if (postData.profileid == currentUserProfile.id) {
+                holder.view.promoteSupport.visibility = View.INVISIBLE
+                holder.view.promoteSupport.isEnabled = false
+            }
+
+            holder.view.sendTextBtn.setOnClickListener {
+                showAlphaAction.let {
+                    if (it != null) {
+                        it()
+                    }
+                }
+                val forwardPostDialog = ForwardPostBottomSheetDialog(
+                    currentUserProfile,
+                    postData,
+                    token,
+                    fragment,
+                    activity
+                )
+                forwardPostDialog.show(fragmentManager, forwardPostDialog.tag)
+            }
+        }
+
+        override fun showCommentSection(postData: Post) {
+            showAlphaAction.let {
+                if (it != null) {
+                    it()
+                }
+            }
+            val bottomSheet = BottomSheetDialog(context, R.style.BottomSheetTheme)
+            val bottomSheetBinding =
+                BottomSheetCommentsBinding.inflate(LayoutInflater.from(context))
+            bottomSheet.setContentView(bottomSheetBinding.root)
+            bottomSheet.setCanceledOnTouchOutside(true)
+            bottomSheetBinding.commentSection.layoutManager =
+                LinearLayoutManager(context)
+            bottomSheetBinding.commentsCount.text =
+                bottomSheetBinding.commentsCount.text.toString().setSpannableColor(
+                    bottomSheetBinding.commentsCount.text.toString().replace("Comments", ""), 8
+                )
+            val timeAgo = postData.time.getAgo()
+            bottomSheetBinding.timeAgo.text = timeAgo
+
+            bottomSheet.setOnCancelListener {
+                removeAlphaAction.let {
+                    if (it != null) {
+                        it()
+                    }
+                }
+            }
+            bottomSheet.setOnDismissListener {
+                removeAlphaAction.let {
+                    if (it != null) {
+                        it()
+                    }
+                }
+            }
+            val profileFromComment = MutableLiveData<Profile>()
+            val profileLive: LiveData<Profile> = profileFromComment
+            var profileData = Profile()
+            profileLive.observe(lifecycleOwner) { profileResult ->
+                profileData = profileResult
+                val postedBy = "Posted by ${profileData.username}"
+                bottomSheetBinding.postedBy.text = postedBy
+
+                bottomSheetBinding.showCommentSection(
+                    viewModel,
+                    lifecycleOwner,
+                    lifecycleScope,
+                    profileData,
+                    currentUserProfile,
+                    postData.identifier
+                )
+            }
+
+            val commentRecyclerViewReadyCallback = object : RecyclerViewReadyCallback {
+                override fun onLayoutReady() {
+                    val cachedProfile = MemoryCache.profiles[postData.profileid]
+                    if (cachedProfile != null) {
+                        val profile: Profile = cachedProfile
+                        profileFromComment.postValue(profile)
+                    }
+                    NetworkConnectionLiveData(context).observe(
+                        lifecycleOwner
+                    ) {
+                        val executor = Executors.newFixedThreadPool(5)
+                        executor.execute {
+                            lifecycleScope.launch {
+                                val profileResult =
+                                    getOtherProfile(postData.profileid, viewModel, lifecycleOwner)
+                                if (profileResult != null && profileResult != profileData) {
+                                    profileData = profileResult
+                                    profileFromComment.postValue(profileData)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            bottomSheetBinding.commentSection.viewTreeObserver.addOnGlobalLayoutListener(object :
+                ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    commentRecyclerViewReadyCallback.onLayoutReady()
+                    bottomSheetBinding.commentSection.viewTreeObserver.removeOnGlobalLayoutListener(
+                        this
+                    )
+                }
+            })
+            bottomSheet.show()
+        }
+
+        override fun like(holder: PostsViewHolder, postData: Post) {
+            val executor = Executors.newFixedThreadPool(5)
+            executor.execute {
+                lifecycleScope.launch {
+                    likePost(
+                        currentUserProfile,
+                        holder,
+                        postData,
+                        activity,
+                        lifecycleScope,
+                        viewModel,
+                        lifecycleOwner
+                    )
+                }
+            }
+        }
+    })
+}
+
+private suspend fun likePost(
+    currentProfile: Profile,
+    holder: PostsViewHolder,
+    postData: Post,
+    activity: Activity?,
+    lifecycleScope: CoroutineScope,
+    viewModel: HomeViewModel,
+    lifecycleOwner: LifecycleOwner
+) {
+    val profileResult = getOtherProfile(postData.profileid, viewModel, lifecycleOwner)
+    if (profileResult != null) {
+        val liked = holder.view.likeToggle.isChecked
+        if (activity != null && activity.isNetworkAvailable())
+            likePost(
+                holder.view.likeToggle,
+                holder.view.likesCount,
+                lifecycleScope,
+                viewModel,
+                lifecycleOwner,
+                postData.identifier,
+                profileResult,
+                currentProfile
+            )
+        else
+            holder.view.likeToggle.isChecked = !liked
+    }
+}
+
+private suspend fun getOtherProfile(
+    id: String,
+    viewModel: HomeViewModel,
+    lifecycleOwner: LifecycleOwner
+): Profile? {
+    return getStoredProfile(id, viewModel, lifecycleOwner) ?: when (val otherProfile =
+        viewModel.getProfileById(id)) {
+        is Resource.Success -> {
+            viewModel.saveProfile(otherProfile.value.data)
+            MemoryCache.profiles[id] = otherProfile.value.data
+            return otherProfile.value.data
+        }
+        is Resource.Loading -> {
+            return null
+        }
+        is Resource.Failure -> {
+            return null
+        }
+        else -> {
+            return null
+        }
+    }
+}
+
+private fun getStoredProfile(
+    id: String,
+    viewModel: HomeViewModel,
+    lifecycleOwner: LifecycleOwner
+): Profile? {
+    val profileResult = MemoryCache.profiles[id]
+    if (profileResult != null)
+        return profileResult
+    val otherProfile = viewModel.getProfile(id)
+    var result: Profile? = null
+    otherProfile?.asLiveData()?.observe(lifecycleOwner) {
+        if (it != null) {
+            result = it
+        }
+    }
+    return result
+}
+
+suspend fun setupPostLikes(
+    holder: PostsViewHolder,
+    postData: Post,
+    viewModel: HomeViewModel,
+    lifecycleOwner: LifecycleOwner
+) {
+    viewModel.setupLikes(
+        postData.id,
+        holder.view.likesCount,
+        holder.view.likeToggle,
+        lifecycleOwner
+    )
+}
+
+suspend fun setupPosts(
+    holder: PostsViewHolder,
+    postData: Post,
+    activity: Activity?,
+    currentProfile: Profile,
+    viewModel: HomeViewModel,
+    lifecycleOwner: LifecycleOwner
+) {
+    val profileResult = getOtherProfile(postData.profileid, viewModel, lifecycleOwner)
+    if (profileResult != null) {
+        holder.bind(
+            activity as AppCompatActivity,
+            postData,
+            profileResult,
+            currentProfile,
+            viewModel
+        )
+    }
 }
 
 fun <A : Activity> Activity.startNewActivityFromAuth(activity: Class<A>) {
@@ -114,6 +462,16 @@ fun <A : Activity> Activity.startActivityFromNotification(activity: Class<A>, ex
         putExtras(extras)
         startActivity(this)
     }
+}
+
+fun Context.isServiceRunning(serviceClass: Class<*>): Boolean {
+    val manager = getSystemService(ACTIVITY_SERVICE) as ActivityManager?
+    for (service in manager!!.getRunningServices(Int.MAX_VALUE)) {
+        if (serviceClass.name == service.service.className) {
+            return true
+        }
+    }
+    return false
 }
 
 fun Activity.finishActivity() {
@@ -145,7 +503,7 @@ fun saveAndStartHomeFragment(
     token: String,
     scope: CoroutineScope,
     activity: Activity,
-    preferences: SettingsPreferences
+    preferences: ProfilePreferences
 ) {
     val api = ProtrndAPIDataSource().buildAPI(ProfileApi::class.java, token)
     val postsApi = ProtrndAPIDataSource().buildAPI(PostApi::class.java, token)
@@ -161,6 +519,12 @@ fun saveAndStartHomeFragment(
                 }
             }
             is Resource.Failure -> {
+                if (profileResponse.isNetworkError)
+                    Toast.makeText(
+                        activity.applicationContext,
+                        "Network error occured",
+                        Toast.LENGTH_SHORT
+                    ).show()
             }
             else -> {
             }
@@ -171,14 +535,16 @@ fun saveAndStartHomeFragment(
 fun TextView.setGradient() {
     val paint = this.paint
     val width = paint.measureText(this.text.toString())
-    val textShader: Shader = LinearGradient(0f, 0f, width, this.textSize, intArrayOf(
-        Color.parseColor("#170246"),
-        Color.parseColor("#1F0342"),
-        Color.parseColor("#38073A"),
-        Color.parseColor("#600D2C"),
-        Color.parseColor("#961519"),
-        Color.parseColor("#CA1E07")
-    ), null, Shader.TileMode.CLAMP)
+    val textShader: Shader = LinearGradient(
+        0f, 0f, width, this.textSize, intArrayOf(
+            Color.parseColor("#170246"),
+            Color.parseColor("#1F0342"),
+            Color.parseColor("#38073A"),
+            Color.parseColor("#600D2C"),
+            Color.parseColor("#961519"),
+            Color.parseColor("#CA1E07")
+        ), null, Shader.TileMode.CLAMP
+    )
 
     this.paint.shader = textShader
 }
@@ -204,20 +570,76 @@ fun String.setSpannableColor(section: String, start: Int = 0): Spannable {
 suspend fun HomeViewModel.setupLikes(
     postId: String,
     likesCountTv: TextView,
-    likeToggle: AppCompatToggleButton
+    likeToggle: AppCompatToggleButton,
+    lifecycleOwner: LifecycleOwner
 ) {
-    val likesCount = this.getLikesCount(postId)
-    withContext(Dispatchers.Main) {
-        val count = likesCount.data!!.data as Double
-        val likes =
-            if (count > 1) "${count.toInt()} likes" else "${count.toInt()} like"
-        likesCountTv.text = likes
+    val likesMutable = MutableLiveData<Int>()
+    val postLikesCount: LiveData<Int> = likesMutable
+
+    val likedMutable = MutableLiveData<Boolean>()
+    val likedPosts: LiveData<Boolean> = likedMutable
+
+    val postLikesCached = MemoryCache.postLikes[postId]
+    var cachedValue = 0
+    if (postLikesCached != null) {
+        cachedValue = postLikesCached
+        likesMutable.postValue(cachedValue)
     }
 
-    val isLiked = this.postIsLiked(postId)
-    withContext(Dispatchers.Main) {
-        likeToggle.isChecked = isLiked.data!!.data
+    val isLikedCache = MemoryCache.likedPosts.contains(postId)
+    likedMutable.postValue(isLikedCache)
+
+    CoroutineScope(Dispatchers.IO).launch {
+        when (val likesCount = this@setupLikes.getLikesCount(postId)) {
+            is Resource.Success -> {
+                val count = likesCount.data!!.data as Double
+                val value = count.toInt()
+                if (cachedValue < value) {
+                    likesMutable.postValue(value)
+                    MemoryCache.postLikes[postId] = value
+                }
+            }
+            is Resource.Loading -> {
+
+            }
+            else -> {}
+        }
+
+        when (val isLiked = this@setupLikes.postIsLiked(postId)) {
+            is Resource.Success -> {
+                val liked = isLiked.data!!.data
+                if (isLikedCache != liked) {
+                    likedMutable.postValue(liked)
+                    if (liked)
+                        MemoryCache.likedPosts.add(postId)
+                    else {
+                        if (MemoryCache.likedPosts.contains(postId))
+                            MemoryCache.likedPosts.remove(postId)
+                    }
+                }
+            }
+            is Resource.Loading -> {
+            }
+            else -> {}
+        }
     }
+
+    withContext(Dispatchers.Main) {
+        postLikesCount.observe(lifecycleOwner) { like ->
+            val likes =
+                if (like > 1) "${
+                    like.formatAmount()
+                } trndrs like this post" else if (like == 1) "$like trndr likes this post" else "Be the first trndr to like this post"
+
+            likesCountTv.text = likes
+        }
+
+        likedPosts.observe(lifecycleOwner) { isLiked ->
+            likeToggle.isChecked = isLiked
+        }
+    }
+
+
 }
 
 fun sendCommentNotification(otherProfile: Profile, currentProfile: Profile, id: String) {
@@ -290,6 +712,7 @@ fun likePost(
     likesCount: TextView,
     scope: CoroutineScope,
     viewModel: HomeViewModel,
+    lifecycleOwner: LifecycleOwner,
     postId: String,
     otherProfile: Profile,
     currentUserProfile: Profile
@@ -300,7 +723,7 @@ fun likePost(
             when (viewModel.likePost(postId)) {
                 is Resource.Success -> {
                     withContext(Dispatchers.Main) {
-                        viewModel.setupLikes(postId, likesCount, likeToggle)
+                        viewModel.setupLikes(postId, likesCount, likeToggle, lifecycleOwner)
                         if (otherProfile != currentUserProfile)
                             sendLikeNotification(
                                 otherProfile,
@@ -315,7 +738,7 @@ fun likePost(
         } else {
             when (viewModel.unlikePost(postId)) {
                 is Resource.Success -> {
-                    viewModel.setupLikes(postId, likesCount, likeToggle)
+                    viewModel.setupLikes(postId, likesCount, likeToggle, lifecycleOwner)
                 }
                 else -> {}
             }
@@ -323,110 +746,268 @@ fun likePost(
     }
 }
 
-fun Context.showCommentSection(
-    viewModel: HomeViewModel? = null,
-    lifecycleOwner: LifecycleOwner? = null,
-    scope: CoroutineScope? = null,
-    otherProfile: Profile? = null,
-    currentProfile: Profile? = null,
-    postId: String? = null
+fun BottomSheetCommentsBinding.showCommentSection(
+    viewModel: HomeViewModel,
+    lifecycleOwner: LifecycleOwner,
+    scope: CoroutineScope,
+    otherProfile: Profile,
+    currentProfile: Profile,
+    postId: String
 ) {
-    try {
-        val bottomSheet = BottomSheetDialog(this, R.style.BottomSheetTheme)
-        val bottomSheetBinding =
-            BottomSheetCommentsBinding.inflate(LayoutInflater.from(this))
-        bottomSheet.setContentView(bottomSheetBinding.root)
-        bottomSheet.setCanceledOnTouchOutside(true)
-        bottomSheetBinding.commentSection.layoutManager = LinearLayoutManager(this)
-        bottomSheetBinding.commentSection.adapter = CommentsAdapter()
-//        viewModel.loadComments(postId)
-//        viewModel.comments.observe(lifecycleOwner) { comments ->
-//            when (comments) {
-//                is Resource.Success -> {
-//                    if (comments.value.data.isNotEmpty()) {
-//                        bottomSheetBinding.commentSection.visible(true)
-//                        bottomSheetBinding.noCommentsTv.visible(false)
-//                        val commentsText = "${comments.value.data.size} Comments"
-//                        bottomSheetBinding.commentsCount.text = commentsText
-//                        val commentAdapter = CommentsAdapter(
-//                            viewModel = viewModel,
-//                            comments = comments.value.data
-//                        )
-//                        commentAdapter.clickListener(object : CommentsAdapter.ClickListener {
-//                            override fun clickProfile(profileId: String) {
-//                                this@showCommentSection.startActivity(
-//                                    Intent(
-//                                        this@showCommentSection,
-//                                        ProfileActivity::class.java
-//                                    ).also { intent ->
-//                                        intent.putExtra("profile_id", profileId)
-//                                    })
-//                            }
-//                        })
-//                        bottomSheetBinding.commentSection.adapter = commentAdapter
-//                    }
-//                }
-//                is Resource.Failure -> {
-//                    if (comments.isNetworkError) {
-//                        bottomSheetBinding.root.snackbar("Error loading comments") {
-//                            viewModel.loadComments(
-//                                postId
-//                            )
-//                        }
-//                    }
-//                }
-//                else -> {}
-//            }
-//        }
+    val commentsLiveData = MutableLiveData<List<Comment>>()
+    val liveData: LiveData<List<Comment>> = commentsLiveData
 
-//        bottomSheetBinding.sendComment.setOnClickListener {
-//            val commentContent = bottomSheetBinding.commentInput.text.toString().trim()
-//            if (commentContent.isNotEmpty()) {
-//                bottomSheetBinding.sendComment.enable(false)
-//                val comment = CommentDTO(comment = commentContent, postid = postId)
-//                scope.launch {
-//                    when (val result = viewModel.addComment(comment)) {
-//                        is Resource.Success -> {
-//                            withContext(Dispatchers.Main) {
-//                                bottomSheetBinding.sendComment.enable(true)
-//                                if (result.value.successful) {
-//                                    if (otherProfile != currentProfile)
-//                                        sendCommentNotification(
-//                                            otherProfile,
-//                                            currentProfile,
-//                                            postId
-//                                        )
-//                                    bottomSheetBinding.commentInput.text.clear()
-//                                    viewModel.getComments(postId)
-//                                }
-//                            }
-//                        }
-//                        is Resource.Loading -> {
-//                            bottomSheetBinding.sendComment.enable(false)
-//                        }
-//                        is Resource.Failure -> {
-//                            bottomSheetBinding.sendComment.enable(true)
-//                        }
-//                        else -> {}
-//                    }
-//                }
-//            } else {
-//                bottomSheetBinding.inputField.error = "This field cannot be empty"
-//            }
-//        }
-        if (!bottomSheet.isShowing)
-            bottomSheet.show()
-        bottomSheet.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+    liveData.observe(lifecycleOwner) { comments ->
+        if (comments.isNotEmpty()) {
+            this.commentSection.visible(true)
+            this.noCommentsTv.visible(false)
+            val commentsText = "Comments \u2022 ${comments.size.formatAmount()}"
+            this.commentsCount.text =
+                commentsText.setSpannableColor(commentsText.replace("Comments", ""), 8)
+            val commentAdapter = CommentsAdapter(
+                viewModel = viewModel,
+                comments = comments,
+                lifecycleOwner = lifecycleOwner
+            )
+            commentAdapter.clickListener(object : CommentsAdapter.ClickListener {
+                override fun clickProfile(profileId: String) {
+                    this@showCommentSection.root.context.startActivity(
+                        Intent(
+                            this@showCommentSection.root.context,
+                            ProfileActivity::class.java
+                        ).also { intent ->
+                            intent.putExtra("profile_id", profileId)
+                        })
+                }
+            })
+            this.commentSection.adapter = commentAdapter
+        }
+    }
+
+    try {
+        val commentsCache = MemoryCache.commentsMap[postId]
+        if (commentsCache != null) {
+            val comments: List<Comment> = commentsCache
+            commentsLiveData.postValue(comments)
+        }
+
+        viewModel.loadComments(postId)
+        viewModel.comments.observe(lifecycleOwner) { comments ->
+            when (comments) {
+                is Resource.Success -> {
+                    commentsLiveData.postValue(comments.value.data)
+                    MemoryCache.commentsMap[postId] = comments.value.data
+                }
+                is Resource.Failure -> {
+                    this.root.errorSnackBar("Error loading comments") {
+                        viewModel.loadComments(postId)
+                    }
+                }
+                else -> {}
+            }
+        }
+
+        this.sendComment.setOnClickListener {
+            val commentContent = this.commentInput.text.toString().trim()
+            if (commentContent.isNotEmpty()) {
+                this.sendComment.enable(false)
+                val comment = CommentDTO(comment = commentContent, postid = postId)
+                scope.launch {
+                    when (val result = viewModel.addComment(comment)) {
+                        is Resource.Success -> {
+                            withContext(Dispatchers.Main) {
+                                this@showCommentSection.sendComment.enable(true)
+                                if (result.value.successful) {
+                                    if (otherProfile != currentProfile)
+                                        sendCommentNotification(
+                                            otherProfile,
+                                            currentProfile,
+                                            postId
+                                        )
+                                    this@showCommentSection.commentInput.text.clear()
+                                    viewModel.getComments(postId)
+                                }
+                            }
+                        }
+                        is Resource.Loading -> {
+                            this@showCommentSection.sendComment.enable(false)
+                        }
+                        is Resource.Failure -> {
+                            this@showCommentSection.sendComment.enable(true)
+                        }
+                    }
+                }
+            } else {
+                this.commentInput.error = "This field cannot be empty"
+            }
+        }
     } catch (e: Exception) {
         throw e
     }
+    this.commentsCount.text = this.commentsCount.text.toString()
+        .setSpannableColor(this.commentsCount.text.toString().replace("Comments", ""), 8)
 }
 
 private fun HomeViewModel.loadComments(postId: String) {
     this.getComments(postId)
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+fun EditText.requestForFocus(next: EditText? = null, prev: EditText? = null) {
+    this.addTextChangedListener {
+        if (it.toString().length == 1 && next != null) {
+            next.requestFocus()
+        } else {
+            if (it.toString().isEmpty())
+                prev?.requestFocus()
+        }
+    }
+}
+
+fun getTimeWithCenterDot(time: String): String {
+    return try {
+        val sdf = LocalDateTime.parse(
+            time,
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+        )
+        val sdfHour = sdf.hour + 1
+        val hour = if (sdfHour > 12) sdfHour - 12 else sdfHour
+        val minute = if (sdf.minute < 10) "0${sdf.minute}" else sdf.minute
+        val am_pm = if (sdfHour > 12) "pm" else "am"
+        "${time.getAgo()} \u2022 $hour:$minute $am_pm"
+    } catch (t: Throwable) {
+        "Error getting date"
+    }
+}
+
+fun showTransactionDetails(
+    context: Context,
+    layoutInflater: LayoutInflater,
+    transaction: Transaction,
+    currentUserProfile: Profile,
+    alphaBg: View,
+    viewModel: PaymentViewModel,
+    lifecycleOwner: LifecycleOwner
+) {
+
+    val mutableReceiver = MutableLiveData<Profile>()
+    val receiver: LiveData<Profile> = mutableReceiver
+
+    val mutableSender = MutableLiveData<Profile>()
+    val sender: LiveData<Profile> = mutableSender
+    val bottomSheetDialog = BottomSheetDialog(context, R.style.BottomSheetTheme)
+    val bottomSheet = TransactionDetailsLayoutBinding.inflate(layoutInflater)
+    bottomSheetDialog.setContentView(bottomSheet.root)
+    bottomSheetDialog.setCanceledOnTouchOutside(true)
+
+    bottomSheet.continueBtn.setOnClickListener {
+        bottomSheetDialog.dismiss()
+    }
+
+    var amount = transaction.amount.formatAmount()
+    if (transaction.purpose.contains("Support sent"))
+        amount = "-$amount"
+    if (amount.startsWith("-")) {
+        amount = amount.replace("-", "")
+        amount = "-₦$amount"
+        bottomSheet.price.setTextColor(Color.parseColor("#FF0C08"))
+    } else
+        amount = "₦$amount"
+    bottomSheet.price.text = amount
+    bottomSheet.date.text = getTimeWithCenterDot(transaction.createdat)
+    bottomSheet.transactId.text = transaction.trxref
+    bottomSheet.purpose.text = transaction.purpose
+
+    val errorText = "Error getting profile data"
+
+    if (transaction.purpose.startsWith(TOP_UP))
+        bottomSheet.fromToLayout.visible(false)
+
+
+    sender.observe(lifecycleOwner) { senderProfile ->
+        val profileName = "@${senderProfile.username}"
+        bottomSheet.fromLocation.text = senderProfile.location
+        bottomSheet.fromProfileName.text = senderProfile.fullname
+        bottomSheet.fromProfileUsername.text = profileName
+        if (transaction.profileid == EMPTY_GUID && senderProfile.id == transaction.profileid) {
+            bottomSheet.fromProfileName.text = errorText
+            bottomSheet.fromProfileUsername.visible(false)
+            bottomSheet.fromLocation.visible(false)
+        }
+        if (transaction.receiverid == EMPTY_GUID && senderProfile.id == transaction.receiverid) {
+            bottomSheet.fromProfileName.text = errorText
+            bottomSheet.fromProfileUsername.visible(false)
+            bottomSheet.fromLocation.visible(false)
+        }
+    }
+
+    receiver.observe(lifecycleOwner) { receiverProfile ->
+        val profileName = "@${receiverProfile.username}"
+        bottomSheet.toLocation.text = receiverProfile.location
+        bottomSheet.toProfileName.text = receiverProfile.fullname
+        bottomSheet.toProfileUsername.text = profileName
+        if (transaction.receiverid == EMPTY_GUID && receiverProfile.id == transaction.receiverid) {
+            bottomSheet.toProfileName.text = errorText
+            bottomSheet.toProfileUsername.visible(false)
+            bottomSheet.toLocation.visible(false)
+        }
+        if (transaction.profileid == EMPTY_GUID && receiverProfile.id == transaction.profileid) {
+            bottomSheet.toProfileName.text = errorText
+            bottomSheet.toProfileUsername.visible(false)
+            bottomSheet.toLocation.visible(false)
+        }
+    }
+
+    if (transaction.purpose.startsWith(RECEIVE) || transaction.purpose.contains(FROM)) {
+        var senderProfile: Profile
+        val cachedSenderProfile = MemoryCache.profiles[transaction.profileid]
+        mutableReceiver.postValue(currentUserProfile)
+        if (cachedSenderProfile != null) {
+            senderProfile = cachedSenderProfile
+            mutableSender.postValue(senderProfile)
+        }
+
+        CoroutineScope(Dispatchers.Main).launch {
+            when (val profileResult =
+                viewModel.getProfileById(transaction.profileid)) {
+                is Resource.Success -> {
+                    val profile = profileResult.value.data
+                    senderProfile = profile
+                    MemoryCache.profiles[transaction.profileid] = senderProfile
+                    mutableSender.postValue(senderProfile)
+                }
+                else -> {}
+            }
+        }
+    } else {
+        val cachedReceiverProfile = MemoryCache.profiles[transaction.receiverid]
+        var receiverProfile: Profile
+        mutableSender.postValue(currentUserProfile)
+        if (cachedReceiverProfile != null) {
+            receiverProfile = cachedReceiverProfile
+            mutableReceiver.postValue(receiverProfile)
+        }
+        CoroutineScope(Dispatchers.Main).launch {
+            when (val profileResult =
+                viewModel.getProfileById(transaction.receiverid)) {
+                is Resource.Success -> {
+                    val profile = profileResult.value.data
+                    receiverProfile = profile
+                    MemoryCache.profiles[transaction.receiverid] = receiverProfile
+                    mutableReceiver.postValue(receiverProfile)
+                }
+                else -> {}
+            }
+        }
+    }
+
+    CoroutineScope(Dispatchers.IO).launch {
+    }
+    bottomSheetDialog.show()
+    bottomSheetDialog.setOnDismissListener {
+        alphaBg.visible(false)
+    }
+}
+
 fun bindPostDetails(
     tabLayout: TabLayout,
     fullnameTv: TextView,
@@ -436,28 +1017,53 @@ fun bindPostDetails(
     profileImage: ImageView,
     imagesPager: ViewPager2,
     postOwnerProfile: Profile?,
+    currentProfile: Profile,
     timeText: TextView,
-    activity: Activity
+    activity: AppCompatActivity,
+    viewModel: ViewModel? = null
 ) {
     if (postOwnerProfile != null) {
-        val username = "@${postOwnerProfile.username}"
-//        usernameTv.text = username
         fullnameTv.text = postOwnerProfile.fullname
         val caption = postOwnerProfile.username + " ${post.caption}"
+        if (postOwnerProfile.acctype == activity.getString(R.string.business))
+            fullnameTv.setCompoundDrawables(
+                null,
+                null,
+                ContextCompat.getDrawable(
+                    activity.applicationContext,
+                    R.drawable.business_badge_ic
+                ),
+                null
+            )
         captionTv.text = caption
         captionTv.setTags(postOwnerProfile.username, activity)
 
         if (postOwnerProfile.profileimg.isNotEmpty()) {
             Glide.with(profileImage)
                 .load(postOwnerProfile.profileimg)
-                .placeholder(R.drawable.default_profile_ic)
-                .circleCrop()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .circleCrop()
                 .into(profileImage)
+        }
+
+        profileImage.setOnClickListener {
+            if (postOwnerProfile != currentProfile) {
+                activity.startActivity(Intent(activity, ProfileActivity::class.java).apply {
+                    putExtra("profile_id", postOwnerProfile.id)
+                })
+                activity.startAnimation()
+            }
+        }
+
+        captionTv.setOnClickListener {
+            it.context.startActivity(Intent(activity, PostActivity::class.java).apply {
+                putExtra("post_id", post.id)
+            })
+            activity.startAnimation()
         }
     }
 
-    val location = post.location.cities[0] + ", " + post.location.state + " State"
+    val location = post.location.city + ", " + post.location.state + " State"
     locationTv.text = location
     val time = post.time.getAgo()
     timeText.text = time
@@ -466,7 +1072,13 @@ fun bindPostDetails(
     imagesPager.clipChildren = false
     imagesPager.clipToPadding = false
     imagesPager.getChildAt(0).overScrollMode = View.OVER_SCROLL_NEVER
-    val adapter = PostImagesAdapter(images = post.uploadurls, activity = activity)
+    val adapter = PostImagesAdapter(
+        activity = activity,
+        images = post.uploadurls,
+        viewModel = viewModel,
+        post = post,
+        currentProfile = currentProfile
+    )
     imagesPager.adapter = adapter
 
     val transformer = CompositePageTransformer()
@@ -478,6 +1090,20 @@ fun bindPostDetails(
 
 fun Int.formatAmount(): String {
     return NumberFormat.getNumberInstance(Locale.US).format(this)
+}
+
+fun Double.formatAmount(): String {
+    return NumberFormat.getNumberInstance(Locale.US).format(this)
+}
+
+fun String.formatInt(): String {
+    return NumberFormat.getNumberInstance(Locale.US).format(this)
+}
+
+fun String.formatAmount(): String {
+    val amount = this.toDouble()
+    val formatter = DecimalFormat("#,###.00")
+    return formatter.format(amount)
 }
 
 private fun TextView.setTags(section: String, activity: Activity) {
@@ -566,26 +1192,68 @@ fun showConfirmationDialog(
     val window: Window = dialog.window!!
     window.setLayout(MATCH_PARENT, WRAP_CONTENT)
 }
+//
+//suspend fun RecyclerView.showUserPostsInGrid(
+//    context: Context,
+//    viewModel: HomeViewModel,
+//    profile: Profile
+//): List<Post> {
+//    var postResults: List<Post> = listOf()
+//    when (val posts = viewModel.getProfilePosts(profile.identifier)) {
+//        is Resource.Success -> {
+//            addThumbnailGrid3(context, posts.value.data)
+//            postResults = posts.value.data
+//        }
+//        else -> {}
+//    }
+//    return postResults
+//}
 
-suspend fun RecyclerView.showUserPostsInGrid(
-    context: Context,
+fun getUserPosts(
+    lifecycleOwner: LifecycleOwner,
     viewModel: HomeViewModel,
     profile: Profile
-) {
-    when (val posts = viewModel.getProfilePosts(profile.identifier)) {
-        is Resource.Success -> {
-            addThumbnailGrid3(context, posts.value.data)
+): List<Post> {
+    var postResults: List<Post> = listOf()
+    viewModel.getProfilePosts(profile.identifier)
+    viewModel.thumbnails.observe(lifecycleOwner) { posts ->
+        when (posts) {
+            is Resource.Success -> postResults = posts.value.data
+            else -> {}
         }
-        else -> {}
     }
+    return postResults
 }
 
-fun RecyclerView.addThumbnailGrid3(context: Context, thumbnails: List<Post>) {
-    val gridlayout = GridLayoutManager(context, 3)
+fun RecyclerView.addThumbnailGrid4(context: Context, thumbnails: List<Post>) {
+    val gridlayout = GridLayoutManager(context, 4)
     this.layoutManager = gridlayout
     val thumbnailsAdapter = ImageThumbnailPostAdapter(thumbnails)
     thumbnailsAdapter.stateRestorationPolicy =
         RecyclerView.Adapter.StateRestorationPolicy.PREVENT
+    thumbnailsAdapter.imageClickListener(object : ImagePostItemClickListener {
+        override fun postItemClickListener(post: Post) {
+            context.startActivity(Intent(context, PostActivity::class.java).apply {
+                this.putExtra("post_id", post.identifier)
+            })
+        }
+    })
+    this.adapter = thumbnailsAdapter
+}
+
+fun RecyclerView.addThumbnailGrid3(context: Context, thumbnails: ArrayList<String>) {
+    val gridlayout = GridLayoutManager(context, 3)
+    this.layoutManager = gridlayout
+    val thumbnailsAdapter = ImageVideoResultAdapter(thumbnails)
+    thumbnailsAdapter.stateRestorationPolicy =
+        RecyclerView.Adapter.StateRestorationPolicy.PREVENT
+    thumbnailsAdapter.imageClickListener(object : ImagePostItemClickListener {
+        override fun postItemClickListener(post: Post) {
+            context.startActivity(Intent(context, PostActivity::class.java).apply {
+                this.putExtra("post_id", post.identifier)
+            })
+        }
+    })
     this.adapter = thumbnailsAdapter
 }
 
@@ -595,7 +1263,7 @@ suspend fun TextView.showFollowersCount(viewModel: HomeViewModel, profile: Profi
         is Resource.Success -> {
             val count = followersCount.value.data.toString().formatNumber()
             val followersResult = "$count Followers"
-            this.text = followersResult.setSpannableBold(count)
+            this.text = followersResult.setSpannableColor(count)
             this.visible(true)
         }
         else -> {}
@@ -614,14 +1282,15 @@ suspend fun TextView.showFollowingCount(viewModel: HomeViewModel, profile: Profi
     }
 }
 
-fun View.snackbar(message: String, action: (() -> Unit)? = null) {
-    val snackbar = Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT)
+fun View.errorSnackBar(message: String, action: (() -> Unit)? = null) {
+    val snackbar = Snackbar.make(rootView, message, Snackbar.LENGTH_LONG)
     snackbar.setBackgroundTint(Color.RED)
     action.let {
         if (it != null) {
-            it()
+            snackbar.setAction("retry") { it() }
         }
     }
+
     val textView =
         snackbar.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
     textView.setCompoundDrawablesWithIntrinsicBounds(
@@ -635,20 +1304,39 @@ fun View.snackbar(message: String, action: (() -> Unit)? = null) {
     textView.compoundDrawablePadding =
         resources.getDimensionPixelOffset(R.dimen.snackbar_icon_padding)
     snackbar.show()
+
+    postDelayed({
+        if (snackbar.isShown)
+            snackbar.dismiss {
+                if (action != null) {
+                    action()
+                }
+            }
+    }, 60000)
 }
 
-//fun reload(action: (() -> Unit)? = null) {
-//    action.let {
-//        if (it != null)
-//            it()
-//    }
-//}
+fun Snackbar.dismiss(action: (() -> Unit)? = null) {
+    action.let {
+        if (it != null) {
+            it()
+            this.dismiss()
+        }
+    }
+}
 
 fun View.visible(isVisible: Boolean) {
     visibility = if (isVisible) View.VISIBLE else View.GONE
 }
 
 fun View.enable(enabled: Boolean) {
+    if (this is LinearLayoutCompat) {
+        for (i in 0 until this.childCount) {
+            val view = this.getChildAt(i)
+            view.enable(enabled)
+        }
+    }
+    isClickable = enabled
+    isLongClickable = enabled
     isEnabled = enabled
     alpha = if (enabled) 1f else 0.5f
 }
@@ -659,13 +1347,13 @@ interface RecyclerViewReadyCallback {
 
 fun Fragment.handleAPIError(failure: Resource.Failure, retry: (() -> Unit)? = null) {
     when {
-        failure.isNetworkError -> requireView().snackbar(
+        failure.isNetworkError -> requireView().errorSnackBar(
             "Please check your internet connection",
             retry
         )
         failure.errorCode == 401 -> {
             if (this is LoginFragment) {
-                requireView().snackbar("You've entered incorrect email or password")
+                requireView().errorSnackBar("You've entered incorrect email or password")
             } else {
                 Intent(requireContext(), AuthenticationActivity::class.java).also {
                     it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -676,9 +1364,9 @@ fun Fragment.handleAPIError(failure: Resource.Failure, retry: (() -> Unit)? = nu
         else -> {
             val error = Gson().fromJson(failure.errorBody?.string(), BasicResponseBody::class.java)
             if (this is LoginFragment && failure.errorCode == 404) {
-                requireView().snackbar("Account does not exist please sign up!")
+                requireView().errorSnackBar("Account does not exist please sign up!")
             } else {
-                requireView().snackbar(error.message)
+                requireView().errorSnackBar(error.message)
             }
         }
     }
@@ -686,7 +1374,7 @@ fun Fragment.handleAPIError(failure: Resource.Failure, retry: (() -> Unit)? = nu
 
 fun handleAPIError(view: View, failure: Resource.Failure, retry: (() -> Unit)? = null) {
     when {
-        failure.isNetworkError -> view.snackbar("Please check your internet connection", retry)
+        failure.isNetworkError -> view.errorSnackBar("Please check your internet connection", retry)
         failure.errorCode == 401 -> {
             Intent(view.context, AuthenticationActivity::class.java).also {
                 it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -694,7 +1382,7 @@ fun handleAPIError(view: View, failure: Resource.Failure, retry: (() -> Unit)? =
             }
         }
         else -> {
-            view.snackbar("Server error occurred")
+            view.errorSnackBar("Server error occurred")
         }
     }
 }
@@ -708,18 +1396,16 @@ fun AppCompatActivity.setupHomeIndicator(toolbar: Toolbar) {
 }
 
 fun Activity.checkStoragePermissions() {
-    if (SDK_INT >= Build.VERSION_CODES.O) {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                listOf(Manifest.permission.READ_EXTERNAL_STORAGE).toTypedArray(),
-                REQUEST_PERMISSION_CODE
-            )
-        }
+    if (ActivityCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        ) != PackageManager.PERMISSION_GRANTED
+    ) {
+        ActivityCompat.requestPermissions(
+            this,
+            listOf(Manifest.permission.READ_EXTERNAL_STORAGE).toTypedArray(),
+            REQUEST_PERMISSION_CODE
+        )
     }
 }
 
@@ -756,7 +1442,18 @@ fun String.formatNumber(): String {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+fun repeatedDecimal(g: String): Boolean {
+    var count = 0
+    for (j in g) {
+        if (j == '.') {
+            count++
+            if (count > 1)
+                return true
+        }
+    }
+    return false
+}
+
 fun String.getAgo(): CharSequence {
     val pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
     val sdf = SimpleDateFormat(pattern, Locale.ENGLISH)
@@ -802,7 +1499,7 @@ fun View.showSystemUI(window: Window) {
     WindowInsetsControllerCompat(window, this).show(WindowInsetsCompat.Type.systemBars())
 }
 
-fun Activity.isNetworkAvailable(): Boolean {
+fun Context.isNetworkAvailable(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val nw = connectivityManager.activeNetwork ?: return false
     val activeNw = connectivityManager.getNetworkCapabilities(nw) ?: return false

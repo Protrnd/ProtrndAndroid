@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.wallet.send.QRScannerFragment">
 
     <com.budiyev.android.codescanner.CodeScannerView
@@ -11,19 +11,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:focusable="true"
-        android:keepScreenOn="true"
-        app:frameColor="@color/main_pink"
-        app:frameThickness="8dp"
         android:hapticFeedbackEnabled="true"
+        android:keepScreenOn="true"
         android:soundEffectsEnabled="true"
         app:autoFocusButtonColor="@color/white"
         app:autoFocusButtonVisible="true"
         app:flashButtonColor="@color/white"
         app:flashButtonVisible="true"
+        app:frameAspectRatioHeight="1"
+        app:frameAspectRatioWidth="1"
+        app:frameColor="@color/main_pink"
+        app:frameCornersRadius="5dp"
+        app:frameSize="0.75"
+        app:frameThickness="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:maskColor="@color/black" />
+        app:maskColor="#4D13101F"
+        app:maskVisible="true" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

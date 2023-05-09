@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/tag_others_nav"
+    app:startDestination="@id/tagOthersFragment">
+
+    <fragment
+        android:id="@+id/tagOthersFragment"
+        android:name="protrnd.com.ui.post.TagOthersFragment"
+        android:label="fragment_tag_others"
+        tools:layout="@layout/fragment_tag_others" />
+</navigation>

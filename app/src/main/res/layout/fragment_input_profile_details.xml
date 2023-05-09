@@ -29,8 +29,8 @@
                 android:layout_marginTop="30dp"
                 android:layout_marginEnd="20dp"
                 android:fontFamily="@font/dmsans_bold"
-                android:textColor="#2D264B"
                 android:text="Start Exploring"
+                android:textColor="#2D264B"
                 android:textSize="24sp" />
 
             <TextView
@@ -57,45 +57,23 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/name_il"
-                style="@style/TextInputLayoutStyle"
+            <EditText
+                android:id="@+id/name_et"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="50dp"
                 android:layout_marginStart="20dp"
-                android:layout_marginTop="5dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="20dp"
-                android:backgroundTint="@color/focused_state_edittext_background"
-                app:boxBackgroundColor="#FEFEFE"
-                app:boxBackgroundMode="outline"
-                app:boxCornerRadiusBottomEnd="50dp"
-                app:boxCornerRadiusBottomStart="50dp"
-                app:boxCornerRadiusTopEnd="50dp"
-                app:boxCornerRadiusTopStart="50dp"
-                app:boxStrokeWidth="1.5dp"
-                app:errorEnabled="true"
-                app:hintEnabled="true"
-                app:hintTextColor="@color/dark_grey"
-                app:layout_constraintEnd_toStartOf="@id/username_il"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/name_tv">
-
-                <EditText
-                    android:id="@+id/name_et"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:autofillHints="emailAddress"
-                    android:importantForAutofill="yes"
-                    android:inputType="textPersonName"
-                    android:labelFor="@id/username_et"
-                    android:maxLines="1"
-                    android:textSize="12sp"
-                    android:gravity="bottom"
-                    android:textColor="#2D264B"
-                    android:textColorHint="@color/dark_grey"
-                    android:textCursorDrawable="@null"
-                    tools:ignore="LabelFor" />
-            </com.google.android.material.textfield.TextInputLayout>
+                android:autofillHints="name"
+                android:background="@drawable/edittext_state_listener"
+                android:importantForAutofill="yes"
+                android:inputType="textPersonName"
+                android:labelFor="@+id/email_et"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#2D264B"
+                android:textColorHint="@color/dark_grey"
+                android:textSize="12sp" />
 
             <TextView
                 android:id="@+id/username_tv"
@@ -105,50 +83,26 @@
                 android:layout_marginTop="20dp"
                 android:fontFamily="@font/dm_sans_medium"
                 android:text="@string/username_with_at"
-                android:textColor="#2D264B"
-                app:layout_constraintStart_toStartOf="@id/username_il"
-                app:layout_constraintTop_toTopOf="parent" />
+                android:textColor="#2D264B" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/username_il"
-                style="@style/TextInputLayoutStyle"
+            <EditText
+                android:id="@+id/username_et"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="50dp"
                 android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="20dp"
-                android:backgroundTint="@color/focused_state_edittext_background"
-                app:boxBackgroundColor="#FEFEFE"
-                app:boxBackgroundMode="outline"
-                app:boxCornerRadiusBottomEnd="50dp"
-                app:boxCornerRadiusBottomStart="50dp"
-                app:boxCornerRadiusTopEnd="50dp"
-                app:boxCornerRadiusTopStart="50dp"
-                app:boxStrokeWidth="1.5dp"
-                app:errorEnabled="true"
-                app:hintEnabled="true"
-                app:hintTextColor="@color/dark_grey"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/name_il"
-                app:layout_constraintTop_toBottomOf="@id/username_tv">
-
-                <EditText
-                    android:id="@+id/username_et"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:autofillHints="emailAddress"
-                    android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
-                    android:importantForAutofill="yes"
-                    android:inputType="textFilter|textPersonName"
-                    android:labelFor="@+id/email_et"
-                    android:maxLength="20"
-                    android:maxLines="1"
-                    android:textSize="12sp"
-                    android:gravity="bottom"
-                    android:textColor="#2D264B"
-                    android:textColorHint="@color/dark_grey"
-                    android:textCursorDrawable="@null" />
-            </com.google.android.material.textfield.TextInputLayout>
-
+                android:autofillHints="username"
+                android:background="@drawable/edittext_state_listener"
+                android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
+                android:drawableStart="@drawable/at_ic"
+                android:importantForAutofill="yes"
+                android:inputType="textFilter|textPersonName"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#2D264B"
+                android:textColorHint="@color/dark_grey"
+                android:textSize="12sp" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -160,40 +114,23 @@
                 android:text="@string/email_address"
                 android:textColor="#2D264B" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/email_il"
-                style="@style/TextInputLayoutStyle"
+            <EditText
+                android:id="@+id/email_et"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="50dp"
                 android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="20dp"
-                android:backgroundTint="@color/focused_state_edittext_background"
-                app:boxBackgroundColor="#FEFEFE"
-                app:boxBackgroundMode="outline"
-                app:boxCornerRadiusBottomEnd="50dp"
-                app:boxCornerRadiusBottomStart="50dp"
-                app:boxCornerRadiusTopEnd="50dp"
-                app:boxCornerRadiusTopStart="50dp"
-                app:boxStrokeWidth="1.5dp"
-                app:errorEnabled="true"
-                app:hintEnabled="true"
-                app:hintTextColor="@color/dark_grey">
-
-                <EditText
-                    android:id="@+id/email_et"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:autofillHints="emailAddress"
-                    android:importantForAutofill="yes"
-                    android:inputType="textEmailAddress"
-                    android:labelFor="@+id/email_et"
-                    android:maxLines="1"
-                    android:textSize="12sp"
-                    android:gravity="bottom"
-                    android:textColor="#2D264B"
-                    android:textColorHint="@color/dark_grey"
-                    android:textCursorDrawable="@null" />
-            </com.google.android.material.textfield.TextInputLayout>
+                android:autofillHints="name"
+                android:background="@drawable/edittext_state_listener"
+                android:importantForAutofill="yes"
+                android:inputType="textEmailAddress"
+                android:labelFor="@+id/email_et"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#2D264B"
+                android:textColorHint="@color/dark_grey"
+                android:textSize="12sp" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -205,49 +142,34 @@
                 android:text="@string/password"
                 android:textColor="#2D264B" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/password_il"
-                style="@style/TextInputLayoutStyle"
+            <EditText
+                android:id="@+id/password_et"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="50dp"
                 android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
                 android:layout_marginEnd="20dp"
-                android:backgroundTint="@color/focused_state_edittext_background"
-                app:boxBackgroundColor="#FEFEFE"
-                app:boxBackgroundMode="outline"
-                app:boxCornerRadiusBottomEnd="50dp"
-                app:boxCornerRadiusBottomStart="50dp"
-                app:boxCornerRadiusTopEnd="50dp"
-                app:boxCornerRadiusTopStart="50dp"
-                app:boxStrokeColor="@color/text_input_box_stroke_color"
-                app:boxStrokeWidth="1.5dp"
-                app:hintEnabled="true"
-                app:passwordToggleEnabled="true"
-                app:passwordToggleTint="@color/focused_state_edittext_outline">
-
-                <EditText
-                    android:id="@+id/password_et"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:autofillHints="password"
-                    android:inputType="textPassword"
-                    android:maxLines="1"
-                    android:textSize="12sp"
-                    android:gravity="bottom"
-                    android:textColor="#2D264B"
-                    android:textCursorDrawable="@null" />
-            </com.google.android.material.textfield.TextInputLayout>
+                android:autofillHints="password"
+                android:background="@drawable/edittext_state_listener"
+                android:importantForAutofill="yes"
+                android:inputType="textPassword"
+                android:labelFor="@+id/email_et"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#2D264B"
+                android:textColorHint="@color/dark_grey"
+                android:textSize="12sp" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/continue_btn"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_marginStart="20dp"
-                android:elevation="@dimen/padding_10"
-                android:layout_marginEnd="20dp"
                 android:layout_gravity="center"
+                android:layout_marginStart="20dp"
                 android:layout_marginTop="50dp"
+                android:layout_marginEnd="20dp"
                 android:background="@drawable/button_elevation"
+                android:elevation="@dimen/padding_10"
                 android:text="@string/create_account"
                 tools:ignore="DuplicateSpeakableTextCheck" />
 

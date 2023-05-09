@@ -81,6 +81,12 @@
         <item name="textAllCaps">false</item>
     </style>
 
+    <style name="ToolbarTextAppearance" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="fontFamily">@font/dmsans_bold</item>
+        <item name="android:fontFamily">@font/dmsans_bold</item>
+        <item name="android:textSize">@dimen/body</item>
+    </style>
+
     <style name="Style.App.circleImageView" parent="">
         <item name="shapeAppearance">@style/ShapeAppearanceOverlay.App.circleImageView</item>
     </style>

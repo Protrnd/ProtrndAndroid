@@ -1,45 +1,49 @@
 package protrnd.com.ui.home
 
+import android.Manifest
 import android.app.Dialog
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.provider.Settings
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
-import androidx.lifecycle.asLiveData
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.tabs.TabLayoutMediator
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.DexterBuilder
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionDeniedResponse
+import com.karumi.dexter.listener.PermissionGrantedResponse
+import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.single.PermissionListener
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import protrnd.com.R
 import protrnd.com.data.NetworkConnectionLiveData
-import protrnd.com.data.models.Post
-import protrnd.com.data.models.Profile
 import protrnd.com.data.models.ProfileDTO
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
-import protrnd.com.data.network.resource.Resource
-import protrnd.com.data.pagingsource.TempPostsPager
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.FragmentHomeBinding
 import protrnd.com.databinding.LocationPickerBinding
 import protrnd.com.ui.*
 import protrnd.com.ui.adapter.PostsPagingAdapter
-import protrnd.com.ui.adapter.PromotionsPagerAdapter
-import protrnd.com.ui.adapter.listener.PromoteListener
-import protrnd.com.ui.adapter.listener.SupportListener
 import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.post.NewPostActivity
-import protrnd.com.ui.promotion.PromotionBottomSheet
-import protrnd.com.ui.support.SupportBottomSheet
-import protrnd.com.ui.viewholder.PostsViewHolder
+import protrnd.com.ui.viewmodels.HomeViewModel
+import protrnd.com.ui.wallet.send.SendMoneyBottomSheetFragment
 
 class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeRepository>() {
 
@@ -47,166 +51,165 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     private lateinit var adapter: PostsPagingAdapter
     private lateinit var postsLayoutManager: LinearLayoutManager
     private lateinit var dialog: Dialog
-    private val locationHash = HashMap<String, List<String>>()
     private lateinit var thisActivity: HomeActivity
-    private lateinit var recyclerViewReadyCallback: RecyclerViewReadyCallback
-    private val rotateOpenAnimation: Animation by lazy {AnimationUtils.loadAnimation(requireContext(), R.anim.rotate_open)}
-    private val rotateCloseAnimation: Animation by lazy {AnimationUtils.loadAnimation(requireContext(), R.anim.rotate_close)}
-    private val fromBottomAnimation: Animation by lazy {AnimationUtils.loadAnimation(requireContext(), R.anim.from_bottom)}
-    private val toBottomAnimation: Animation by lazy { AnimationUtils.loadAnimation(requireContext(), R.anim.to_bottom)}
+    private lateinit var dexter: DexterBuilder
+    private var resultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    private val rotateOpenAnimation: Animation by lazy {
+        AnimationUtils.loadAnimation(
+            requireContext(),
+            R.anim.rotate_open
+        )
+    }
+    private val rotateCloseAnimation: Animation by lazy {
+        AnimationUtils.loadAnimation(
+            requireContext(),
+            R.anim.rotate_close
+        )
+    }
+    private val fromBottomAnimation: Animation by lazy {
+        AnimationUtils.loadAnimation(
+            requireContext(),
+            R.anim.from_bottom
+        )
+    }
+    private val toBottomAnimation: Animation by lazy {
+        AnimationUtils.loadAnimation(
+            requireContext(),
+            R.anim.to_bottom
+        )
+    }
+
+    override fun onStart() {
+        super.onStart()
+        checkNotifications()
+    }
+
+    override fun onViewReady(savedInstanceState: Bundle?) {
+        super.onViewReady(savedInstanceState)
         thisActivity = activity as HomeActivity
         postsLayoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         binding.postsRv.layoutManager = postsLayoutManager
+        adapter = PostsPagingAdapter()
+        binding.postsRv.adapter = adapter
 
         binding.floatingActionButtonAdd.setOnClickListener {
             onAddButtonClicked()
         }
+
         binding.floatingActionButtonScan.setOnClickListener {
+            onAddButtonClicked()
+            binding.alphaBg.visible(true)
+            val scanBottomSheetDialog = SendMoneyBottomSheetFragment(this)
+            scanBottomSheetDialog.show(childFragmentManager, scanBottomSheetDialog.tag)
         }
+
         binding.floatingActionButtonMessage.setOnClickListener {
-
-        }
-        binding.floatingActionButtonUpload.setOnClickListener {
-            startActivity(Intent(requireContext(),NewPostActivity::class.java))
-        }
-
-//        if (thisActivity.lmState != null) {
-//            binding.postsRv.layoutManager!!.onRestoreInstanceState(thisActivity.lmState)
-//            thisActivity.lmState = null
-//        }
-
-//        binding.postsRv.apply {
-//            adapter = PostsPagingAdapter()
-//            this@HomeFragment.adapter = adapter as PostsPagingAdapter
-//        }
-
-        val tempAdapter = TempPostsPager()
-        binding.postsRv.adapter = tempAdapter
-
-        val promotionsAdapter = PromotionsPagerAdapter()
-        binding.promotionsPager.clipChildren = false
-        binding.promotionsPager.clipToPadding = false
-        binding.promotionsPager.getChildAt(0).overScrollMode = View.OVER_SCROLL_NEVER
-        binding.promotionsPager.adapter = promotionsAdapter
-        TabLayoutMediator(binding.tabLayout,binding.promotionsPager) { _, _ ->
-        }.attach()
-
-//        recyclerViewReadyCallback = object : RecyclerViewReadyCallback {
-//            override fun onLayoutReady() {
-//                if (!snapshotExists())
-//                    setupRecyclerView()
-//            }
-//        }
-
-//        binding.postsRv.viewTreeObserver.addOnGlobalLayoutListener(object :
-//            ViewTreeObserver.OnGlobalLayoutListener {
-//            override fun onGlobalLayout() {
-//                recyclerViewReadyCallback.onLayoutReady()
-//                binding.postsRv.viewTreeObserver.removeOnGlobalLayoutListener(this)
-//            }
-//        })
-
-        tempAdapter.promotePost(object : PromoteListener{
-            override fun click() {
-                val bottomSheetPromote = PromotionBottomSheet(this@HomeFragment)
-                binding.alphaBg.visible(true)
-                bottomSheetPromote.show(childFragmentManager,bottomSheetPromote.tag)
-            }
-        })
-
-        tempAdapter.supportPost(object : SupportListener {
-            override fun click() {
-                val bottomSheetSupport = SupportBottomSheet(this@HomeFragment)
-                binding.alphaBg.visible(true)
-                bottomSheetSupport.show(childFragmentManager,bottomSheetSupport.tag)
-            }
-        })
-
-        if (requireActivity().isNetworkAvailable()) {
-//            setupData()
-        } else {
-//            getStoredDataFromLocalDB()
-        }
-
-        binding.root.setOnRefreshListener {
-            if (thisActivity.isNetworkAvailable()) {
-//                adapter.submitData(lifecycle, PagingData.empty())
-//                requestPosts()
-            } else {
-                binding.root.snackbar("Please check your network connection")
-            }
-
-            Handler(Looper.getMainLooper()).postDelayed({
-                if (binding.root.isRefreshing) {
-                    binding.root.isRefreshing = false
-                }
-            }, 3000)
+            thisActivity.setChatChecked()
+            onAddButtonClicked()
         }
 
         dialog = Dialog(requireContext())
         val locationPickerBinding = LocationPickerBinding.inflate(layoutInflater)
         dialog.setCanceledOnTouchOutside(false)
         dialog.setCancelable(false)
-//        viewModel.locations.observe(viewLifecycleOwner) { resource ->
-//            when (resource) {
-//                is Resource.Success -> {
-//                    val locations: List<Location> = resource.value.data
-//                    dialog.setContentView(locationPickerBinding.root)
-//                    for (location in locations)
-//                        locationHash[location.state] = location.cities
-//                    val states = ArrayList<String>()
-//                    for (state in locationHash.keys)
-//                        states.add(state)
-//                    locationPickerBinding.statePicker.setItems(states)
-//                    dialog.show()
-//                    val window: Window = dialog.window!!
-//                    window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-//                    window.setLayout(
-//                        ViewGroup.LayoutParams.MATCH_PARENT,
-//                        ViewGroup.LayoutParams.WRAP_CONTENT
-//                    )
-//                }
-//                is Resource.Loading -> {
-//                    locationPickerBinding.saveBtn.enable(false)
-//                }
-//                is Resource.Failure -> {
-////                    if (thisActivity.currentUserProfile.location.toString().isEmpty())
-////                        this.handleAPIError(resource) { lifecycleScope.launch { loadLocations() } }
-//                }
-//                else -> {}
-//            }
-//        }
+        dialog.setContentView(locationPickerBinding.root)
 
-        var state = ""
-        var city = ""
-//        locationPickerBinding.statePicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
-//            city = ""
-//            locationPickerBinding.cityPicker.clearSelectedItem()
-//            state = newItem
-//            locationPickerBinding.cityPicker.setItems(locationHash[newItem]!!)
-//        }
-//
-//        locationPickerBinding.cityPicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
-//            city = newItem
-//        }
+        if (currentUserProfile.location == null || currentUserProfile.location!!.isEmpty()) {
+            dialog.show()
+        } else {
+            binding.postsRv.loadPageData(
+                childFragmentManager,
+                thisActivity,
+                viewModel,
+                lifecycleScope,
+                requireContext(),
+                viewLifecycleOwner,
+                currentUserProfile,
+                this,
+                { removeAlphaVisibility() },
+                { showAlpha() },
+                token
+            )
+        }
 
-//        locationPickerBinding.saveBtn.setOnClickListener {
-//            if (state.isEmpty() || city.isEmpty())
-//                Toast.makeText(
-//                    requireContext(),
-//                    "Please select a state and city",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            else {
-//                thisActivity.currentUserProfile.location = "$state,$city"
-//                updateProfile()
-//                dialog.dismiss()
-//            }
-//        }
+        binding.floatingActionButtonUpload.setOnClickListener {
+            startActivity(Intent(requireContext(), NewPostActivity::class.java))
+        }
+
+        binding.root.setOnRefreshListener {
+            if (thisActivity.isNetworkAvailable()) {
+                adapter.submitData(lifecycle, PagingData.empty())
+                loadPage()
+                binding.postsRv.loadPageData(
+                    childFragmentManager,
+                    thisActivity,
+                    viewModel,
+                    lifecycleScope,
+                    requireContext(),
+                    viewLifecycleOwner,
+                    currentUserProfile,
+                    this,
+                    { removeAlphaVisibility() },
+                    { showAlpha() },
+                    token
+                )
+            } else {
+                binding.root.errorSnackBar("Please check your network connection")
+            }
+        }
+
+        var state = "Abia"
+        var city = "Aba"
+
+        locationPickerBinding.statePicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
+            city = ""
+            locationPickerBinding.cityPicker.clearSelectedItem()
+            state = newItem
+            when (state.lowercase()) {
+                "abia" -> locationPickerBinding.cityPicker.setItems(R.array.abia)
+                "adamawa" -> locationPickerBinding.cityPicker.setItems(R.array.adamawa)
+                "akwa ibom" -> locationPickerBinding.cityPicker.setItems(R.array.akwa_ibom)
+                "anambra" -> locationPickerBinding.cityPicker.setItems(R.array.anambra)
+            }
+            locationPickerBinding.saveBtn.enable(false)
+        }
+
+        locationPickerBinding.cityPicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
+            city = newItem
+            locationPickerBinding.saveBtn.enable(true)
+        }
+
+        locationPickerBinding.statePicker.selectItemByIndex(0)
+        locationPickerBinding.cityPicker.selectItemByIndex(0)
+
+        locationPickerBinding.saveBtn.setOnClickListener {
+            thisActivity.currentUserProfile.location = "$state,$city"
+            updateProfile()
+            dialog.dismiss()
+            if (adapter.snapshot().isEmpty())
+                binding.postsRv.loadPageData(
+                    childFragmentManager,
+                    thisActivity,
+                    viewModel,
+                    lifecycleScope,
+                    requireContext(),
+                    viewLifecycleOwner,
+                    currentUserProfile,
+                    this,
+                    { removeAlphaVisibility() },
+                    { showAlpha() },
+                    token
+                )
+        }
+
+        NetworkConnectionLiveData(requireContext()).observe(viewLifecycleOwner) {
+            setupData()
+            if (binding.root.isRefreshing)
+                binding.root.isRefreshing = false
+        }
     }
 
     private fun updateProfile() {
@@ -214,140 +217,65 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
             ProfileDTO(
                 profileImage = thisActivity.currentUserProfile.profileimg,
                 backgroundImageUrl = thisActivity.currentUserProfile.bgimg,
-                phone = thisActivity.currentUserProfile.phone!!,
                 accountType = thisActivity.currentUserProfile.acctype,
                 location = thisActivity.currentUserProfile.location!!,
                 email = thisActivity.currentUserProfile.email,
+                about = thisActivity.currentUserProfile.about.toString(),
                 fullName = thisActivity.currentUserProfile.fullname,
                 userName = thisActivity.currentUserProfile.username
             )
         )
-        lifecycleScope.launch {
-            settingsPreferences.saveProfile(thisActivity.currentUserProfile)
-        }
     }
 
     private fun loadPage() {
-//        if (thisActivity.currentUserProfile.location.toString().isEmpty())
-//            loadLocations()
         //Load first page
-        lifecycleScope.launch { requestPosts() }
+        requestPosts()
     }
 
     private fun requestPosts() {
-        adapter.submitData(viewLifecycleOwner.lifecycle, PagingData.from(arrayListOf(Post(), Post(), Post())))
-//        viewModel.getPostByPage().observe(viewLifecycleOwner) {
-//            adapter.submitData(viewLifecycleOwner.lifecycle, it)
-//        }
-    }
-
-//    fun switchPromotionFragment() {
-//        val navHost = childFragmentManager.findFragmentById(R.id.promote_content_view) as NavHostFragment
-//        val navController = navHost.navController
-//
-//    }
-
-    private fun loadLocations() {
-        viewModel.getLocations()
-    }
-
-    private fun setupRecyclerView() {
-        adapter.setupRecyclerResults(object : PostsPagingAdapter.SetupRecyclerResultsListener {
-            override fun setupLikes(holder: PostsViewHolder, postData: Post) {
-                NetworkConnectionLiveData(context ?: return)
-                    .observe(viewLifecycleOwner) { isConnected ->
-                        if (isConnected) {
-                            lifecycleScope.launch {
-//                                setupPostLikes(holder, postData)
+        viewModel.getPostByPage().observe(viewLifecycleOwner) {
+            lifecycleScope.launch {
+                withContext(Dispatchers.Main) {
+                    adapter.loadStateFlow.collectLatest { loadStates ->
+                        if (loadStates.refresh is LoadState.Loading) {
+                            binding.shimmer.visible(true)
+                            binding.root.isRefreshing = true
+                        } else {
+                            binding.shimmer.visible(false)
+                            binding.root.isRefreshing = false
+                            if (adapter.itemCount < 1) {
+                                binding.root.errorSnackBar("Error loading posts") { loadPage() }
+                            } else {
+                                // TODO: Network error
                             }
                         }
                     }
-            }
-
-            override fun setupData(holder: PostsViewHolder, postData: Post) {
-                NetworkConnectionLiveData(context ?: return)
-                    .observe(viewLifecycleOwner) {
-                        lifecycleScope.launch {
-//                            setupPosts(holder, postData)
-                        }
-//                        binding.shimmerLayout.stopShimmerAnimation()
-//                        binding.shimmerLayout.visible(false)
-                        binding.postsRv.visible(true)
-                    }
-            }
-
-            override fun showCommentSection(postData: Post?) {
-                requireContext().showCommentSection()
-//                lifecycleScope.launch {
-//                    val profileResult = getOtherProfile(postData.profileid)
-//                    if (profileResult != null) {
-//                        requireContext().showCommentSection(
-//                            viewModel,
-//                            viewLifecycleOwner,
-//                            lifecycleScope,
-//                            profileResult,
-//                            thisActivity.currentUserProfile,
-//                            postData.identifier
-//                        )
-//                    }
-//                }
-            }
-
-            override fun like(holder: PostsViewHolder, postData: Post) {
-                lifecycleScope.launch {
-//                    likePost(holder, postData)
                 }
             }
-        })
+            adapter.submitData(viewLifecycleOwner.lifecycle, it)
+        }
     }
 
-    private suspend fun likePost(holder: PostsViewHolder, postData: Post) {
-        val profileResult = getOtherProfile(postData.profileid)
-        if (profileResult != null) {
-            val liked = holder.view.likeToggle.isChecked
-            if (requireActivity().isNetworkAvailable())
-                likePost(
-                    holder.view.likeToggle,
-                    holder.view.likesCount,
-                    lifecycleScope,
-                    viewModel,
-                    postData.identifier,
-                    profileResult,
-                    thisActivity.currentUserProfile
-                )
-            else
-                holder.view.likeToggle.isChecked = !liked
-        }
+    override fun onResume() {
+        super.onResume()
+        if (adapter.snapshot().isEmpty())
+            binding.postsRv.loadPageData(
+                childFragmentManager,
+                thisActivity,
+                viewModel,
+                lifecycleScope,
+                requireContext(),
+                viewLifecycleOwner,
+                currentUserProfile,
+                this,
+                { removeAlphaVisibility() },
+                { showAlpha() },
+                token
+            )
     }
 
     private fun setupData() {
         loadPage()
-    }
-
-    private fun getStoredDataFromLocalDB() {
-        viewModel.getSavedPosts()?.asLiveData()?.observe(viewLifecycleOwner) { saved ->
-            if (saved.isNotEmpty()) {
-                adapter.submitData(viewLifecycleOwner.lifecycle, PagingData.from(saved))
-            }
-        }
-    }
-
-    override fun onPause() {
-//        savePosts()
-        super.onPause()
-    }
-
-    private fun savePosts() {
-        lifecycleScope.launch {
-            val postItems = adapter.snapshot().items
-            if (postItems.isNotEmpty())
-                viewModel.savePosts(postItems)
-        }
-        thisActivity.lmState = postsLayoutManager.onSaveInstanceState()!!
-    }
-
-    private fun snapshotExists(): Boolean {
-        return adapter.snapshot().items.isNotEmpty()
     }
 
     override fun getViewModel() = HomeViewModel::class.java
@@ -358,7 +286,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     ) = FragmentHomeBinding.inflate(inflater, container, false)
 
     override fun getFragmentRepository(): HomeRepository {
-        val token = runBlocking { settingsPreferences.authToken.first() }
+        val token = runBlocking { profilePreferences.authToken.first() }
         val api = protrndAPIDataSource.buildAPI(ProfileApi::class.java, token)
         val postsApi = protrndAPIDataSource.buildAPI(PostApi::class.java, token)
         val postDatabase = protrndAPIDataSource.providePostDatabase(requireActivity().application)
@@ -368,89 +296,116 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
     }
 
     override fun onDestroy() {
-//        binding.shimmerLayout.stopShimmerAnimation()
         super.onDestroy()
         if (dialog.isShowing) {
             dialog.cancel()
         }
     }
 
-    private suspend fun getOtherProfile(
-        id: String
-    ): Profile? {
-        return getStoredProfile(id) ?: when (val otherProfile = viewModel.getProfileById(id)) {
-            is Resource.Success -> {
-                viewModel.saveProfile(otherProfile.value.data)
-                return otherProfile.value.data
-            }
-            is Resource.Loading -> {
-                return null
-            }
-            is Resource.Failure -> {
-                return null
-            }
-            else -> {
-                return null
-            }
-        }
-    }
-
-    private fun getStoredProfile(id: String): Profile? {
-        val otherProfile = viewModel.getProfile(id)
-        var result: Profile? = null
-        otherProfile?.asLiveData()?.observe(viewLifecycleOwner) {
-            if (it != null) {
-                result = it
-            }
-        }
-        return result
-    }
-
-    suspend fun setupPostLikes(holder: PostsViewHolder, postData: Post) {
-        viewModel.setupLikes(
-            postData.id,
-            holder.view.likesCount,
-            holder.view.likeToggle
-        )
-    }
-
-    suspend fun setupPosts(holder: PostsViewHolder, postData: Post) {
-        val profileResult = getOtherProfile(postData.profileid)
-        if (profileResult != null) {
-            holder.bind(
-                requireActivity(),
-                postData,
-                profileResult,
-                thisActivity.currentUserProfile
-            )
-        }
-    }
-
     private fun onAddButtonClicked() {
-        binding.alphaBg.visible(!addButtonClicked)
-        binding.floatingActionButtonScan.visible(addButtonClicked)
-        binding.floatingActionButtonUpload.visible(addButtonClicked)
-        binding.floatingActionButtonMessage.visible(addButtonClicked)
-        setAnimation(addButtonClicked)
-
-        addButtonClicked = !addButtonClicked
+        if (!addButtonClicked) {
+            binding.alphaBg.visible(true)
+            binding.floatingActionButtonScan.visible(true)
+            binding.floatingActionButtonUpload.visible(true)
+            binding.floatingActionButtonMessage.visible(true)
+            setAnimation(true)
+        } else {
+            binding.alphaBg.visible(false)
+            binding.floatingActionButtonScan.visible(false)
+            binding.floatingActionButtonUpload.visible(false)
+            binding.floatingActionButtonMessage.visible(false)
+            setAnimation(false)
+        }
     }
 
-    fun setAnimation(buttonClicked: Boolean) {
-        if (!buttonClicked){
+    private fun setAnimation(buttonClicked: Boolean) {
+        if (buttonClicked) {
             binding.floatingActionButtonScan.startAnimation(fromBottomAnimation)
             binding.floatingActionButtonUpload.startAnimation(fromBottomAnimation)
             binding.floatingActionButtonMessage.startAnimation(fromBottomAnimation)
             binding.floatingActionButtonAdd.startAnimation(rotateOpenAnimation)
-        }else{
+        } else {
             binding.floatingActionButtonScan.startAnimation(toBottomAnimation)
             binding.floatingActionButtonUpload.startAnimation(toBottomAnimation)
             binding.floatingActionButtonMessage.startAnimation(toBottomAnimation)
             binding.floatingActionButtonAdd.startAnimation(rotateCloseAnimation)
         }
+        addButtonClicked = !addButtonClicked
     }
 
     fun removeAlphaVisibility() {
         binding.alphaBg.visible(false)
+    }
+
+    private fun showAlpha() {
+        binding.alphaBg.visible(true)
+    }
+
+    private fun checkNotifications() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            dexter = Dexter.withContext(requireContext())
+                .withPermission(
+                    Manifest.permission.POST_NOTIFICATIONS
+                ).withListener(object : PermissionListener {
+                    override fun onPermissionGranted(response: PermissionGrantedResponse?) {
+
+                    }
+
+                    override fun onPermissionDenied(report: PermissionDeniedResponse?) {
+                        report.let {
+                            if (report != null) {
+                                if (!report.isPermanentlyDenied) {
+                                    val requestNotificationIntent =
+                                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                            val uri = Uri.fromParts(
+                                                "package",
+                                                requireActivity().packageName,
+                                                null
+                                            )
+                                            data = uri
+                                        }
+                                    resultLauncher.launch(requestNotificationIntent)
+                                }
+                            }
+                        }
+
+                    }
+
+                    override fun onPermissionRationaleShouldBeShown(
+                        request: PermissionRequest?,
+                        token: PermissionToken?
+                    ) {
+                        token?.continuePermissionRequest()
+                    }
+                }).withErrorListener {
+                    Toast.makeText(requireContext(), "An Error occurred!", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            dexter.onSameThread().check()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (addButtonClicked)
+            onAddButtonClicked()
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        if (addButtonClicked)
+            onAddButtonClicked()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        if (addButtonClicked)
+            onAddButtonClicked()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (addButtonClicked)
+            onAddButtonClicked()
     }
 }

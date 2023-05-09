@@ -11,6 +11,8 @@ interface NotificationApi {
     @GET("n/fetch/{page}")
     suspend fun getNotificationPaginated(@Path("page") page: Int): GetNotificationsResponseBody
 
+    //TODO: Make api to get notifications where type is not a Transaction
+
     @GET("profile/{id}")
     suspend fun getProfileById(@Path("id") id: String): ProfileResponseBody
 

@@ -17,12 +17,14 @@ abstract class BaseRepository {
                 when (throwable) {
                     is HttpException -> {
                         Resource.Failure(
-                            false, throwable.code(),
-                            throwable.response()?.errorBody() as ResponseBody
+                            false,
+                            throwable.code(),
+                            throwable.response()?.errorBody() as ResponseBody,
+                            throwable
                         )
                     }
                     else -> {
-                        Resource.Failure(true, 500, null)
+                        Resource.Failure(true, 500, null, throwable)
                     }
                 }
             }

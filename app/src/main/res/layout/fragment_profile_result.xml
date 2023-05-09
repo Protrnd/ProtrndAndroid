@@ -11,31 +11,31 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/enter_profile_ic"
-        android:textSize="@dimen/subheading"
         android:fontFamily="@font/dmsans_medium"
-        android:textColor="@color/black"/>
+        android:text="@string/enter_profile_ic"
+        android:textColor="@color/black"
+        android:textSize="@dimen/subheading" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/profile_id"
-        android:textSize="@dimen/label"
-        android:textColor="@color/main_purple"
+        android:layout_marginTop="24dp"
         android:fontFamily="@font/dm_sans_medium"
-        android:layout_marginTop="24dp"/>
+        android:text="@string/profile_id"
+        android:textColor="@color/main_purple"
+        android:textSize="@dimen/label" />
 
     <TextView
         android:id="@+id/profile_id_result"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:text="@string/at_protrnd"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/rect_outlined_black_50"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:textColor="@color/black"
-        android:background="@drawable/rect_outlined_black_50"/>
+        android:text="@string/at_protrnd"
+        android:textColor="@color/black" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -43,7 +43,7 @@
         android:layout_marginTop="24dp">
 
         <ImageView
-            android:id="@+id/imageView5"
+            android:id="@+id/profile_img"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/round_bg"
@@ -52,41 +52,43 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/textView8"
+            android:id="@+id/profile_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:drawablePadding="5dp"
             android:fontFamily="@font/dmsans_medium"
             android:text="@string/protrnd"
-            android:textSize="@dimen/body"
             android:textColor="@color/black"
+            android:textSize="@dimen/body"
             app:drawableEndCompat="@drawable/business_badge_ic"
-            app:layout_constraintStart_toEndOf="@+id/imageView5"
+            app:layout_constraintStart_toEndOf="@+id/profile_img"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
+            android:id="@+id/username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/dm_sans"
             android:text="@string/at_protrnd"
             android:textColor="@color/dark_grey"
-            android:fontFamily="@font/dm_sans"
             android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="@+id/imageView5"
-            app:layout_constraintStart_toStartOf="@+id/textView8"
-            app:layout_constraintTop_toBottomOf="@+id/textView8" />
+            app:layout_constraintBottom_toBottomOf="@+id/profile_img"
+            app:layout_constraintStart_toStartOf="@+id/profile_name"
+            app:layout_constraintTop_toBottomOf="@+id/profile_name" />
 
         <TextView
+            android:id="@+id/location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:drawablePadding="5dp"
-            android:textColor="@color/black"
             android:fontFamily="@font/dm_sans"
             android:text="@string/protrnd_location"
+            android:textColor="@color/black"
+            app:drawableStartCompat="@drawable/location_ic"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:drawableStartCompat="@drawable/location_ic" />
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.appcompat.widget.AppCompatButton
@@ -95,8 +97,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="36dp"
-        android:fontFamily="@font/dmsans_medium"
         android:background="@drawable/button_elevation"
+        android:fontFamily="@font/dmsans_medium"
         android:text="@string/continue_text"
         android:textColor="@color/white"
         tools:ignore="DuplicateSpeakableTextCheck" />

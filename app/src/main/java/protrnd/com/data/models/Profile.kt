@@ -25,8 +25,8 @@ data class Profile(
     var identifier: String = "",
     @SerializedName("location")
     var location: String? = "",
-    @SerializedName("phone")
-    var phone: String? = "",
+    @SerializedName("about")
+    var about: String? = "",
     @SerializedName("profileimg")
     var profileimg: String = "",
     @SerializedName("regdate")
@@ -58,7 +58,7 @@ data class Profile(
         parcel.writeString(id)
         parcel.writeString(identifier)
         parcel.writeString(location)
-        parcel.writeString(phone)
+        parcel.writeString(about)
         parcel.writeString(profileimg)
         parcel.writeString(regdate)
         parcel.writeString(username)

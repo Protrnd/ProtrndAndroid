@@ -8,23 +8,35 @@ interface PostApi {
     @GET("post/fetch/{page}")
     suspend fun getPosts(@Path("page") page: Int): GetPostsResponseBody
 
+    @GET("search/get/posts/{name}")
+    suspend fun getPostsByName(@Path("name") name: String): GetPostsResponseBody
+
+    @GET("post/fetch/promotions/{page}")
+    suspend fun getPromotionsPage(@Path("page") page: Int): PromotionListResponseBody
+
     @GET("post/fetch/query")
     suspend fun getPostsQueried(
         @Query("page") page: Int,
         @Query("word") word: String
     ): GetPostsResponseBody
 
+    @GET("post/profile/tags")
+    suspend fun getProfilePostTags(
+        @Query("page", encoded = true) page: Int,
+        @Query("profileid", encoded = true) profileid: String
+    ): GetPostsResponseBody
+
     @GET("post/get/count/{word}")
     suspend fun getQueryCount(@Path(value = "word", encoded = true) word: String): BasicResponseBody
 
     @GET("post/is-liked/{id}")
-    suspend fun postIsLiked(@Path("id") id: String): LikeResponseBody
+    suspend fun postIsLiked(@Path("id") id: String): BooleanResponseBody
 
     @POST("post/like/{id}")
-    suspend fun likePost(@Path("id") id: String): LikeResponseBody
+    suspend fun likePost(@Path("id") id: String): BooleanResponseBody
 
     @DELETE("post/delete/like/{id}")
-    suspend fun unlikePost(@Path("id") id: String): LikeResponseBody
+    suspend fun unlikePost(@Path("id") id: String): BooleanResponseBody
 
     @GET("post/{id}/like-count")
     suspend fun getLikesCount(@Path("id") id: String): BasicResponseBody

@@ -6,21 +6,21 @@ import com.google.gson.annotations.SerializedName
 import java.util.*
 
 data class Location(
-    @SerializedName("cities")
-    val cities: List<String> = arrayListOf(),
+    @SerializedName("city")
+    val city: String = "",
     @SerializedName("id")
     val id: String = UUID.randomUUID().toString(),
     @SerializedName("state")
     val state: String = ""
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.createStringArrayList()!!,
+        parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeStringList(cities)
+        parcel.writeString(city)
         parcel.writeString(id)
         parcel.writeString(state)
     }

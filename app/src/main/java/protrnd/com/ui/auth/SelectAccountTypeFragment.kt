@@ -13,6 +13,7 @@ import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.setGradient
 import protrnd.com.ui.setSpannableBold
 import protrnd.com.ui.setSpannableColor
+import protrnd.com.ui.viewmodels.AuthViewModel
 
 class SelectAccountTypeFragment :
     BaseFragment<AuthViewModel, FragmentSelectAccountTypeBinding, AuthRepository>() {
@@ -25,8 +26,10 @@ class SelectAccountTypeFragment :
 
         binding.loginTv.setGradient()
         binding.loginHereTv.setGradient()
-        binding.userAccountBtn.text = binding.userAccountBtn.text.toString().setSpannableBold("Explore")
-        binding.enterpriseAccountBtn.text = binding.enterpriseAccountBtn.text.toString().setSpannableBold("Business")
+        binding.userAccountBtn.text =
+            binding.userAccountBtn.text.toString().setSpannableBold("Explore")
+        binding.enterpriseAccountBtn.text =
+            binding.enterpriseAccountBtn.text.toString().setSpannableBold("Business")
         binding.loginText.text = binding.loginText.text.toString().setSpannableColor("Login", 25)
 
         binding.userAccountBtn.setOnClickListener {
@@ -52,5 +55,5 @@ class SelectAccountTypeFragment :
     ) = FragmentSelectAccountTypeBinding.inflate(inflater, container, false)
 
     override fun getFragmentRepository() =
-        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), settingsPreferences)
+        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
 }

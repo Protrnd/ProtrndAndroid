@@ -8,8 +8,8 @@
     <ImageView
         android:id="@+id/imageView4"
         android:layout_width="match_parent"
-        android:background="@color/light_grey"
         android:layout_height="180dp"
+        android:background="@color/light_grey"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -21,10 +21,10 @@
         android:drawablePadding="8dp"
         android:gravity="bottom"
         android:paddingStart="16dp"
-        android:textColor="@color/black"
         android:paddingTop="10dp"
         android:paddingEnd="4dp"
         android:text="Views 540"
+        android:textColor="@color/black"
         app:drawableStartCompat="@drawable/views_ic"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/imageView4" />
@@ -37,9 +37,9 @@
         android:gravity="bottom"
         android:paddingStart="16dp"
         android:paddingTop="10dp"
-        android:textColor="@color/black"
         android:paddingEnd="4dp"
         android:text="Clicks 540"
+        android:textColor="@color/black"
         app:drawableStartCompat="@drawable/clicks_ic"
         app:layout_constraintStart_toEndOf="@+id/textView3"
         app:layout_constraintTop_toBottomOf="@id/imageView4" />
@@ -47,8 +47,8 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/more_vert_ic"
         android:layout_marginEnd="16dp"
+        android:src="@drawable/more_vert_ic"
         app:layout_constraintBottom_toBottomOf="@+id/plan"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/plan" />

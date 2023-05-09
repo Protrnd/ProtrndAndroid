@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="16dp"
     android:gravity="center"
     android:orientation="vertical"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="16dp"
     tools:context=".ui.payment.PaymentCompleteFragment">
 
     <TextView
@@ -14,9 +14,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
-        android:text="@string/congratulations_you_re_trnding"
-        android:gravity="center"
         android:fontFamily="@font/dm_sans_medium"
+        android:gravity="center"
+        android:text="@string/your_support_has_been_successfully_sent"
         android:textColor="@color/black"
         android:textSize="@dimen/heading_1"
         android:textStyle="bold" />
@@ -26,25 +26,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
-        android:src="@drawable/promote_ic_large"
+        android:src="@drawable/support_large_ic"
         app:layout_constraintBottom_toTopOf="@+id/textView2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
-        android:gravity="center"
-        android:textColor="@color/black"
-        android:text="@string/you_re_post_is_going_viral_click_here_to_find_out_what_to_do_next_or_continue_exploring"
-        android:textSize="@dimen/body"
-        app:layout_constraintBottom_toTopOf="@+id/continue_btn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView2" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/continue_btn"

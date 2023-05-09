@@ -6,13 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.NavHostFragment
 import protrnd.com.R
+import protrnd.com.data.network.ProtrndAPIDataSource
+import protrnd.com.data.network.api.PaymentApi
 import protrnd.com.data.repository.PaymentRepository
 import protrnd.com.databinding.FragmentPromotionLocationBinding
 import protrnd.com.ui.base.BaseFragment
-import protrnd.com.ui.payment.PaymentViewModel
+import protrnd.com.ui.viewmodels.PaymentViewModel
 import protrnd.com.ui.visible
 
-class PromotionLocationFragment : BaseFragment<PaymentViewModel, FragmentPromotionLocationBinding, PaymentRepository>() {
+class PromotionLocationFragment :
+    BaseFragment<PaymentViewModel, FragmentPromotionLocationBinding, PaymentRepository>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -40,8 +43,8 @@ class PromotionLocationFragment : BaseFragment<PaymentViewModel, FragmentPromoti
 
         var total = 10000
         val country = "Nigeria"
-        var state = "Rivers"
-        var city ="Port Harcourt"
+        var state = "Abia"
+        var city = "Aba"
 
         binding.areaPicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
             if (newItem == "State") {
@@ -65,21 +68,26 @@ class PromotionLocationFragment : BaseFragment<PaymentViewModel, FragmentPromoti
             city = newItem
         }
 
-        binding.statePicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
+        binding.statePicker.setOnSpinnerItemSelectedListener<String> { _, _, newPosition, newItem ->
             state = newItem
+            when (newPosition) {
+                0 -> binding.cityPicker.setItems(R.array.abia)
+                1 -> binding.cityPicker.setItems(R.array.adamawa)
+            }
+            binding.cityPicker.selectItemByIndex(0)
         }
 
         val hostFragment = parentFragment as NavHostFragment
         binding.continueBtn.setOnClickListener {
-            val location = when(binding.areaPicker.selectedIndex)  {
+            val location = when (binding.areaPicker.selectedIndex) {
                 2 -> "$country, $state, $city"
                 1 -> "$country, $state"
                 else -> country
             }
-            val bundle = Bundle()
-            bundle.putString("location",location)
-            bundle.putInt("amount",total)
-            hostFragment.navController.navigate(R.id.paymentPlanFragment,bundle)
+
+            requireArguments().putString("location", location)
+            requireArguments().putInt("amount", total)
+            hostFragment.navController.navigate(R.id.paymentPlanFragment, requireArguments())
         }
     }
 
@@ -88,7 +96,11 @@ class PromotionLocationFragment : BaseFragment<PaymentViewModel, FragmentPromoti
     override fun getFragmentBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
-    ) = FragmentPromotionLocationBinding.inflate(inflater,container,false)
+    ) = FragmentPromotionLocationBinding.inflate(inflater, container, false)
 
-    override fun getFragmentRepository() = PaymentRepository()
+    override fun getFragmentRepository(): PaymentRepository {
+        val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java)
+        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
+        return PaymentRepository(paymentApi)
+    }
 }

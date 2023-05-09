@@ -2,13 +2,14 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="oval">
-            <solid android:color="@color/main_pink"/>
+            <solid android:color="@color/main_pink" />
         </shape>
     </item>
 
-    <item android:drawable="@drawable/qr_scan_white_ic"
+    <item
         android:bottom="18dp"
-        android:top="18dp"
+        android:drawable="@drawable/qr_scan_white_ic"
+        android:end="17dp"
         android:start="17dp"
-        android:end="17dp" />
+        android:top="18dp" />
 </layer-list>

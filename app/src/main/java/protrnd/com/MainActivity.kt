@@ -12,10 +12,10 @@ import protrnd.com.databinding.ActivityMainBinding
 import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.handleUnCaughtException
 import protrnd.com.ui.home.HomeActivity
-import protrnd.com.ui.home.HomeViewModel
 import protrnd.com.ui.post.PostActivity
 import protrnd.com.ui.startActivityFromNotification
 import protrnd.com.ui.startNewActivityFromAuth
+import protrnd.com.ui.viewmodels.HomeViewModel
 
 class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel, HomeRepository>() {
 
@@ -23,7 +23,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel, HomeReposi
         super.onViewReady(savedInstanceState, intent)
         val bundle = intent!!.extras
         Thread.setDefaultUncaughtExceptionHandler { _, e ->
-            binding.root.handleUnCaughtException()
+            binding.root.handleUnCaughtException(e)
         }
         if (bundle != null && bundle.containsKey("post_id")) {
             bundle.putBoolean("isFromNotification", true)

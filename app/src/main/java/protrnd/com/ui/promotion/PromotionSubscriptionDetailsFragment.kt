@@ -6,13 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.NavHostFragment
 import protrnd.com.R
+import protrnd.com.data.network.ProtrndAPIDataSource
+import protrnd.com.data.network.api.PaymentApi
 import protrnd.com.data.repository.PaymentRepository
 import protrnd.com.databinding.FragmentPromotionSubscriptionDetailsBinding
 import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.formatAmount
-import protrnd.com.ui.payment.PaymentViewModel
+import protrnd.com.ui.viewmodels.PaymentViewModel
 
-class PromotionSubscriptionDetailsFragment : BaseFragment<PaymentViewModel,FragmentPromotionSubscriptionDetailsBinding,PaymentRepository>() {
+class PromotionSubscriptionDetailsFragment :
+    BaseFragment<PaymentViewModel, FragmentPromotionSubscriptionDetailsBinding, PaymentRepository>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -23,11 +26,15 @@ class PromotionSubscriptionDetailsFragment : BaseFragment<PaymentViewModel,Fragm
         val plan = "1 $period"
         binding.plan.text = plan
         val amount = "₦ ${arguments.getInt("amount").formatAmount()} / $period"
+
+        requireArguments().putString("from", "Promotion")
+
         binding.amount.text = amount
         binding.locationS.text = location
+
         val hostFragment = parentFragment as NavHostFragment
         binding.continueBtn.setOnClickListener {
-            hostFragment.navController.navigate(R.id.promotionBannerFragment)
+            hostFragment.navController.navigate(R.id.promotionBannerFragment, requireArguments())
         }
     }
 
@@ -36,7 +43,11 @@ class PromotionSubscriptionDetailsFragment : BaseFragment<PaymentViewModel,Fragm
     override fun getFragmentBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
-    ) = FragmentPromotionSubscriptionDetailsBinding.inflate(inflater,container,false)
+    ) = FragmentPromotionSubscriptionDetailsBinding.inflate(inflater, container, false)
 
-    override fun getFragmentRepository() = PaymentRepository()
+    override fun getFragmentRepository(): PaymentRepository {
+        val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java)
+        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
+        return PaymentRepository(paymentApi)
+    }
 }

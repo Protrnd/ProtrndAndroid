@@ -12,19 +12,24 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.bumptech.glide.Glide
 import com.yalantis.ucrop.UCrop
+import kotlinx.coroutines.launch
 import protrnd.com.R
+import protrnd.com.data.network.ProtrndAPIDataSource
+import protrnd.com.data.network.api.PaymentApi
 import protrnd.com.data.repository.PaymentRepository
 import protrnd.com.databinding.FragmentPromotionBannerBinding
 import protrnd.com.ui.base.BaseFragment
-import protrnd.com.ui.payment.PaymentViewModel
+import protrnd.com.ui.enable
+import protrnd.com.ui.viewmodels.PaymentViewModel
 import java.io.File
 import java.util.*
 
-class PromotionBannerFragment : BaseFragment<PaymentViewModel, FragmentPromotionBannerBinding, PaymentRepository>() {
-
+class PromotionBannerFragment :
+    BaseFragment<PaymentViewModel, FragmentPromotionBannerBinding, PaymentRepository>() {
     private var promotionUri: Uri = Uri.EMPTY
 
     private fun getContent() {
@@ -42,31 +47,55 @@ class PromotionBannerFragment : BaseFragment<PaymentViewModel, FragmentPromotion
         }
     }
 
-    private val getImagePickerResult = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-        if (uri != null) {
-            promotionUri = uri
-            getContent()
-        } else {
-            Toast.makeText(requireContext(), "No images selected", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        binding.promotionImage.setOnClickListener {
-            if (promotionUri != Uri.EMPTY) {
+    private val getImagePickerResult =
+        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            if (uri != null) {
+                promotionUri = uri
                 getContent()
+            } else {
+                Toast.makeText(requireContext(), "No images selected", Toast.LENGTH_SHORT).show()
             }
         }
 
-        binding.newImageBtn.setOnClickListener {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+//        val width = binding.bannerSelectorLayout.width
+//        val height = (width*9)/16
+//        val params = binding.bannerSelectorLayout.layoutParams
+//        params.height = height
+//        params.width = width
+//        binding.bannerSelectorLayout.requestLayout()
+
+        binding.bannerSelectorLayout.setOnClickListener {
             getImagePickerResult.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
 
         val hostFragment = parentFragment as NavHostFragment
         binding.continueBtn.setOnClickListener {
-            hostFragment.navController.navigate(R.id.chooseSupportPaymentMethodFragment)
+            if (promotionUri != Uri.EMPTY) {
+                binding.root.enable(false)
+                lifecycleScope.launch {
+                    val uploaded = viewModel.uploadImage(promotionUri, currentUserProfile.username)
+                    if (uploaded.isNotEmpty()) {
+                        requireArguments().putString("bannerurl", uploaded)
+                        hostFragment.navController.navigate(
+                            R.id.chooseSupportPaymentMethodFragment,
+                            requireArguments()
+                        )
+                    } else {
+                        binding.root.enable(true)
+                        Toast.makeText(
+                            requireContext(),
+                            "Error uploading banner",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } else {
+                Toast.makeText(requireContext(), "Please select a banner", Toast.LENGTH_SHORT)
+                    .show()
+                binding.root.enable(true)
+            }
         }
     }
 
@@ -76,8 +105,12 @@ class PromotionBannerFragment : BaseFragment<PaymentViewModel, FragmentPromotion
                 val inputUri = input[0]
                 val outputUri = input[1]
 
-                val uCrop = UCrop.of(inputUri, outputUri).withAspectRatio(16f, 9f)
-                    .withMaxResultSize(1920, 1080)
+                val options = UCrop.Options()
+                options.setCompressionQuality(50)
+                options.setShowCropGrid(true)
+                val uCrop = UCrop.of(inputUri, outputUri)
+                    .withAspectRatio(16f, 9f)
+                    .withOptions(options)
 
                 return uCrop.getIntent(context)
             }
@@ -96,7 +129,11 @@ class PromotionBannerFragment : BaseFragment<PaymentViewModel, FragmentPromotion
     override fun getFragmentBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
-    ) = FragmentPromotionBannerBinding.inflate(inflater,container,false)
+    ) = FragmentPromotionBannerBinding.inflate(inflater, container, false)
 
-    override fun getFragmentRepository() = PaymentRepository()
+    override fun getFragmentRepository(): PaymentRepository {
+        val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java)
+        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
+        return PaymentRepository(paymentApi)
+    }
 }

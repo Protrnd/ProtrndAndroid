@@ -25,7 +25,9 @@ data class Post(
     @SerializedName("time")
     val time: String = "",
     @SerializedName("uploadurls")
-    val uploadurls: List<String> = arrayListOf()
+    val uploadurls: List<String> = arrayListOf(),
+    @SerializedName("tags")
+    val tags: List<String> = arrayListOf()
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readByte() != 0.toByte(),
@@ -36,6 +38,7 @@ data class Post(
         parcel.readParcelable(Location::class.java.classLoader)!!,
         parcel.readString()!!,
         parcel.readString()!!,
+        parcel.createStringArrayList()!!,
         parcel.createStringArrayList()!!
     )
 
@@ -49,6 +52,7 @@ data class Post(
         parcel.writeString(profileid)
         parcel.writeString(time)
         parcel.writeStringList(uploadurls)
+        parcel.writeStringList(tags)
     }
 
     override fun describeContents(): Int {

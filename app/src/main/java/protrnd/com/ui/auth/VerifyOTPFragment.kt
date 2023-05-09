@@ -4,8 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import kotlinx.coroutines.launch
@@ -15,6 +13,7 @@ import protrnd.com.data.repository.AuthRepository
 import protrnd.com.databinding.FragmentVerifyOtpBinding
 import protrnd.com.ui.*
 import protrnd.com.ui.base.BaseFragment
+import protrnd.com.ui.viewmodels.AuthViewModel
 
 class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, AuthRepository>() {
 
@@ -32,7 +31,8 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
         binding.input2.requestForFocus(binding.input3, binding.input1)
         binding.input3.requestForFocus(binding.input4, binding.input2)
         binding.input4.requestForFocus(prev = binding.input3)
-        binding.resendCode.text = binding.resendCode.text.toString().setSpannableColor("Click here to resend", 23)
+        binding.resendCode.text =
+            binding.resendCode.text.toString().setSpannableColor("Click here to resend", 23)
         viewModel.verifyOtpResponse.observe(viewLifecycleOwner) {
             when (it) {
                 is Resource.Success -> {
@@ -41,10 +41,10 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
                             it.value.data.toString(),
                             lifecycleScope,
                             requireActivity(),
-                            settingsPreferences
+                            profilePreferences
                         )
                     } else {
-                        binding.root.snackbar(it.value.message)
+                        binding.root.errorSnackBar(it.value.message)
                     }
                 }
                 is Resource.Loading -> {
@@ -55,9 +55,9 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
                     binding.continueBtn.enable(true)
                     binding.progressBar.visible(false)
                     if (it.isNetworkError) {
-                        binding.root.snackbar("Error verifying otp, please wait while we try again") { lifecycleScope.launch { verifyOtp() } }
+                        binding.root.errorSnackBar("Error verifying otp, please wait while we try again") { lifecycleScope.launch { verifyOtp() } }
                     } else {
-                        binding.root.snackbar("Internal server error occurred")
+                        binding.root.errorSnackBar("Internal server error occurred")
                     }
                 }
                 else -> {}
@@ -82,17 +82,6 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
         viewModel.verifyOtp(registerFragment.verifyOTP)
     }
 
-    private fun EditText.requestForFocus(next: EditText? = null, prev: EditText? = null) {
-        this.addTextChangedListener {
-            if (it.toString().length == 1 && next != null) {
-                next.requestFocus()
-            } else {
-                if (it.toString().isEmpty())
-                    prev?.requestFocus()
-            }
-        }
-    }
-
     override fun getViewModel() = AuthViewModel::class.java
 
     override fun getFragmentBinding(
@@ -101,5 +90,5 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
     ) = FragmentVerifyOtpBinding.inflate(inflater, container, false)
 
     override fun getFragmentRepository() =
-        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), settingsPreferences)
+        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
 }

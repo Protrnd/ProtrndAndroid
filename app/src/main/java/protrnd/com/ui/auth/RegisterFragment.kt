@@ -13,6 +13,7 @@ import protrnd.com.data.repository.AuthRepository
 import protrnd.com.databinding.FragmentRegisterBinding
 import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.finishActivity
+import protrnd.com.ui.viewmodels.AuthViewModel
 
 class RegisterFragment : BaseFragment<AuthViewModel, FragmentRegisterBinding, AuthRepository>() {
 
@@ -48,5 +49,5 @@ class RegisterFragment : BaseFragment<AuthViewModel, FragmentRegisterBinding, Au
     ) = FragmentRegisterBinding.inflate(inflater, container, false)
 
     override fun getFragmentRepository() =
-        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), settingsPreferences)
+        AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
 }

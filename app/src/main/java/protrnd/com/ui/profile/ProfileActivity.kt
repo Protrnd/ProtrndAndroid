@@ -3,78 +3,213 @@ package protrnd.com.ui.profile
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import protrnd.com.data.models.Post
 import protrnd.com.data.models.Profile
+import protrnd.com.data.network.MemoryCache
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityProfileBinding
 import protrnd.com.ui.*
-import protrnd.com.ui.adapter.ImageThumbnailPostAdapter
-import protrnd.com.ui.adapter.listener.ImagePostItemClickListener
+import protrnd.com.ui.adapter.ProfileTabsAdapter
 import protrnd.com.ui.base.BaseActivity
-import protrnd.com.ui.home.HomeViewModel
-import protrnd.com.ui.post.PostActivity
+import protrnd.com.ui.chat.ChatContentActivity
+import protrnd.com.ui.viewmodels.HomeViewModel
+import protrnd.com.ui.wallet.send.SendMoneyBottomSheetFragment
 
 class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, HomeRepository>() {
-    private var profile: Profile? = null
-    private var profileMap: HashMap<String, Profile> = HashMap()
-    private var profileId: String = ""
-    private val temp = HashMap<String, String>()
-    private var userId: String = ""
-
-    val profileIdResult =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (it.resultCode == RESULT_OK && it.data != null) {
-                profileId = it.data!!.getStringExtra("profile_id").toString()
-            }
-        }
+    private val postsSizeMutable = MutableLiveData<Int>()
+    private val sizeLive: LiveData<Int> = postsSizeMutable
+    private val followersCachedMutable = MutableLiveData<String>()
+    private val followersLive: LiveData<String> = followersCachedMutable
+    private val followingsCachedMutable = MutableLiveData<String>()
+    private val followingsLive: LiveData<String> = followingsCachedMutable
+    private val profilePostsMutableCache = MutableLiveData<MutableList<Post>>()
+    val profilePostsLive: LiveData<MutableList<Post>> = profilePostsMutableCache
+    private val profileMutable: MutableLiveData<Profile> = MutableLiveData()
+    private val profileLive: LiveData<Profile> = profileMutable
+    var firstInstance = true
+    var profileId = ""
+    var followersCount = 0
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
-        binding.navBackBtn.setOnClickListener { finishActivity() }
+        binding.refresh.setOnRefreshListener {
+            binding.refresh.isRefreshing = false
+        }
 
-        val usernameIntent = intent?.getStringExtra("profile_name").toString()
-        if (usernameIntent.isNotEmpty() && usernameIntent.contains("@")) {
-            lifecycleScope.launch {
-                getProfileByName(usernameIntent.removePrefix("@"))
-                getProfileById()
-            }
-        } else {
-            profileId = intent?.getStringExtra("profile_id").toString()
-            lifecycleScope.launch {
-                getProfileById()
+        profileId = intent!!.getStringExtra("profile_id")!!
+
+        viewModel.isFollowing(profileId)
+
+        viewModel.isFollowing.observe(this) {
+            when (it) {
+                is Resource.Success -> {
+                    binding.followBtn.isChecked = it.value.data.toString().toBoolean()
+                    firstInstance = false
+                }
+                else -> {}
             }
         }
 
-        binding.followToggle.setOnClickListener {
-            val following = binding.followToggle.isChecked
-            if (following) {
-                lifecycleScope.launch {
-                    when (viewModel.follow(profileId)) {
-                        is Resource.Success -> {
-                            profile?.let { sendFollowNotification(it, currentUserProfile) }
+        binding.messageBtn.setOnClickListener {
+            startActivity(Intent(this, ChatContentActivity::class.java).apply {
+                putExtra("profileid", profileId)
+            })
+        }
+
+        binding.navBackBtn.setOnClickListener {
+            finishActivity()
+        }
+
+        binding.followBtn.setOnCheckedChangeListener { _, isChecked ->
+            if (!firstInstance) {
+                if (isChecked) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        viewModel.follow(profileId)
+                    }
+                } else {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        viewModel.unfollow(profileId)
+                    }
+                }
+                val a = if (isChecked) followersCount + 1 else followersCount - 1
+                followersCount = a
+                followersCachedMutable.postValue(a.formatAmount())
+            }
+        }
+
+        val profileTabsAdapter = ProfileTabsAdapter(supportFragmentManager, lifecycle)
+        binding.profileTabsPager.adapter = profileTabsAdapter
+
+        binding.navName.text = currentUserProfile.username
+        val tabTexts = arrayListOf("Posts 0", "Tagged")
+
+        TabLayoutMediator(binding.tabItems, binding.profileTabsPager) { tab, position ->
+            tab.text = tabTexts[position]
+        }.attach()
+
+        sizeLive.observe(this) { size ->
+            val displayText =
+                "Posts $size".setSpannableColor("$size".formatNumber(), "Posts ".length)
+            binding.tabItems.getTabAt(0)?.text = displayText
+        }
+
+        val profilePostsCache = MemoryCache.profilePosts
+        postsSizeMutable.postValue(profilePostsCache.size)
+
+        viewModel.getProfilePosts(profileId)
+        viewModel.thumbnails.observe(this) { posts ->
+            when (posts) {
+                is Resource.Success -> {
+                    MemoryCache.profilePosts[profileId] = posts.value.data.toMutableList()
+                    postsSizeMutable.postValue(posts.value.data.size)
+                    profilePostsMutableCache.postValue(posts.value.data.toMutableList())
+                }
+                else -> {}
+            }
+        }
+
+        val profile = MemoryCache.profiles[profileId]
+        if (profile != null) {
+            val result: Profile = profile
+            profileMutable.postValue(result)
+        }
+
+        profileLive.observe(this) { profileData ->
+            val username = "@${profileData.username}"
+            binding.profileFullName.text = profileData.fullname
+            binding.profileUsername.text = username
+
+            if (profileData.profileimg.isNotEmpty())
+                Glide.with(this)
+                    .load(profileData.profileimg)
+                    .circleCrop()
+                    .into(binding.profileImage)
+
+            binding.about.visible(profileData.about != null && profileData.about!!.isNotEmpty())
+            binding.about.text = profileData.about
+            binding.location.text = profileData.location
+
+            binding.sendMoneyBtn.setOnClickListener {
+                binding.alphaBg.visible(true)
+                val bottomSheet =
+                    SendMoneyBottomSheetFragment(activity = this, profile = profileData)
+                bottomSheet.show(supportFragmentManager, bottomSheet.tag)
+            }
+        }
+
+        followersLive.observe(this) {
+            val followersResult = "$it Followers"
+            binding.followersCount.text = followersResult.setSpannableColor(it)
+        }
+
+        val followers = MemoryCache.profileFollowers[profileId]
+        var flw = ""
+        if (followers != null) {
+            flw = followers
+            followersCachedMutable.postValue(flw)
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            when (val fc = viewModel.getFollowersCount(profileId)) {
+                is Resource.Success -> {
+                    if (fc.value.successful) {
+                        followersCount = "${fc.value.data}".toInt()
+                        val count = "$followersCount".formatNumber()
+                        if (flw != count) {
+                            followersCachedMutable.postValue(count)
+                            MemoryCache.profileFollowers[profileId] = count
                         }
-                        else -> {}
                     }
                 }
-            } else {
-                lifecycleScope.launch {
-                    when (viewModel.unfollow(profileId)) {
-                        is Resource.Success -> {}
-                        else -> {}
-                    }
-                }
+                else -> {}
             }
         }
+
+        followingsLive.observe(this) {
+            val followingsResult = "$it Following"
+            binding.followingCount.text = followingsResult.setSpannableColor(it)
+        }
+
+        val followings = MemoryCache.profileFollowings[profileId]
+        if (followings != null) {
+            val flwng: String = followings
+            followingsCachedMutable.postValue(flwng)
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            when (val fc = viewModel.getFollowingsCount(profileId)) {
+                is Resource.Success -> {
+                    if (fc.value.successful) {
+                        val count = "${fc.value.data}".formatNumber()
+                        if (flw != count) {
+                            followingsCachedMutable.postValue(count)
+                            MemoryCache.profileFollowings[profileId] = count
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
+
+    fun removeAlphaVisibility() {
+        binding.alphaBg.visible(false)
+    }
+
+    fun showAlpha() {
+        binding.alphaBg.visible(true)
     }
 
     override fun getViewModel() = HomeViewModel::class.java
@@ -87,119 +222,5 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
         val api = protrndAPIDataSource.buildAPI(ProfileApi::class.java, token)
         val postsApi = protrndAPIDataSource.buildAPI(PostApi::class.java, token)
         return HomeRepository(api, postsApi)
-    }
-
-    private suspend fun getProfileByName(usernameIntent: String) {
-        when (val result = viewModel.getProfileByName(usernameIntent)) {
-            is Resource.Success -> {
-                if (result.value.successful) {
-                    temp["id"] = result.value.data.identifier
-                    userId = temp["id"]!!
-                    if (profileId.isEmpty() && userId.isNotEmpty())
-                        profileId = userId
-                }
-            }
-            is Resource.Loading -> {}
-            is Resource.Failure -> {
-                if (result.isNetworkError) {
-                    binding.root.snackbar("An error occurred") {
-                        lifecycleScope.launch { getProfileByName(usernameIntent) }
-                    }
-                } else {
-                    binding.root.snackbar("An error occurred") { finishActivity() }
-                }
-            }
-            else -> {}
-        }
-    }
-
-    private suspend fun getProfileById() {
-        when (val result = viewModel.getProfileById(profileId)) {
-            is Resource.Success -> {
-                profileMap["other_profile"] = result.value.data
-                profile = profileMap["other_profile"]
-                binding.profileFullName.text = profile?.fullname
-                val username = "@${profile?.username.toString()}"
-                binding.profileUsername.text = username
-                binding.navName.text = username.replace("@", "")
-
-                if (currentUserProfile.identifier != profileId) {
-                    viewModel.isFollowing(profileId)
-                    viewModel.isFollowing.observe(this@ProfileActivity) {
-                        when (it) {
-                            is Resource.Success -> {
-                                binding.followToggle.enable(true)
-                                binding.followToggle.isChecked = it.value.data as Boolean
-                            }
-                            is Resource.Loading -> {
-                                binding.followToggle.enable(false)
-                            }
-                            is Resource.Failure -> {
-                                if (it.errorCode == 404) {
-                                    binding.followToggle.visible(false)
-                                }
-                            }
-                            else -> {}
-                        }
-                    }
-                }
-
-                if (currentUserProfile.identifier == profileId)
-                    binding.followToggle.visible(false)
-                else
-                    binding.followToggle.visible(true)
-
-                if (profile?.profileimg!!.isNotEmpty()) {
-                    Glide.with(applicationContext)
-                        .load(profile?.profileimg).circleCrop()
-                        .diskCacheStrategy(DiskCacheStrategy.ALL).into(binding.profileImage)
-                    Glide.with(applicationContext)
-                        .load(profile?.profileimg).circleCrop()
-                        .diskCacheStrategy(DiskCacheStrategy.ALL).into(binding.navImage)
-                }
-
-                if (profile?.bgimg!!.isNotEmpty())
-                    Glide.with(applicationContext)
-                        .load(profile?.bgimg)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL).into(binding.bgImage)
-
-                lifecycleScope.launch {
-                    binding.followersCount.showFollowersCount(viewModel, profile!!)
-                    binding.followingCount.showFollowingCount(viewModel, profile!!)
-                    binding.postsRv.showUserPostsInGrid(
-                        this@ProfileActivity,
-                        viewModel,
-                        profile!!
-                    )
-                    val thumbnailAdapter = binding.postsRv.adapter as ImageThumbnailPostAdapter
-                    thumbnailAdapter.imageClickListener(object : ImagePostItemClickListener {
-                        override fun postItemClickListener(post: Post) {
-                            profileIdResult.launch(
-                                Intent(
-                                    this@ProfileActivity,
-                                    PostActivity::class.java
-                                ).apply {
-                                    this.putExtra("post_id", post.identifier)
-                                })
-                            startAnimation()
-                        }
-                    })
-                    binding.profileShimmer.visible(false)
-                    binding.profileView.visible(true)
-                }
-            }
-            is Resource.Loading -> {
-                binding.profileShimmer.visible(true)
-                binding.profileView.visible(false)
-            }
-            is Resource.Failure -> {
-                if (result.isNetworkError)
-                    getProfileById()
-                else {
-                    finishActivity()
-                }
-            }
-            else -> {}
-        }
     }
 }

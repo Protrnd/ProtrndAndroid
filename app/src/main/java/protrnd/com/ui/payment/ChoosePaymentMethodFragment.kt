@@ -5,17 +5,28 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.NavHostFragment
+import protrnd.com.R
+import protrnd.com.data.network.ProtrndAPIDataSource
+import protrnd.com.data.network.api.PaymentApi
 import protrnd.com.data.repository.PaymentRepository
 import protrnd.com.databinding.FragmentChoosePaymentMethodBinding
 import protrnd.com.ui.base.BaseFragment
+import protrnd.com.ui.viewmodels.PaymentViewModel
 
-class ChoosePaymentMethodFragment : BaseFragment<PaymentViewModel, FragmentChoosePaymentMethodBinding, PaymentRepository>() {
+class ChoosePaymentMethodFragment :
+    BaseFragment<PaymentViewModel, FragmentChoosePaymentMethodBinding, PaymentRepository>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val hostFragment = parentFragment as NavHostFragment
 
         binding.continueBtn.setOnClickListener {
-            hostFragment.navController.navigate(ChoosePaymentMethodFragmentDirections.actionChooseSupportPaymentMethodFragmentToSupportPaymentDetailsFragment())
+            if (binding.cdc.isChecked)
+                hostFragment.navController.navigate(R.id.paymentDetailsFragment, requireArguments())
+            else
+                hostFragment.navController.navigate(
+                    R.id.payFromWalletBalanceFragment,
+                    requireArguments()
+                )
         }
     }
 
@@ -24,7 +35,11 @@ class ChoosePaymentMethodFragment : BaseFragment<PaymentViewModel, FragmentChoos
     override fun getFragmentBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
-    ) = FragmentChoosePaymentMethodBinding.inflate(inflater,container,false)
+    ) = FragmentChoosePaymentMethodBinding.inflate(inflater, container, false)
 
-    override fun getFragmentRepository() = PaymentRepository()
+    override fun getFragmentRepository(): PaymentRepository {
+        val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java)
+        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
+        return PaymentRepository(paymentApi)
+    }
 }

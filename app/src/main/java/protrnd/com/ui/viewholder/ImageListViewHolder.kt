@@ -1,77 +1,47 @@
 package protrnd.com.ui.viewholder
 
-import android.app.Activity
-import android.content.res.Resources
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.media.MediaMetadataRetriever
 import android.net.Uri
-import android.view.LayoutInflater
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import protrnd.com.R
 import protrnd.com.databinding.PostImageItemBinding
-import protrnd.com.databinding.VideoPlayerLayoutBinding
-import protrnd.com.ui.hideSystemUI
 import protrnd.com.ui.post.NewPostActivity
-import protrnd.com.ui.showSystemUI
 import protrnd.com.ui.visible
 
 class ImageListViewHolder(val view: PostImageItemBinding) : RecyclerView.ViewHolder(view.root) {
-    fun bind(imageUrl: String) {
-        Glide.with(view.postImage).load(imageUrl)
-            .placeholder(R.color.black)
+    fun bind(imageUrls: List<String>, position: Int) {
+        Glide.with(view.postImage)
+            .load(imageUrls[position])
             .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(view.postImage)
-        if (imageUrl.contains(".mp4"))
+
+        if (imageUrls[position].contains(".mp4")) {
+//            CoroutineScope(Dispatchers.IO).launch {
+//                val retriever = MediaMetadataRetriever()
+//                retriever.setDataSource(imageUrls[position], HashMap<String, String>())
+//                val image =
+//                    retriever.getFrameAtTime(1000000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+//                withContext(Dispatchers.Main) {
+//                    Glide.with(view.postImage)
+//                        .load(image)
+//                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                        .placeholder(R.drawable.texture_img)
+//                        .into(view.postImage)
+//                }
+//            }
             view.playBtn.visible(true)
-        this.itemView.setOnClickListener {
-            if (imageUrl.contains(".mp4")) {
-                val bottomSheet = BottomSheetDialog(this.itemView.context, R.style.BottomSheetTheme)
-                val binding =
-                    VideoPlayerLayoutBinding.inflate(LayoutInflater.from(this.itemView.context))
-                bottomSheet.setContentView(binding.root)
-                binding.root.minHeight = Resources.getSystem().displayMetrics.heightPixels
-                this.itemView.hideSystemUI((this.itemView.context as Activity).window)
-                binding.videoView.setVideoPath(imageUrl)
-                binding.videoView.isDrawingCacheEnabled = true
-                binding.videoView.start()
-                var isPlaying = true
-                binding.videoView.setOnClickListener {
-                    if (isPlaying) {
-                        isPlaying = false
-                        binding.videoView.pause()
-                    } else {
-                        isPlaying = true
-                        binding.videoView.resume()
-                    }
-                }
-                binding.videoView.setOnCompletionListener {
-                    binding.videoView.stopPlayback()
-                    binding.videoView.clearFocus()
-                    bottomSheet.dismiss()
-                    this.itemView.showSystemUI((this.itemView.context as Activity).window)
-                }
-                binding.closeVideo.setOnClickListener {
-                    binding.videoView.stopPlayback()
-                    binding.videoView.clearFocus()
-                    bottomSheet.dismiss()
-                    this.itemView.showSystemUI((this.itemView.context as Activity).window)
-                }
-                bottomSheet.setOnDismissListener {
-                    this.itemView.showSystemUI((this.itemView.context as Activity).window)
-                }
-                bottomSheet.show()
-                bottomSheet.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                bottomSheet.behavior.peekHeight = Resources.getSystem().displayMetrics.heightPixels
-            }
+        } else {
+//            Glide.with(view.postImage)
+//                .load(imageUrls[position])
+//                .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                .into(view.postImage)
         }
     }
 
     fun bind(activity: NewPostActivity?, imageUri: Uri) {
-        Glide.with(view.root).load(imageUri).diskCacheStrategy(DiskCacheStrategy.ALL)
+        Glide.with(view.root).load(imageUri)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
             .into(view.postImage)
         if (activity != null) {
             val retriever = MediaMetadataRetriever()

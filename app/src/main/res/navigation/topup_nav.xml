@@ -9,7 +9,7 @@
         android:id="@+id/topUpFragment"
         android:name="protrnd.com.ui.wallet.topup.TopUpFragment"
         android:label="fragment_top_up"
-        tools:layout="@layout/fragment_top_up" >
+        tools:layout="@layout/fragment_top_up">
         <action
             android:id="@+id/action_topUpFragment_to_paymentDetailsFragment"
             app:destination="@id/paymentDetailsFragment" />
@@ -23,7 +23,7 @@
         android:id="@+id/paymentDetailsFragment"
         android:name="protrnd.com.ui.payment.PaymentDetailsFragment"
         android:label="fragment_payment_details"
-        tools:layout="@layout/fragment_payment_details" >
+        tools:layout="@layout/fragment_payment_details">
         <action
             android:id="@+id/action_paymentDetailsFragment_to_topUpSuccessFragment"
             app:destination="@id/topUpSuccessFragment" />

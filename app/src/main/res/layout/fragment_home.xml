@@ -7,49 +7,75 @@
     android:background="@android:color/white"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".ui.home.HomeFragment">
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fillViewport="true"
             android:scrollbars="none">
+
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
-                <androidx.viewpager2.widget.ViewPager2
-                    android:id="@+id/promotions_pager"
-                    android:layout_width="match_parent"
-                    android:layout_height="180dp"/>
-                <com.google.android.material.tabs.TabLayout
-                    android:id="@+id/tab_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:background="@android:color/transparent"
-                    app:tabBackground="@drawable/tab_selector"
-                    app:tabGravity="center"
-                    app:tabIndicatorHeight="0dp"
-                    app:tabMaxWidth="15dp" />
+                <!--                <androidx.viewpager2.widget.ViewPager2-->
+                <!--                    android:id="@+id/promotions_pager"-->
+                <!--                    android:layout_width="match_parent"-->
+                <!--                    android:visibility="gone"-->
+                <!--                    android:layout_height="230dp"/>-->
+                <!--                <com.google.android.material.tabs.TabLayout-->
+                <!--                    android:id="@+id/tab_layout"-->
+                <!--                    android:visibility="gone"-->
+                <!--                    android:layout_width="match_parent"-->
+                <!--                    android:layout_height="wrap_content"-->
+                <!--                    android:layout_alignParentBottom="true"-->
+                <!--                    android:background="@android:color/transparent"-->
+                <!--                    app:tabBackground="@drawable/tab_selector"-->
+                <!--                    app:tabGravity="center"-->
+                <!--                    app:tabIndicatorHeight="0dp"-->
+                <!--                    app:tabMaxWidth="15dp" />-->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/trnding_near_you"
-                    android:textSize="@dimen/label"
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="20dp"
+                    android:fontFamily="@font/dm_sans"
+                    android:text="@string/trnding_near_you"
                     android:textColor="@color/main_pink"
-                    android:fontFamily="@font/dm_sans"/>
+                    android:textSize="@dimen/label" />
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/posts_rv"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:focusableInTouchMode="true"
                     android:nestedScrollingEnabled="false"
-                    android:orientation="vertical"
-                    android:paddingBottom="100dp"/>
+                    android:orientation="vertical" />
+
+                <com.facebook.shimmer.ShimmerFrameLayout
+                    android:id="@+id/shimmer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:auto_start="true">
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <include layout="@layout/shimmer_layout_view" />
+
+                        <include layout="@layout/shimmer_layout_view" />
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+                </com.facebook.shimmer.ShimmerFrameLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp" />
             </androidx.appcompat.widget.LinearLayoutCompat>
         </androidx.core.widget.NestedScrollView>
 
@@ -57,77 +83,77 @@
             android:id="@+id/alpha_bg"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/black"
             android:alpha="0.5"
+            android:background="@color/black"
             android:clickable="true"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/floatingActionButtonAdd"
+            style="@style/Widget.Design.FloatingActionButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="32dp"
             android:layout_marginBottom="32dp"
             android:clickable="true"
             android:focusable="true"
+            android:foreground="@drawable/fab_round_gradient"
             android:src="@drawable/add_ic"
-            style="@style/Widget.Design.FloatingActionButton"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:foreground="@drawable/fab_round_gradient" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/floatingActionButtonUpload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
             android:layout_marginEnd="24dp"
+            android:layout_marginBottom="24dp"
+            android:backgroundTint="@color/main_pink"
             android:clickable="true"
             android:focusable="true"
+            android:foreground="@drawable/add_post_fab_foreground"
+            android:scaleX="0.9"
+            android:scaleY="0.9"
             android:tint="@color/white"
             android:visibility="gone"
-            android:scaleY="0.9"
-            android:scaleX="0.9"
-            android:foreground="@drawable/add_post_fab_foreground"
-            android:backgroundTint="@color/main_pink"
             app:backgroundTint="@color/main_pink"
             app:layout_constraintBottom_toTopOf="@+id/floatingActionButtonAdd"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/floatingActionButtonScan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="24dp"
+            android:backgroundTint="@color/main_pink"
             android:clickable="true"
             android:focusable="true"
+            android:foreground="@drawable/scan_fab_foreground"
+            android:scaleX="0.9"
+            android:scaleY="0.9"
             android:tint="@color/white"
             android:visibility="gone"
-            android:backgroundTint="@color/main_pink"
             app:backgroundTint="@color/main_pink"
-            android:layout_marginBottom="24dp"
-            android:layout_marginEnd="24dp"
-            android:scaleY="0.9"
-            android:scaleX="0.9"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/floatingActionButtonAdd"
-            android:foreground="@drawable/scan_fab_foreground"/>
+            app:layout_constraintEnd_toStartOf="@+id/floatingActionButtonAdd" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/floatingActionButtonMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="@color/main_pink"
             android:clickable="true"
             android:focusable="true"
-            android:backgroundTint="@color/main_pink"
-            app:backgroundTint="@color/main_pink"
-            android:visibility="gone"
-            android:scaleY="0.9"
+            android:foreground="@drawable/chat_fab_foreground"
             android:scaleX="0.9"
-            android:layout_marginBottom="12dp"
-            android:layout_marginEnd="12dp"
+            android:scaleY="0.9"
+            android:visibility="gone"
+            app:backgroundTint="@color/main_pink"
             app:layout_constraintBottom_toTopOf="@+id/floatingActionButtonScan"
-            app:layout_constraintEnd_toStartOf="@+id/floatingActionButtonUpload"
-            android:foreground="@drawable/chat_fab_foreground" />
+            app:layout_constraintEnd_toStartOf="@+id/floatingActionButtonUpload" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

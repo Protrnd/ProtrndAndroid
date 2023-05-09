@@ -11,6 +11,9 @@ interface ProfileApi {
     @GET("profile")
     suspend fun getCurrentProfile(): ProfileResponseBody
 
+    @GET("search/get/people/{name}")
+    suspend fun getProfilesByName(@Path("name") name: String): ProfileListResponseBody
+
     @GET("profile/{id}")
     suspend fun getProfileById(@Path("id") id: String): ProfileResponseBody
 

@@ -6,7 +6,6 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkInfo
 import android.net.NetworkRequest
-import android.os.Build
 import androidx.lifecycle.LiveData
 
 class NetworkConnectionLiveData(val context: Context) : LiveData<Boolean>() {
@@ -19,12 +18,9 @@ class NetworkConnectionLiveData(val context: Context) : LiveData<Boolean>() {
     override fun onActive() {
         super.onActive()
         updateConnection()
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> connectivityManager.registerDefaultNetworkCallback(
-                getConnectivityManagerCallback()
-            )
-            else -> lollipopNetworkAvailableRequest()
-        }
+        connectivityManager.registerDefaultNetworkCallback(
+            getConnectivityManagerCallback()
+        )
     }
 
     override fun onInactive() {

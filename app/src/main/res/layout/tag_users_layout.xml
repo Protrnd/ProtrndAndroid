@@ -1,81 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@drawable/bottom_sheet_bg">
+    android:background="@drawable/bottom_sheet_bg"
+    android:orientation="vertical">
+
     <androidx.cardview.widget.CardView
         android:layout_width="100dp"
         android:layout_height="4dp"
-        app:cardCornerRadius="50dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         app:cardBackgroundColor="@color/main_purple"
-        android:layout_gravity="center"
-        android:layout_marginBottom="16dp"/>
+        app:cardCornerRadius="50dp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/tag_people"
-        android:textColor="@color/main_pink"
-        android:fontFamily="@font/dmsans_medium"
-        android:textSize="@dimen/subheading"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/i_m_tagging"
-        android:textColor="@color/main_purple"
-        android:fontFamily="@font/dm_sans"
-        android:textSize="@dimen/label"
-        android:layout_marginTop="12dp"/>
-
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragment_container"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="8dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="14dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:layout_marginBottom="12dp"
-        android:background="@drawable/rect_outlined_black_50">
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/tagged_profile_id_rv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"/>
-        <EditText
-            android:id="@+id/input_profile_id"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:importantForAutofill="no"
-            android:inputType="textPersonName"
-            android:hint="@string/max_10_people"
-            android:background="@android:color/transparent"/>
-    </androidx.appcompat.widget.LinearLayoutCompat>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/searched_profiles_rv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/done_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="12dp"
-        android:fontFamily="@font/dmsans_medium"
-        android:background="@drawable/button_elevation"
-        android:text="@string/done"
-        android:textColor="@color/white"
-        tools:ignore="DuplicateSpeakableTextCheck" />
-
+        app:defaultNavHost="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar_layout"
+        app:navGraph="@navigation/tag_others_nav" />
 </androidx.appcompat.widget.LinearLayoutCompat>

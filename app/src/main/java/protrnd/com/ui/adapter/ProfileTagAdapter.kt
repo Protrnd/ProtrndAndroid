@@ -7,8 +7,9 @@ import protrnd.com.data.models.Profile
 import protrnd.com.databinding.ProfileTagBinding
 import protrnd.com.ui.adapter.listener.ProfileClickListener
 import protrnd.com.ui.viewholder.ProfileTagViewHolder
+import protrnd.com.ui.visible
 
-class ProfileTagAdapter(private val profiles: List<Profile>) :
+class ProfileTagAdapter(var profiles: List<Profile>, var showSendBtn: Boolean = false) :
     RecyclerView.Adapter<ProfileTagViewHolder>() {
     lateinit var positionClickListener: ProfileClickListener
 
@@ -19,7 +20,13 @@ class ProfileTagAdapter(private val profiles: List<Profile>) :
     override fun onBindViewHolder(holder: ProfileTagViewHolder, position: Int) {
         holder.bind(profiles[position])
         holder.view.root.setOnClickListener {
-            positionClickListener.profileClick(profiles[position])
+            positionClickListener.profileClick(holder, position, profiles[position])
+        }
+
+        holder.view.sendBtn.visible(showSendBtn)
+
+        holder.view.sendBtn.setOnClickListener {
+            positionClickListener.profileClick(holder, position, profiles[position])
         }
     }
 

@@ -5,50 +5,52 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     tools:context=".ui.wallet.withdraw.WithdrawFragment">
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/dm_sans_bold"
         android:text="@string/withdraw"
-        android:textSize="@dimen/heading_2"
         android:textColor="@color/main_pink"
-        android:fontFamily="@font/dm_sans_bold"/>
+        android:textSize="@dimen/heading_2" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/how_much_would_you_like_to_withdraw"
         android:layout_marginTop="24dp"
-        android:textSize="@dimen/subheading"
         android:fontFamily="@font/dmsans_medium"
-        android:textColor="@color/black"/>
+        android:text="@string/how_much_would_you_like_to_withdraw"
+        android:textColor="@color/black"
+        android:textSize="@dimen/subheading" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/withdraw_amount"
-        android:textSize="@dimen/label"
-        android:textColor="@color/main_purple"
+        android:layout_marginTop="24dp"
         android:fontFamily="@font/dm_sans_medium"
-        android:layout_marginTop="24dp"/>
+        android:text="@string/withdraw_amount"
+        android:textColor="@color/main_purple"
+        android:textSize="@dimen/label" />
 
     <EditText
         android:id="@+id/amount_input"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:importantForAutofill="yes"
-        android:inputType="numberDecimal"
         android:layout_marginTop="8dp"
-        android:labelFor="@+id/email_et"
-        android:textSize="@dimen/body"
         android:background="@drawable/input_field_main_purp"
         android:drawableStart="@drawable/naira_ic"
-        android:textColor="@color/black"
+        android:drawablePadding="2dp"
+        android:gravity="center_vertical"
         android:hint="@string/_0"
+        android:importantForAutofill="no"
+        android:inputType="numberPassword"
+        android:labelFor="@+id/email_et"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:gravity="center_vertical"
-        android:drawablePadding="2dp"
+        android:textColor="@color/black"
         android:textColorHint="@color/main_grey"
+        android:textSize="@dimen/body"
         tools:ignore="SpeakableTextPresentCheck" />
 
     <androidx.appcompat.widget.AppCompatButton
@@ -57,8 +59,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="36dp"
-        android:fontFamily="@font/dmsans_medium"
         android:background="@drawable/button_elevation"
+        android:fontFamily="@font/dmsans_medium"
         android:text="@string/continue_text"
         android:textColor="@color/white"
         tools:ignore="DuplicateSpeakableTextCheck" />
@@ -68,8 +70,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:textSize="@dimen/body"
+        android:text="@string/note_protrnd_charges_on_withdrawal"
         android:textColor="@color/black"
-        android:text="Note: Protrnd charges 3% on each withdrawal"/>
+        android:textSize="@dimen/body" />
 
 </androidx.appcompat.widget.LinearLayoutCompat>

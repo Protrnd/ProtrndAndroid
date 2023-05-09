@@ -11,33 +11,63 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Promotion Banner"
+        android:fontFamily="@font/dmsans_bold"
+        android:text="@string/choose_what_to_promote"
         android:textColor="@color/black"
-        android:textSize="@dimen/subheading"
-        android:fontFamily="@font/dmsans_bold"/>
+        android:textSize="@dimen/subheading" />
 
     <TextView
-        android:id="@+id/new_image_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:drawablePadding="8dp"
-        android:padding="8dp"
-        android:textSize="@dimen/label"
-        android:fontFamily="@font/dmsans_medium"
-        android:textColor="@color/black"
-        android:layout_gravity="center"
         android:layout_marginTop="24dp"
-        android:background="@drawable/pink_light_outlined_to_deep_filled_selector"
-        android:text="Please click to select a new promotion banner"
-        app:drawableStartCompat="@drawable/add_image_ic" />
+        android:fontFamily="@font/dm_sans"
+        android:text="@string/recommended_dimensions_for_banners_are_1200_x_640"
+        android:textColor="@color/dark_grey"
+        android:textSize="@dimen/body" />
 
-    <ImageView
-        android:id="@+id/promotion_image"
+    <RelativeLayout
+        android:id="@+id/banner_selector_layout"
         android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:layout_marginTop="12dp"
-        android:background="@color/lightest_grey"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:background="@drawable/pink_light_outlined_to_deep_filled_selector"
+        android:clickable="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center"
+            android:drawablePadding="16dp"
+            android:fontFamily="@font/dm_sans"
+            android:gravity="center_horizontal"
+            android:text="@string/choose_banner"
+            android:textColor="@color/black"
+            android:textSize="@dimen/label"
+            app:drawableTopCompat="@drawable/upload_banner_ic" />
+
+        <ImageView
+            android:id="@+id/promotion_image"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:background="@drawable/pink_light_outlined_to_deep_filled_selector"
+            android:clipToOutline="true"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:fontFamily="@font/dm_sans"
+        android:text="@string/banner_note"
+        android:textColor="@color/main_purple"
+        android:textSize="@dimen/body" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/continue_btn"
@@ -45,8 +75,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="12dp"
-        android:fontFamily="@font/dmsans_medium"
         android:background="@drawable/button_ripple"
+        android:fontFamily="@font/dmsans_medium"
         android:text="@string/continue_text"
         android:textColor="@color/white"
         tools:ignore="DuplicateSpeakableTextCheck" />

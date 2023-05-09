@@ -4,14 +4,20 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
-import androidx.lifecycle.asLiveData
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import protrnd.com.data.models.Post
-import protrnd.com.data.models.Profile
+import protrnd.com.data.network.MemoryCache
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.network.resource.Resource
@@ -19,37 +25,22 @@ import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityHashTagResultsBinding
 import protrnd.com.ui.adapter.PostsPagingAdapter
 import protrnd.com.ui.base.BaseActivity
-import protrnd.com.ui.home.HomeViewModel
-import protrnd.com.ui.viewholder.PostsViewHolder
+import protrnd.com.ui.viewmodels.HomeViewModel
 
 class HashTagResultsActivity :
     BaseActivity<ActivityHashTagResultsBinding, HomeViewModel, HomeRepository>() {
     private lateinit var postsAdapter: PostsPagingAdapter
     private lateinit var postsLayoutManager: LinearLayoutManager
     private var hashtag: String = ""
+    private val postCountMutable = MutableLiveData<Int>()
+    private val postCountLive: LiveData<Int> = postCountMutable
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
         if (intent != null) hashtag = intent.getStringExtra("hashtag").toString()
-
         setSupportActionBar(binding.toolbarResults)
         binding.toolbarResults.contentInsetStartWithNavigation = 0
-        val actionBar = supportActionBar
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true)
-            actionBar.title = hashtag
-            lifecycleScope.launch {
-                when (val count = viewModel.getQueryCount(hashtag)) {
-                    is Resource.Success -> {
-                        val postCount =
-                            count.value.data.toString().replace(".0", "").toLong().toInt()
-                        actionBar.subtitle =
-                            if (postCount > 1) "$postCount posts" else "$postCount post"
-                    }
-                    else -> {}
-                }
-            }
-        }
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         postsLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         binding.hashTaggedResultsRv.layoutManager = postsLayoutManager
@@ -58,11 +49,31 @@ class HashTagResultsActivity :
 
         setupStoredData()
 
+        loadPage()
+
         binding.refreshLayout.setOnRefreshListener {
-            if (binding.refreshLayout.isRefreshing) {
-                loadPage()
-                binding.refreshLayout.isRefreshing = false
-            }
+            loadPage()
+            binding.refreshLayout.isRefreshing = false
+        }
+
+        binding.hashTaggedResultsRv.loadPageData(
+            supportFragmentManager,
+            this,
+            viewModel,
+            lifecycleScope,
+            this,
+            this,
+            currentUserProfile,
+            null,
+            { binding.alphaBg.visible(false) },
+            { binding.alphaBg.visible(true) },
+            authToken!!
+        )
+
+        postCountLive.observe(this) { postCount ->
+            binding.toolbarResults.title = hashtag
+            binding.toolbarResults.subtitle =
+                if (postCount > 1) "${postCount.formatAmount()} posts" else "$postCount post"
         }
     }
 
@@ -70,116 +81,45 @@ class HashTagResultsActivity :
         //Load first page
 //        setupRecyclerView()
         viewModel.getPostsQueried(hashtag).observe(this) {
-            postsAdapter.submitData(lifecycle, it)
-        }
-    }
-
-    private fun getSoredProfile(id: String): Profile? {
-        val otherProfile = viewModel.getProfile(id)
-        var result: Profile? = null
-        otherProfile?.asLiveData()?.observe(this) {
-            if (it != null) {
-                result = it
-            }
-        }
-        return result
-    }
-
-    private suspend fun getOtherProfile(
-        id: String
-    ): Profile? {
-        return getSoredProfile(id)
-            ?: when (val otherProfile = viewModel.getProfileById(id)) {
-                is Resource.Success -> {
-                    viewModel.saveProfile(otherProfile.value.data)
-                    return otherProfile.value.data
-                }
-                is Resource.Loading -> {
-                    return null
-                }
-                is Resource.Failure -> {
-                    if (otherProfile.isNetworkError) {
-                        return getSoredProfile(id)
-                    } else {
-                        return null
+            lifecycleScope.launch {
+                withContext(Dispatchers.Main) {
+                    postsAdapter.loadStateFlow.collectLatest { loadStates ->
+                        if (loadStates.refresh is LoadState.Loading) {
+//                            binding.shimmer.visible(true)
+                        } else {
+//                            binding.shimmer.visible(false)
+                            binding.refreshLayout.isRefreshing = false
+                            if (postsAdapter.itemCount < 1) {
+                                binding.root.errorSnackBar("Error loading hashtags") { loadPage() }
+                            } else {
+                                // TODO: Network error
+                            }
+                        }
                     }
                 }
-                else -> {
-                    return null
-                }
             }
+            postsAdapter.submitData(lifecycle, it)
+        }
+
+        lifecycleScope.launch {
+            when (val count = viewModel.getQueryCount(hashtag)) {
+                is Resource.Success -> {
+                    val postCount = count.value.data.toString().replace(".0", "").toLong().toInt()
+                    MemoryCache.hashTagPostCount[hashtag] = postCount
+                    postCountMutable.postValue(postCount)
+                }
+                else -> {}
+            }
+        }
     }
 
-//    private fun setupRecyclerView() {
-//        postsAdapter = binding.hashTaggedResultsRv.adapter as PostsPagingAdapter
-//        postsAdapter.setupRecyclerResults(object : PostsPagingAdapter.SetupRecyclerResultsListener {
-//            override fun setupLikes(holder: PostsViewHolder, postData: Post) {
-//                lifecycleScope.launch {
-//                    if (isNetworkAvailable())
-//                        viewModel.setupLikes(
-//                            postData.id,
-//                            holder.view.likesCount,
-//                            holder.view.likeToggle
-//                        )
-//                }
-//            }
-//
-//            override fun setupData(holder: PostsViewHolder, postData: Post) {
-//                lifecycleScope.launch {
-//                    val profileResult = getOtherProfile(postData.profileid)
-//                    if (profileResult != null) {
-//                        holder.bind(
-//                            this@HashTagResultsActivity,
-//                            postData,
-//                            profileResult,
-//                            currentUserProfile
-//                        )
-//                    }
-//                }
-//            }
-//
-//            override fun showCommentSection(postData: Post) {
-//                lifecycleScope.launch {
-//                    val profileResult = getOtherProfile(postData.profileid)
-//                    if (profileResult != null) {
-//                        showCommentSection(
-//                            viewModel,
-//                            this@HashTagResultsActivity,
-//                            lifecycleScope,
-//                            profileResult,
-//                            currentUserProfile,
-//                            postData.identifier
-//                        )
-//                    }
-//                }
-//            }
-//
-//            override fun like(holder: PostsViewHolder, postData: Post) {
-//                lifecycleScope.launch {
-//                    val profileResult = getOtherProfile(postData.profileid)
-//                    if (profileResult != null) {
-//                        val liked = holder.view.likeToggle.isChecked
-//                        if (isNetworkAvailable())
-//                            likePost(
-//                                holder.view.likeToggle,
-//                                holder.view.likesCount,
-//                                lifecycleScope,
-//                                viewModel,
-//                                postData.identifier,
-//                                profileResult,
-//                                currentUserProfile
-//                            )
-//                        else
-//                            holder.view.likeToggle.isChecked = !liked
-//                    }
-//                }
-//            }
-//        })
-//    }
-
     private fun setupStoredData() {
-        if (isNetworkAvailable())
-            loadPage()
+        val result = MemoryCache.hashTagPosts[hashtag]
+        if (result != null) {
+            val posts: List<Post> = result
+            postsAdapter.submitData(lifecycle, PagingData.from(posts))
+            postCountMutable.postValue(posts.size)
+        }
     }
 
     override fun getViewModel() = HomeViewModel::class.java
@@ -204,5 +144,14 @@ class HashTagResultsActivity :
             }
         }
         return true
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        MemoryCache.hashTagPosts[hashtag] = postsAdapter.snapshot().items
+    }
+
+    fun removeAlphaVisibility() {
+        binding.alphaBg.visible(false)
     }
 }

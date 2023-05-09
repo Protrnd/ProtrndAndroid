@@ -7,21 +7,24 @@ import protrnd.com.databinding.TransactionInfoItemBinding
 import protrnd.com.ui.adapter.listener.TransactionItemListener
 import protrnd.com.ui.viewholder.TransactionHistoryViewHolder
 
-class TransactionHistoryAdapter: RecyclerView.Adapter<TransactionHistoryViewHolder>() {
+class TransactionHistoryAdapter : RecyclerView.Adapter<TransactionHistoryViewHolder>() {
 
     lateinit var listener: TransactionItemListener
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ) = TransactionHistoryViewHolder(TransactionInfoItemBinding.inflate(LayoutInflater.from(parent.context),parent,false))
+    ) = TransactionHistoryViewHolder(
+        TransactionInfoItemBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+    )
 
     override fun getItemCount() = 10
 
     override fun onBindViewHolder(holder: TransactionHistoryViewHolder, position: Int) {
-        holder.view.root.setOnClickListener {
-            listener.click()
-        }
     }
 
     fun click(listener: TransactionItemListener) {

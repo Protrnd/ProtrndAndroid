@@ -6,12 +6,12 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import protrnd.com.data.models.Post
 import protrnd.com.databinding.PostItemBinding
-import protrnd.com.ui.adapter.listener.PromoteListener
+import protrnd.com.ui.adapter.listener.PromoteSupportListener
 import protrnd.com.ui.viewholder.PostsViewHolder
 
 class PostsPagingAdapter : PagingDataAdapter<Post, PostsViewHolder>(PostComparator()) {
-    private var recyclerResultsListener: SetupRecyclerResultsListener? = null
-    private var promoteListener: PromoteListener? = null
+    private lateinit var recyclerResultsListener: SetupRecyclerResultsListener
+    private lateinit var promoteSupportListener: PromoteSupportListener
 
     class PostComparator : DiffUtil.ItemCallback<Post>() {
         override fun areItemsTheSame(oldItem: Post, newItem: Post): Boolean =
@@ -23,28 +23,28 @@ class PostsPagingAdapter : PagingDataAdapter<Post, PostsViewHolder>(PostComparat
     interface SetupRecyclerResultsListener {
         fun setupLikes(holder: PostsViewHolder, postData: Post)
         fun setupData(holder: PostsViewHolder, postData: Post)
-        fun showCommentSection(postData: Post? = null)
+        fun showCommentSection(postData: Post)
         fun like(holder: PostsViewHolder, postData: Post)
     }
 
     override fun onBindViewHolder(holder: PostsViewHolder, position: Int) {
+        val postData = getItem(position)!!
+
         holder.view.promoteSupport.setOnClickListener {
-            promoteListener?.click()
+            promoteSupportListener.click(postData)
         }
-//        val postData = getItem(position)!!
-//
+
         holder.view.commentBtn.setOnClickListener {
-//            recyclerResultsListener?.showCommentSection(postData)
-            recyclerResultsListener?.showCommentSection(null)
+            recyclerResultsListener.showCommentSection(postData)
         }
-//
-//        holder.view.likeToggle.setOnClickListener {
-//            recyclerResultsListener?.like(holder, postData)
-//        }
-//
-//        recyclerResultsListener?.setupData(holder, postData)
-//
-//        recyclerResultsListener?.setupLikes(holder, postData)
+
+        holder.view.likeToggle.setOnClickListener {
+            recyclerResultsListener.like(holder, postData)
+        }
+
+        recyclerResultsListener.setupData(holder, postData)
+
+        recyclerResultsListener.setupLikes(holder, postData)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostsViewHolder {
@@ -53,11 +53,12 @@ class PostsPagingAdapter : PagingDataAdapter<Post, PostsViewHolder>(PostComparat
         )
     }
 
+
     fun setupRecyclerResults(resultsListener: SetupRecyclerResultsListener) {
         this.recyclerResultsListener = resultsListener
     }
 
-    fun promotePost(promoteListener: PromoteListener) {
-        this.promoteListener = promoteListener
+    fun promoteSupportPost(promoteListener: PromoteSupportListener) {
+        this.promoteSupportListener = promoteListener
     }
 }

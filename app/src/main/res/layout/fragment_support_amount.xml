@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp"
     tools:context=".ui.support.SupportAmountFragment">
@@ -11,29 +11,29 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/subheading"
-        android:textColor="@color/black"
         android:fontFamily="@font/dm_sans_medium"
-        android:text="@string/how_big_is_your_love"/>
+        android:text="@string/how_big_is_your_love"
+        android:textColor="@color/black"
+        android:textSize="@dimen/subheading" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/support_amount"
         android:layout_marginTop="24dp"
         android:fontFamily="@font/dm_sans_medium"
+        android:text="@string/support_amount"
         android:textColor="@color/black"
-        android:textSize="@dimen/label"/>
+        android:textSize="@dimen/label" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/amount_il"
         style="@style/TextInputLayoutStyleLight"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:backgroundTint="@color/focused_state_edittext_background"
         app:boxBackgroundColor="#FEFEFE"
         app:boxBackgroundMode="outline"
-        android:layout_marginTop="8dp"
         app:boxCornerRadiusBottomEnd="50dp"
         app:boxCornerRadiusBottomStart="50dp"
         app:boxCornerRadiusTopEnd="50dp"
@@ -48,16 +48,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autofillHints="emailAddress"
+            android:drawableStart="@drawable/naira_ic"
+            android:drawablePadding="5dp"
+            android:fontFamily="@font/dm_sans"
+            android:gravity="center_vertical"
+            android:hint="@string/support_value"
             android:importantForAutofill="yes"
             android:inputType="numberDecimal"
-            android:textSize="14sp"
-            android:drawableStart="@drawable/naira_ic"
-            android:gravity="center_vertical"
-            android:fontFamily="@font/dm_sans"
-            android:hint="@string/support_value"
-            android:drawablePadding="5dp"
             android:textColor="#2D264B"
             android:textColorHint="#8E8E8E"
+            android:textSize="14sp"
             tools:ignore="SpeakableTextPresentCheck" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -67,8 +67,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="12dp"
-        android:fontFamily="@font/dmsans_medium"
         android:background="@drawable/button_ripple"
+        android:fontFamily="@font/dmsans_medium"
         android:text="@string/continue_text"
         android:textColor="@color/white"
         tools:ignore="DuplicateSpeakableTextCheck" />

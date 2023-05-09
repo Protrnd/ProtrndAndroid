@@ -69,7 +69,7 @@ class AuthenticationActivity : AppCompatActivity() {
         }
 
         Thread.setDefaultUncaughtExceptionHandler { _, e ->
-            binding.root.handleUnCaughtException()
+            binding.root.handleUnCaughtException(e)
         }
         setSupportActionBar(binding.appAuthToolbar)
         val actionBar = supportActionBar!!
