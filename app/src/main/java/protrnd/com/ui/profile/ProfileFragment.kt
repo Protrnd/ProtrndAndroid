@@ -1,20 +1,14 @@
 package protrnd.com.ui.profile
 
-import android.app.Dialog
-import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayoutMediator
-import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -27,16 +21,19 @@ import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.FragmentProfileBinding
-import protrnd.com.ui.*
 import protrnd.com.ui.adapter.ProfileTabsAdapter
 import protrnd.com.ui.base.BaseFragment
+import protrnd.com.ui.formatNumber
 import protrnd.com.ui.home.HomeActivity
+import protrnd.com.ui.setSpannableColor
+import protrnd.com.ui.settings.SettingsActivity
+import protrnd.com.ui.startAnimation
 import protrnd.com.ui.viewmodels.HomeViewModel
+import protrnd.com.ui.visible
 import protrnd.com.ui.wallet.send.SendMoneyBottomSheetFragment
 
 class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, HomeRepository>() {
 
-    private lateinit var loadingDialog: Dialog
     private lateinit var thisActivity: HomeActivity
     private val postsSizeMutable = MutableLiveData<Int>()
     private val sizeLive: LiveData<Int> = postsSizeMutable
@@ -46,103 +43,25 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
     private val followingsLive: LiveData<String> = followingsCachedMutable
     private val profilePostsMutableCache = MutableLiveData<MutableList<Post>>()
     val profilePostsLive: LiveData<MutableList<Post>> = profilePostsMutableCache
-
-//    private val getProfileImageContent =
-//        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-//            if (uri != null) {
-//                val outputUri = File(requireActivity().filesDir, "${Date().time}.jpg").toUri()
-//                val listUri = listOf(uri, outputUri)
-//                cropProfileImage.launch(listUri)
-//            }
-//        }
-
-//    private val cropProfileImage = registerForActivityResult(cropImagePicker(1f, 1f, 1080)) { uri ->
-//        if (uri != null && uri != Uri.EMPTY) {
-//            Glide.with(requireContext()).load(uri).into(binding.profileImage)
-//            loadingDialog.show()
-//
-//            autoDisposeScope.launch {
-//                val uploadResult = viewModel.uploadImage(
-//                    uri,
-//                    thisActivity.currentUserProfile.username,
-//                    requireContext().getFileTypes(listOf(uri))[0]
-//                )
-//                withContext(Dispatchers.Main) {
-//                    uploadResult.observe(viewLifecycleOwner) { url ->
-//                        if (url.isEmpty()) {
-//                            binding.root.snackbar("Error")
-//                        } else {
-//                            uploadUrl(profileUrl = url)
-//                        }
-//                    }
-//                    loadingDialog.dismiss()
-//                }
-//            }
-//            Glide.with(requireContext()).load(uri).circleCrop().into(binding.profileImage)
-//        }
-//    }
-
-//    private val cropBannerImage = registerForActivityResult(cropImagePicker(16f, 9f, 1920)) { uri ->
-//        if (uri != null && uri != Uri.EMPTY) {
-//            loadingDialog.show()
-//            Glide.with(requireContext()).load(uri).into(binding.bgImage)
-//            autoDisposeScope.launch {
-//                val result = viewModel.uploadImage(
-//                    uri,
-//                    thisActivity.currentUserProfile.username,
-//                    requireActivity().getFileTypes(listOf(uri))[0]
-//                )
-//                withContext(Dispatchers.Main) {
-//                    result.observe(viewLifecycleOwner) { url ->
-//                        if (url.isEmpty()) {
-//                            binding.root.snackbar("Error")
-//                        } else {
-//                            uploadUrl(backgroundUrl = url)
-//                        }
-//                    }
-//                    loadingDialog.dismiss()
-//                }
-//            }
-//        }
-//    }
-
-//    private val getBannerImageContent =
-//        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
-//            if (uri != null) {
-//                val outputUri = File(requireActivity().filesDir, "${Date().time}.jpg").toUri()
-//                val listUri = listOf(uri, outputUri)
-//                cropBannerImage.launch(listUri)
-//            }
-//        }
-
-    private fun cropImagePicker(ratioX: Float, ratioY: Float, width: Int) =
-        object : ActivityResultContract<List<Uri>, Uri>() {
-            override fun createIntent(context: Context, input: List<Uri>): Intent {
-                val inputUri = input[0]
-                val outputUri = input[1]
-
-                val uCrop = UCrop.of(inputUri, outputUri).withAspectRatio(ratioX, ratioY)
-                    .withMaxResultSize(width, 1080)
-
-                return uCrop.getIntent(context)
-            }
-
-            override fun parseResult(resultCode: Int, intent: Intent?): Uri {
-                return try {
-                    UCrop.getOutput(intent!!)!!
-                } catch (e: Exception) {
-                    Uri.EMPTY
-                }
-            }
-        }
+    private var flw = ""
+    private var flwng = ""
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         thisActivity = activity as HomeActivity
 
         binding.root.setOnRefreshListener {
+            loadData()
             binding.root.isRefreshing = false
         }
+
+        binding.settingsBtn.setOnClickListener {
+            startActivity(Intent(requireContext(), SettingsActivity::class.java).apply {
+                thisActivity.startAnimation()
+            })
+        }
+
+        loadData()
 
         val profileTabsAdapter = ProfileTabsAdapter(childFragmentManager, lifecycle)
         binding.profileTabsPager.adapter = profileTabsAdapter
@@ -162,7 +81,6 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         val profilePostsCache = MemoryCache.profilePosts
         postsSizeMutable.postValue(profilePostsCache.size)
 
-        viewModel.getProfilePosts(currentUserProfile.identifier)
         viewModel.thumbnails.observe(viewLifecycleOwner) { posts ->
             when (posts) {
                 is Resource.Success -> {
@@ -178,12 +96,6 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         val username = "@${currentUserProfile.username}"
         binding.profileFullName.text = currentUserProfile.fullname
         binding.profileUsername.text = username
-
-        if (currentUserProfile.profileimg.isNotEmpty())
-            Glide.with(requireView())
-                .load(currentUserProfile.profileimg)
-                .circleCrop()
-                .into(binding.profileImage)
 
         binding.about.visible(currentUserProfile.about != null && currentUserProfile.about!!.isNotEmpty())
         binding.about.text = currentUserProfile.about
@@ -201,26 +113,11 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         }
 
         val followers = MemoryCache.profileFollowers[currentUserProfile.id]
-        var flw = ""
         if (followers != null) {
             flw = followers
             followersCachedMutable.postValue(flw)
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            when (val fc = viewModel.getFollowersCount(currentUserProfile.id)) {
-                is Resource.Success -> {
-                    if (fc.value.successful) {
-                        val count = "${fc.value.data}".formatNumber()
-                        if (flw != count) {
-                            followersCachedMutable.postValue(count)
-                            MemoryCache.profileFollowers[currentUserProfile.id] = count
-                        }
-                    }
-                }
-                else -> {}
-            }
-        }
 
         followingsLive.observe(viewLifecycleOwner) {
             val followingsResult = "$it Following"
@@ -228,72 +125,11 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         }
 
         val followings = MemoryCache.profileFollowings[currentUserProfile.id]
-        var flwng = ""
         if (followings != null) {
             flwng = followings
             followingsCachedMutable.postValue(flwng)
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            when (val fc = viewModel.getFollowingsCount(currentUserProfile.id)) {
-                is Resource.Success -> {
-                    if (fc.value.successful) {
-                        val count = "${fc.value.data}".formatNumber()
-                        if (flw != count) {
-                            followingsCachedMutable.postValue(count)
-                            MemoryCache.profileFollowings[currentUserProfile.id] = count
-                        }
-                    }
-                }
-                else -> {}
-            }
-        }
-
-//        NetworkConnectionLiveData(context ?: return)
-//            .observe(viewLifecycleOwner) {
-//                loadView()
-//            }
-
-//        loadingDialog = Dialog(requireContext())
-//        loadingDialog.setCanceledOnTouchOutside(false)
-//        val loadingLayoutBinding = LoadingLayoutBinding.inflate(layoutInflater)
-//        loadingDialog.setContentView(loadingLayoutBinding.root)
-//        val loadingWindow: Window = loadingDialog.window!!
-//        loadingWindow.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-//        loadingWindow.setLayout(
-//            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
-//        )
-
-//        requireActivity().checkStoragePermissions()
-//
-//        val dialog = Dialog(requireContext())
-//        val selectBinding = SelectImageDialogBinding.inflate(layoutInflater)
-//        dialog.setContentView(selectBinding.root)
-//        val window: Window = dialog.window!!
-//        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-//        window.setLayout(
-//            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
-//        )
-//
-//        binding.bgImage.setOnClickListener {
-//            val request = "Want to upload a new background image?"
-//            selectBinding.actionRequest.text = request
-//            selectBinding.acceptBtn.setOnClickListener {
-//                getBannerImageContent.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-//                dialog.dismiss()
-//            }
-//            dialog.show()
-//        }
-//
-//        binding.profileImage.setOnClickListener {
-//            val request = "Want to upload a new profile photo?"
-//            selectBinding.actionRequest.text = request
-//            selectBinding.acceptBtn.setOnClickListener {
-//                getProfileImageContent.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-//                dialog.dismiss()
-//            }
-//            dialog.show()
-//        }
     }
 
     override fun getViewModel() = HomeViewModel::class.java
@@ -309,27 +145,6 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         return HomeRepository(api, postsApi)
     }
 
-//    private fun uploadUrl(backgroundUrl: String? = null, profileUrl: String? = null) {
-//        val dto = ProfileDTO(
-//            profileImage = profileUrl ?: thisActivity.currentUserProfile.profileimg,
-//            backgroundImageUrl = backgroundUrl ?: thisActivity.currentUserProfile.bgimg,
-//            phone = thisActivity.currentUserProfile.phone!!,
-//            accountType = thisActivity.currentUserProfile.acctype,
-//            location = thisActivity.currentUserProfile.location!!,
-//            email = thisActivity.currentUserProfile.email,
-//            fullName = thisActivity.currentUserProfile.fullname,
-//            userName = thisActivity.currentUserProfile.username
-//        )
-//
-//        viewModel.updateProfile(dto)
-//        thisActivity.currentUserProfile.bgimg = dto.backgroundImageUrl
-//        thisActivity.currentUserProfile.profileimg = dto.profileImage
-//
-//        lifecycleScope.launch {
-//            settingsPreferences.saveProfile(thisActivity.currentUserProfile)
-//        }
-//    }
-
     fun removeAlphaVisibility() {
         binding.alphaBg.visible(false)
     }
@@ -338,16 +153,48 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         binding.alphaBg.visible(true)
     }
 
-    private fun loadView() {
-        lifecycleScope.launch {
-            binding.followersCount.showFollowersCount(
-                viewModel,
-                thisActivity.currentUserProfile
-            )
-            binding.followingCount.showFollowingCount(
-                viewModel,
-                thisActivity.currentUserProfile
-            )
+    fun loadData() {
+        if (currentUserProfile.profileimg.isNotEmpty())
+            Glide.with(requireView())
+                .load(currentUserProfile.profileimg)
+                .circleCrop()
+                .into(binding.profileImage)
+
+        if (currentUserProfile.bgimg.isNotEmpty())
+            Glide.with(requireView())
+                .load(currentUserProfile.bgimg)
+                .into(binding.bgimg)
+
+        viewModel.getProfilePosts(currentUserProfile.identifier)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            when (val fc = viewModel.getFollowingsCount(currentUserProfile.id)) {
+                is Resource.Success -> {
+                    if (fc.value.successful) {
+                        val count = "${fc.value.data}".formatNumber()
+                        if (flwng != count) {
+                            followingsCachedMutable.postValue(count)
+                            MemoryCache.profileFollowings[currentUserProfile.id] = count
+                        }
+                    }
+                }
+                else -> {}
+            }
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            when (val fc = viewModel.getFollowersCount(currentUserProfile.id)) {
+                is Resource.Success -> {
+                    if (fc.value.successful) {
+                        val count = "${fc.value.data}".formatNumber()
+                        if (flw != count) {
+                            followersCachedMutable.postValue(count)
+                            MemoryCache.profileFollowers[currentUserProfile.id] = count
+                        }
+                    }
+                }
+                else -> {}
+            }
         }
     }
 }

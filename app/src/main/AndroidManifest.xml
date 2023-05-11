@@ -29,10 +29,20 @@
         android:theme="@style/Theme.Protrnd"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
-        <service
-            android:name=".data.network.ApiRequestService"
-            android:enabled="true"
-            android:exported="false"></service>
+        <activity
+            android:name=".ui.auth.NewPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.settings.EditProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:exported="false" />
+
+<!--        <service-->
+<!--            android:name=".data.network.ApiRequestService"-->
+<!--            android:enabled="true"-->
+<!--            android:exported="false" />-->
 
         <activity
             android:name=".ui.chat.ChatContentActivity"

@@ -21,17 +21,15 @@ import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.FragmentSearchBinding
+import protrnd.com.ui.*
 import protrnd.com.ui.adapter.PostsPagingAdapter
 import protrnd.com.ui.adapter.ProfileTagAdapter
 import protrnd.com.ui.adapter.listener.ProfileClickListener
 import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.home.HomeActivity
-import protrnd.com.ui.loadPageData
 import protrnd.com.ui.profile.ProfileActivity
-import protrnd.com.ui.setGradient
 import protrnd.com.ui.viewholder.ProfileTagViewHolder
 import protrnd.com.ui.viewmodels.HomeViewModel
-import protrnd.com.ui.visible
 
 class SearchFragment : BaseFragment<HomeViewModel, FragmentSearchBinding, HomeRepository>() {
 
@@ -40,6 +38,8 @@ class SearchFragment : BaseFragment<HomeViewModel, FragmentSearchBinding, HomeRe
 
     private val mutablePostsList = MutableLiveData<MutableList<Post>>()
     private val postsLiveData: LiveData<MutableList<Post>> = mutablePostsList
+
+    private lateinit var profileSearchAdapter: ProfileTagAdapter
 
     override fun getViewModel() = HomeViewModel::class.java
 
@@ -63,12 +63,12 @@ class SearchFragment : BaseFragment<HomeViewModel, FragmentSearchBinding, HomeRe
 
         binding.profileSearchResultRv.layoutManager = LinearLayoutManager(requireContext())
 
-        binding.posts.setGradient()
-        binding.profiles.setGradient()
+        val postsPagingAdapter = PostsPagingAdapter()
 
         liveData.observe(viewLifecycleOwner) { profileSearchResults ->
             profileSearchResults.remove(currentUserProfile)
-            val profileSearchAdapter = ProfileTagAdapter(profileSearchResults, showSendBtn = false)
+            binding.searchResults.visible(profileSearchResults.isEmpty() && postsPagingAdapter.itemCount <= 0)
+            profileSearchAdapter = ProfileTagAdapter(profileSearchResults, showSendBtn = false)
             binding.profileSearchResultRv.adapter = profileSearchAdapter
             profileSearchAdapter.clickPosition(object : ProfileClickListener {
                 override fun profileClick(
@@ -84,10 +84,10 @@ class SearchFragment : BaseFragment<HomeViewModel, FragmentSearchBinding, HomeRe
             })
         }
 
-        val postsPagingAdapter = PostsPagingAdapter()
         binding.postsResultsRv.layoutManager = LinearLayoutManager(requireContext())
         binding.postsResultsRv.adapter = postsPagingAdapter
         postsLiveData.observe(viewLifecycleOwner) { postsSearchResults ->
+            binding.searchResults.visible(postsSearchResults.isEmpty() && profileSearchAdapter.profiles.isEmpty())
             postsPagingAdapter.submitData(lifecycle, PagingData.from(postsSearchResults))
         }
 
@@ -110,6 +110,9 @@ class SearchFragment : BaseFragment<HomeViewModel, FragmentSearchBinding, HomeRe
                 is Resource.Success -> {
                     mutableProfileList.postValue(it.value.data.toMutableList())
                     binding.profilesText.visible(it.value.data.isNotEmpty())
+                    val profilesCount = "${it.value.data.size.formatAmount()} Profiles"
+                    val split = profilesCount.split(" ")
+                    binding.profiles.text = profilesCount.setSpannableColor(split[0])
                 }
                 is Resource.Loading -> {
                 }
@@ -125,6 +128,9 @@ class SearchFragment : BaseFragment<HomeViewModel, FragmentSearchBinding, HomeRe
                 is Resource.Success -> {
                     mutablePostsList.postValue(it.value.data.toMutableList())
                     binding.postsText.visible(it.value.data.isNotEmpty())
+                    val postCount = "${it.value.data.size.formatAmount()} Posts"
+                    val split = postCount.split(" ")
+                    binding.posts.text = postCount.setSpannableColor(split[0])
                 }
                 is Resource.Loading -> {
 

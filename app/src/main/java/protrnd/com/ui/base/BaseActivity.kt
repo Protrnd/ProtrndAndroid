@@ -15,10 +15,12 @@ import protrnd.com.data.models.Profile
 import protrnd.com.data.network.ProfilePreferences
 import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.repository.BaseRepository
+import protrnd.com.databinding.ActivityForgotPasswordBinding
+import protrnd.com.databinding.ActivityNewPasswordBinding
 import protrnd.com.ui.auth.AuthenticationActivity
 import protrnd.com.ui.checkStoragePermissions
 import protrnd.com.ui.handleUnCaughtException
-import protrnd.com.ui.startNewActivityFromAuth
+import protrnd.com.ui.startNewActivityWithNoBackstack
 
 abstract class BaseActivity<B : ViewBinding, VM : ViewModel, R : BaseRepository> :
     AppCompatActivity() {
@@ -29,6 +31,7 @@ abstract class BaseActivity<B : ViewBinding, VM : ViewModel, R : BaseRepository>
     val profileHash = HashMap<String, Profile>()
     var currentUserProfile: Profile = Profile()
     open var authToken: String? = null
+    var isAuth = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,14 +44,16 @@ abstract class BaseActivity<B : ViewBinding, VM : ViewModel, R : BaseRepository>
         authToken = runBlocking { profilePreferences.authToken.first() }
         if (authToken != null && profile != null) {
             currentUserProfile = Gson().fromJson(profile, Profile::class.java)
-        } else {
-            startNewActivityFromAuth(AuthenticationActivity::class.java)
         }
         val factory = ViewModelFactory(getActivityRepository())
         viewModel = ViewModelProvider(this, factory)[getViewModel()]
         onViewReady(savedInstanceState, intent)
         Thread.setDefaultUncaughtExceptionHandler { _, e ->
             binding.root.handleUnCaughtException(e)
+        }
+        if (authToken == null && profile == null) {
+            if (!isAuth)
+                startNewActivityWithNoBackstack(AuthenticationActivity::class.java)
         }
     }
 

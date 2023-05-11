@@ -38,8 +38,6 @@ class TransactionHistoryActivity :
     override fun getActivityRepository(): PaymentRepository {
         val token = runBlocking { profilePreferences.authToken.first() }
         val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java, token)
-        val transactionDatabase =
-            protrndAPIDataSource.provideTransactionDatabase(application)
         return PaymentRepository(paymentApi)
     }
 

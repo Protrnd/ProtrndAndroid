@@ -2,10 +2,12 @@ package protrnd.com.data.network.api
 
 import protrnd.com.data.models.Login
 import protrnd.com.data.models.RegisterDTO
+import protrnd.com.data.models.ResetPasswordDTO
 import protrnd.com.data.models.VerifyOTP
 import protrnd.com.data.responses.BasicResponseBody
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface AuthApi {
@@ -19,4 +21,10 @@ interface AuthApi {
 
     @POST("auth/verify/otp")
     suspend fun verifyOtp(@Body verifyOTP: VerifyOTP): BasicResponseBody
+
+    @POST("auth/forgot-password")
+    suspend fun forgotPassword(@Body login: Login): BasicResponseBody
+
+    @PUT("auth/reset-password")
+    suspend fun resetPassword(@Body reset: ResetPasswordDTO): BasicResponseBody
 }

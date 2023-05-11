@@ -61,6 +61,15 @@ class ProfilePreferences(context: Context) {
         }
     }
 
+    suspend fun logoutProfile() {
+        dataStore.edit { preferences ->
+            preferences.remove(KEY_AUTH)
+            preferences.remove(PROFILE_KEY)
+            preferences.remove(PAYMENT_PIN)
+            preferences.remove(CARD_DETAILS)
+        }
+    }
+
     companion object {
         private val Context.DATASTORE by preferencesDataStore("Protrnd_Store")
         private val KEY_AUTH = stringPreferencesKey("jwt_auth")

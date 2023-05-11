@@ -73,9 +73,7 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
             likePost(
                 binding.likeToggle,
                 binding.likesCount,
-                lifecycleScope,
                 viewModel,
-                this,
                 postId,
                 otherProfileHash["otherProfile"]!!,
                 currentUserProfile
@@ -295,7 +293,7 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
 
     private fun goBack() {
         if (isFromNotification)
-            startNewActivityFromAuth(HomeActivity::class.java)
+            startNewActivityWithNoBackstack(HomeActivity::class.java)
         else
             finishActivity()
     }

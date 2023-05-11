@@ -1,73 +1,84 @@
 package protrnd.com.data.network
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
 import android.content.Context
-import android.content.Intent
-import android.graphics.Color
-import android.os.IBinder
-import protrnd.com.R
-import protrnd.com.data.models.Actions
+import android.net.Uri
+import androidx.work.WorkerParameters
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import protrnd.com.data.models.Location
+import protrnd.com.data.models.PostDTO
+import protrnd.com.data.network.api.PostApi
+import protrnd.com.ui.getFileTypes
 
-class ApiRequestService : Service() {
+class ApiRequestService(context: Context, params: WorkerParameters) : androidx.work.Worker(context, params) {
 
-    companion object {
-        var action: (() -> Unit)? = null
-    }
-
-    private fun createNotification(): Notification {
-        val notificationChannelId = "API REQUEST CHANNEL"
-
-        // depending on the Android API that we're dealing with we will have
-        // to use a specific method to create the notification
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager;
-        val channel = NotificationChannel(
-            notificationChannelId,
-            "Api Request Channel",
-            NotificationManager.IMPORTANCE_HIGH
-        ).let {
-            it.description = "Api Request"
-            it.lightColor = Color.RED
-            it
+    override fun doWork(): Result {
+        val authToken = inputData.getString("auth")!!
+        val caption = inputData.getString("caption")!!
+        val tags = inputData.getStringArray("tags")!!
+        val postUriList = inputData.getStringArray("uris")!!
+        val username = inputData.getString("name")!!
+        val city = inputData.getString("city")!!
+        val state = inputData.getString("state")!!
+        val location = Location(city = city, state = state)
+        val api = ProtrndAPIDataSource().buildAPI(PostApi::class.java, authToken)
+        val uriList = arrayListOf<Uri>()
+        postUriList.forEach {
+            uriList.add(Uri.parse(it))
         }
-        notificationManager.createNotificationChannel(channel)
-
-//        val pendingIntent: PendingIntent = Intent(this, MainActivity::class.java).let { notificationIntent ->
-//            PendingIntent.getActivity(this, 0, notificationIntent, 0)
-//        }
-
-        val builder: Notification.Builder = Notification.Builder(
-            this,
-            notificationChannelId
-        )
-
-        return builder
-            .setContentTitle("Protrnd")
-            .setContentText("Please wait...")
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setPriority(Notification.PRIORITY_HIGH) // for under android 26 compatibility
-            .build()
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val n = createNotification()
-        if (intent != null && intent.action == Actions.START_FOREGROUND) {
-            startForeground(1003, n)
-            action.let {
-                if (it != null)
-                    it()
+        CoroutineScope(Dispatchers.IO).launch {
+            val result = uriList.let {
+                uploadImage(
+                    it,
+                    username,
+                    applicationContext.getFileTypes(it)
+                )
             }
-        } else if (intent != null && intent.action == Actions.STOP_FOREGROUND) {
-            stopForeground(true)
-            stopSelfResult(1003)
+
+            val postDto = PostDTO(
+                caption = caption,
+                location = location,
+                uploadurls = result,
+                tags = tags.toList()
+            )
+
+            api.addPost(postDto)
         }
-        return START_NOT_STICKY
+        return Result.success()
+    }
+
+    suspend fun uploadImage(uris: List<Uri>, username: String, fileType: List<String>): List<String> {
+        return addImageToFirebase(uris, username, fileType)
+    }
+
+    suspend fun addImageToFirebase(
+        uris: List<Uri>,
+        username: String,
+        fileType: List<String>
+    ): List<String> {
+        val urls = mutableListOf<String>()
+        for (position in uris.indices) {
+            withContext(Dispatchers.IO) {
+                try {
+                    val fileReference: StorageReference =
+                        FirebaseStorage.getInstance().reference.child(
+                            username +
+                                    System.currentTimeMillis()
+                                        .toString() + "." + fileType[position]
+                        )
+                    val downloadUrl =
+                        fileReference.putFile(uris[position]).await().storage.downloadUrl.await()
+                    urls.add(downloadUrl.toString())
+                } catch (e: Exception) {
+                    throw e
+                }
+            }
+        }
+        return urls
     }
 }

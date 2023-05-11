@@ -13,6 +13,7 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View.OVER_SCROLL_NEVER
+import android.view.Window
 import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContract
@@ -21,15 +22,17 @@ import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.CompositePageTransformer
 import androidx.viewpager2.widget.MarginPageTransformer
+import androidx.work.*
+import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.gson.Gson
 import com.gowtham.library.utils.TrimType
 import com.gowtham.library.utils.TrimVideo
 import com.yalantis.ucrop.UCrop
-import kotlinx.coroutines.delay
+import dagger.Provides
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import org.jetbrains.anko.doAsync
 import protrnd.com.R
 import protrnd.com.data.models.Actions
 import protrnd.com.data.models.Location
@@ -42,6 +45,7 @@ import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.PostRepository
 import protrnd.com.databinding.ActivityNewPostBinding
+import protrnd.com.databinding.LocationPickerBinding
 import protrnd.com.databinding.UploadProcessingBinding
 import protrnd.com.ui.*
 import protrnd.com.ui.adapter.PostImagesAdapter
@@ -50,6 +54,7 @@ import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.viewmodels.PostViewModel
 import java.io.File
 import java.util.*
+import javax.inject.Singleton
 
 class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, PostRepository>() {
     private var postUriList: ArrayList<Uri> = arrayListOf()
@@ -180,10 +185,58 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
             launchGalleryPicker()
         }
 
+        if (currentUserProfile.profileimg.isNotEmpty())
+            Glide.with(this)
+                .load(currentUserProfile.profileimg)
+                .circleCrop()
+                .into(binding.profileImg)
+
         binding.tagPeopleBtn.setOnClickListener {
             binding.alphaBg.visible(true)
             val bottomSheetDialog = TagBottomSheetFragmentDialog(taggedProfiles, this)
             bottomSheetDialog.show(supportFragmentManager, bottomSheetDialog.tag)
+        }
+
+        val locationDialog = Dialog(this, R.style.TransparentDialog)
+        val locationPickerBinding = LocationPickerBinding.inflate(layoutInflater)
+        locationDialog.setCanceledOnTouchOutside(true)
+        locationDialog.setCancelable(true)
+        locationDialog.setContentView(locationPickerBinding.root)
+        val window: Window = locationDialog.window!!
+        window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        val location = currentUserProfile.location?.split(",")
+        var state = location?.get(0)
+        var city = location?.get(1)
+        var locationUpdate = currentUserProfile.location ?: ""
+
+        binding.addLocationBtn.setOnClickListener {
+            locationDialog.show()
+            locationPickerBinding.statePicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
+                city = ""
+                locationPickerBinding.cityPicker.clearSelectedItem()
+                state = newItem
+                when (state!!.lowercase()) {
+                    "abia" -> locationPickerBinding.cityPicker.setItems(R.array.abia)
+                    "adamawa" -> locationPickerBinding.cityPicker.setItems(R.array.adamawa)
+                    "akwa ibom" -> locationPickerBinding.cityPicker.setItems(R.array.akwa_ibom)
+                    "anambra" -> locationPickerBinding.cityPicker.setItems(R.array.anambra)
+                }
+                locationPickerBinding.saveBtn.enable(false)
+            }
+
+            locationPickerBinding.cityPicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
+                city = newItem
+                locationPickerBinding.saveBtn.enable(true)
+            }
+
+            locationPickerBinding.statePicker.selectItemByIndex(0)
+            locationPickerBinding.cityPicker.selectItemByIndex(0)
+
+            locationPickerBinding.saveBtn.setOnClickListener {
+                locationUpdate = "$state,$city"
+                binding.selectedLocation.text = locationUpdate
+                locationDialog.dismiss()
+            }
         }
 
         val dialog = Dialog(this, R.style.TransparentDialog)
@@ -196,25 +249,19 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
             binding.postBtn.enable(false)
             dialog.show()
             binding.captionEt.clearFocus()
-            val l = currentUserProfile.location!!.split(",")
-            val location = Location(city = l[1], state = l[0])
+
             val tags = arrayListOf<String>()
             for (profile in taggedProfiles) {
                 tags.add(profile.id)
             }
-            ApiRequestService.action = {
-                upload(
-                    tags,
-                    location,
-                    postUriList,
-                    currentUserProfile,
-                    binding.captionEt.text.toString().trim()
-                )
-            }
-            Intent(this, ApiRequestService::class.java).apply {
-                action = Actions.START_FOREGROUND
-                startForegroundService(this)
-            }
+
+            upload(
+                tags,
+                Location(city = city!!, state = state!!),
+                postUriList,
+                currentUserProfile,
+                binding.captionEt.text.toString().trim()
+            )
         }
     }
 
@@ -225,53 +272,30 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
         currentUserProfile: Profile,
         caption: String
     ) {
-        lifecycleScope.launch {
+        val uris = arrayListOf<String>()
+        postUriList.forEach {
+            uris.add(it.toString())
+        }
+        val data = Data.Builder()
+            .putString("auth",authToken)
+            .putString("caption",caption)
+            .putStringArray("tags",tags.toTypedArray())
+            .putStringArray("uris",uris.toTypedArray())
+            .putString("name",currentUserProfile.username)
+            .putString("city",location.city)
+            .putString("state",location.state)
+            .build()
+
+        val worker = OneTimeWorkRequest.Builder(ApiRequestService::class.java)
+            .setInputData(data)
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+            .build()
+        WorkManager.getInstance().enqueue(worker)
+
+        CoroutineScope(Dispatchers.Main).launch {
             delay(2000)
             finishActivity()
-            val authToken = runBlocking { profilePreferences.authToken.first() }
-            val postApi = ProtrndAPIDataSource().buildAPI(PostApi::class.java, authToken)
-            val profileApi = ProtrndAPIDataSource().buildAPI(ProfileApi::class.java, authToken)
-            val repo = PostRepository(profileApi, postApi)
-            val uploadViewModel = PostViewModel(repo)
-            val result = postUriList.let {
-                uploadViewModel.uploadImage(
-                    it,
-                    currentUserProfile.username,
-                    getFileTypes(postUriList)
-                )
-            }
-            Log.i("gwijbe", Gson().toJson(currentUserProfile))
-            Log.i("gwiube", binding.captionEt.text.toString().trim())
-            val postDto = PostDTO(
-                caption = caption,
-                location = location,
-                uploadurls = result,
-                tags = tags
-            )
-            when (val add = uploadViewModel.addPost(postDto)) {
-                is Resource.Success -> {
-                    if (add.value.successful) {
-                        ApiRequestService.action = null
-                        Intent(applicationContext, ApiRequestService::class.java).apply {
-                            action = Actions.STOP_FOREGROUND
-                            startForegroundService(this)
-                        }
-//                        finishActivity()
-                    } else {
-//                        dialog.dismiss()
-//                        binding.alphaBg.visible(false)
-//                        binding.postBtn.enable(true)
-                    }
-                }
-                is Resource.Failure -> {
-                    Log.i("DJIBF", "giesub")
-//                    dialog.dismiss()
-//                    Toast.makeText(this@NewPostActivity, Gson().toJson(add.errorBody), Toast.LENGTH_LONG).show()
-//                    binding.alphaBg.visible(false)
-//                    binding.postBtn.enable(true)
-                }
-                else -> {}
-            }
         }
     }
 
@@ -333,5 +357,4 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
         imagecursor.close()
         return imageList
     }
-
 }

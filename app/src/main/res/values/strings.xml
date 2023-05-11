@@ -68,7 +68,7 @@
     <string name="business_name">Business Name</string>
     <string name="grow_business">Ready to grow your business? Let\'s start by creating an account, so you can manage your business from anywhere! \uD83D\uDE03</string>
     <string name="business_username_at">Business Username (@username)</string>
-    <string name="verify_otp">Please input the one-time-password sent to your email address so we can verify your email.</string>
+    <string name="verify_otp">Please input the one-time-password sent to your email address so we can verify your identity.</string>
     <string name="fullname">Full Name</string>
     <string name="signup">Sign Up</string>
     <string name="video_player_closer">Video player closer</string>
@@ -90,7 +90,7 @@
     <string name="welcome_back">Welcome Back</string>
     <string name="forgot_password_">Forgot Password</string>
     <string name="send_reset">Send Reset</string>
-    <string name="back_to_create_account">Back to Create Account</string>
+    <string name="go_back">Go Back</string>
     <string name="already_have_an_account">Already have an account? Log in here</string>
     <string name="nigeria">Nigeria</string>
     <string name="country">Country</string>
@@ -493,6 +493,19 @@
     <string name="input_your_payment_pin">Input your payment pin</string>
     <string name="please_input_your_payment_pin">Please input your payment pin</string>
     <string name="receive_funds_quickly_with_qr_code">Receive funds quickly with Qr Code</string>
+    <string name="logout">Logout</string>
+    <string name="change_password">Change Password</string>
+    <string name="forgot_payment_pin">Forgot Payment Pin</string>
+    <string name="update_card_details">Update Card Details</string>
+    <string name="about">About</string>
+    <string name="replace_image">Replace Image</string>
+    <string name="crop_image">Crop Image</string>
+    <string name="didn_t_receive_a_code_click_here_to_resend">Didn’t receive a code? Click here to resend</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="input_your_new_password">Input your new password</string>
+    <string name="new_password">New Password</string>
+    <string name="search_results">Your search results will show here</string>
+    <string name="your_conversations_will_display_here">Your conversations will display here</string>
     <string-array name="image_video">
         <item>Images Only</item>
         <item>Videos Only</item>

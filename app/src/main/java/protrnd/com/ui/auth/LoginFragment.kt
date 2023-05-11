@@ -22,14 +22,16 @@ class LoginFragment : BaseFragment<AuthViewModel, FragmentLoginBinding, AuthRepo
     override fun onViewReady(savedInstanceState: Bundle?) {
         super.onViewReady(savedInstanceState)
         binding.loginBtn.enable(false)
+        val authActivity = activity as AuthenticationActivity
 
         binding.signupHereTv.setOnClickListener {
-            val authActivity = activity as AuthenticationActivity
             authActivity.startFragment(LoginFragmentDirections.actionLoginFragmentToRegisterFragment())
         }
 
         binding.forgotPass.setOnClickListener {
-            startActivity(Intent(requireContext(), ForgotPasswordActivity::class.java))
+            startActivity(Intent(authActivity, ForgotPasswordActivity::class.java).apply {
+                authActivity.startAnimation()
+            })
         }
 
         binding.loginTv.setGradient()

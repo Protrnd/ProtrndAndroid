@@ -2,6 +2,7 @@ package protrnd.com.data.repository
 
 import protrnd.com.data.models.Login
 import protrnd.com.data.models.RegisterDTO
+import protrnd.com.data.models.ResetPasswordDTO
 import protrnd.com.data.models.VerifyOTP
 import protrnd.com.data.network.ProfilePreferences
 import protrnd.com.data.network.api.AuthApi
@@ -21,4 +22,8 @@ class AuthRepository(private val api: AuthApi, private val preferences: ProfileP
     }
 
     suspend fun verifyOtp(verifyOTP: VerifyOTP) = safeApiCall { api.verifyOtp(verifyOTP) }
+
+    suspend fun forgotPassword(login: Login) = safeApiCall { api.forgotPassword(login) }
+
+    suspend fun resetPassword(reset: ResetPasswordDTO) = safeApiCall { api.resetPassword(reset) }
 }

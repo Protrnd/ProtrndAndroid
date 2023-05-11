@@ -18,7 +18,7 @@ import protrnd.com.ui.handleUnCaughtException
 import protrnd.com.ui.home.HomeActivity
 import protrnd.com.ui.post.PostActivity
 import protrnd.com.ui.startActivityFromNotification
-import protrnd.com.ui.startNewActivityFromAuth
+import protrnd.com.ui.startNewActivityWithNoBackstack
 
 class WelcomeActivity : AppCompatActivity() {
     lateinit var profilePreferences: ProfilePreferences
@@ -46,7 +46,7 @@ class WelcomeActivity : AppCompatActivity() {
             bundle.putBoolean("isFromNotification", true)
             startActivityFromNotification(PostActivity::class.java, bundle)
         } else if (currentUserProfile.id.isNotEmpty()) {
-            startNewActivityFromAuth(HomeActivity::class.java)
+            startNewActivityWithNoBackstack(HomeActivity::class.java)
         }
 
         binding.onboardingFragmentsPager.adapter = OnBoardingPagerAdapter()

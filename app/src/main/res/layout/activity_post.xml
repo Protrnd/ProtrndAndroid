@@ -108,7 +108,6 @@
                         android:fontFamily="@font/dmsans_medium"
                         android:gravity="center"
                         android:maxLines="1"
-                        android:text="@string/protrnd"
                         android:textColor="@color/black"
                         android:textSize="@dimen/body"
                         app:drawableEndCompat="@drawable/business_badge_ic"
@@ -122,7 +121,6 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/dmsans_regular"
-                        android:text="@string/protrnd_location"
                         android:textColor="@color/dark_grey"
                         android:textSize="12sp"
                         app:layout_constraintBottom_toBottomOf="@+id/post_owner_image"
@@ -234,7 +232,6 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="8dp"
                     android:fontFamily="@font/dm_sans_medium"
-                    android:text="@string/no_of_trndrs_liked_this_post"
                     android:textColor="@color/black"
                     android:textSize="14sp"
                     app:layout_constraintTop_toBottomOf="@id/promote_support" />
@@ -246,7 +243,6 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="5dp"
                     android:fontFamily="@font/dm_sans"
-                    android:text="@string/time_ago"
                     android:textColor="@color/black"
                     android:textSize="11sp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -268,12 +264,9 @@
                         android:autoLink="web"
                         android:focusable="true"
                         android:fontFamily="@font/dm_sans"
-                        android:text="@string/default_caption"
                         android:textColor="@color/main_purple"
                         app:layout_constraintTop_toTopOf="parent" />
-
                 </androidx.constraintlayout.widget.ConstraintLayout>
-
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>
     </androidx.appcompat.widget.LinearLayoutCompat>

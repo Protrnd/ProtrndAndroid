@@ -6,9 +6,9 @@ import com.google.gson.annotations.SerializedName
 
 data class Login(
     @SerializedName("email")
-    var email: String,
+    var email: String = "",
     @SerializedName("password")
-    var password: String
+    var password: String = ""
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,

@@ -27,6 +27,7 @@ class VerifyOTPFragment : BaseFragment<AuthViewModel, FragmentVerifyOtpBinding, 
         super.onViewCreated(view, savedInstanceState)
         val fragmentHost = parentFragment as NavHostFragment
         registerFragment = fragmentHost.parentFragment as RegisterFragment
+
         binding.input1.requestForFocus(binding.input2)
         binding.input2.requestForFocus(binding.input3, binding.input1)
         binding.input3.requestForFocus(binding.input4, binding.input2)

@@ -17,6 +17,7 @@ class ViewModelFactory(private val repository: BaseRepository) :
                 repository as NotificationRepository
             ) as T
             modelClass.isAssignableFrom(PaymentViewModel::class.java) -> PaymentViewModel(repository as PaymentRepository) as T
+            modelClass.isAssignableFrom(EmptyViewModel::class.java) -> EmptyViewModel() as T
             modelClass.isAssignableFrom(ChatViewModel::class.java) -> ChatViewModel(repository as ChatRepository) as T
             modelClass.isAssignableFrom(SearchViewModel::class.java) -> SearchViewModel(repository as SearchRepository) as T
             else -> throw IllegalArgumentException("ViewModelClass not found")

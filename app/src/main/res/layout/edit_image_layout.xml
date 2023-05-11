@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rect_12"
+    android:layout_gravity="center"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/crop_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/crop_image"
+        android:paddingStart="16dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:background="@drawable/top_12_light_pink"
+        android:textSize="@dimen/subheading"
+        android:textColor="@color/black"
+        android:drawablePadding="@dimen/padding_10"
+        android:paddingEnd="24dp"
+        app:drawableTint="@color/main_pink"
+        app:drawableStartCompat="@drawable/crop_ic" />
+    <TextView
+        android:id="@+id/replace_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/replace_image"
+        android:paddingStart="16dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:background="@drawable/bottom_12_light_pink"
+        android:textSize="@dimen/subheading"
+        android:textColor="@color/black"
+        android:drawablePadding="@dimen/padding_10"
+        android:paddingEnd="24dp"
+        app:drawableTint="@color/main_pink"
+        app:drawableStartCompat="@drawable/replace_image_ic"/>
+</androidx.appcompat.widget.LinearLayoutCompat>

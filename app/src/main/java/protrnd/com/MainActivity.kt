@@ -14,7 +14,7 @@ import protrnd.com.ui.handleUnCaughtException
 import protrnd.com.ui.home.HomeActivity
 import protrnd.com.ui.post.PostActivity
 import protrnd.com.ui.startActivityFromNotification
-import protrnd.com.ui.startNewActivityFromAuth
+import protrnd.com.ui.startNewActivityWithNoBackstack
 import protrnd.com.ui.viewmodels.HomeViewModel
 
 class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel, HomeRepository>() {
@@ -29,7 +29,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel, HomeReposi
             bundle.putBoolean("isFromNotification", true)
             startActivityFromNotification(PostActivity::class.java, bundle)
         } else if (currentUserProfile.id.isNotEmpty()) {
-            startNewActivityFromAuth(HomeActivity::class.java)
+            startNewActivityWithNoBackstack(HomeActivity::class.java)
         }
     }
 

@@ -5,7 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import protrnd.com.data.models.Login
 import protrnd.com.data.models.RegisterDTO
+import protrnd.com.data.models.ResetPasswordDTO
 import protrnd.com.data.models.VerifyOTP
 import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.AuthRepository
@@ -29,7 +31,9 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
         _loginResponse.value = repository.login(email, password)
     }
 
-    suspend fun saveAuthToken(token: String) = repository.saveAuthToken(token)
+    suspend fun forgotPassword(email: String) = repository.forgotPassword(Login(email))
+
+    suspend fun resetPassword(resetPasswordDTO: ResetPasswordDTO) = repository.resetPassword(resetPasswordDTO)
 
     suspend fun register(registerDTO: RegisterDTO) = viewModelScope.launch {
         _registerResponse.value = Resource.Loading()

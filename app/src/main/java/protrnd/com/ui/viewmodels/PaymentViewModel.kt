@@ -47,6 +47,8 @@ class PaymentViewModel @Inject constructor(val repository: PaymentRepository) : 
         _profiles.value = repository.searchProfilesByName(name)
     }
 
+    suspend fun getProfileByName(name: String) = repository.searchProfilesByName(name)
+
     suspend fun getProfileById(id: String) =
         withContext(Dispatchers.IO) { repository.getProfileById(id) }
 

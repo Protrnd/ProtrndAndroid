@@ -20,6 +20,7 @@ import protrnd.com.ui.adapter.RecentChatProfilesAdapter
 import protrnd.com.ui.adapter.listener.ChatProfileListener
 import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.viewmodels.ChatViewModel
+import protrnd.com.ui.visible
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -55,6 +56,7 @@ class ChatFragment : BaseFragment<ChatViewModel, FragmentChatBinding, ChatReposi
         }
 
         conversations.observe(viewLifecycleOwner) { convos ->
+            binding.messagesResults.visible(convos.isEmpty())
             adapter.conversations = convos
             adapter.notifyItemRangeChanged(0, convos.size)
             if (binding.refreshLayout.isRefreshing)

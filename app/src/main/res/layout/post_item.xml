@@ -35,10 +35,8 @@
             android:fontFamily="@font/dmsans_medium"
             android:gravity="center"
             android:maxLines="1"
-            android:text="@string/protrnd"
             android:textColor="@color/black"
             android:textSize="@dimen/body"
-            app:drawableEndCompat="@drawable/business_badge_ic"
             app:layout_constraintStart_toEndOf="@+id/post_owner_image"
             app:layout_constraintTop_toTopOf="@+id/post_owner_image"
             app:layout_constraintVertical_chainStyle="spread" />
@@ -49,7 +47,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:fontFamily="@font/dmsans_regular"
-            android:text="@string/protrnd_location"
             android:textColor="@color/dark_grey"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="@+id/post_owner_image"
@@ -161,7 +158,6 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:fontFamily="@font/dm_sans_medium"
-        android:text="@string/no_of_trndrs_liked_this_post"
         android:textColor="@color/black"
         android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/promote_support" />
@@ -173,7 +169,6 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="5dp"
         android:fontFamily="@font/dm_sans"
-        android:text="@string/time_ago"
         android:textColor="@color/black"
         android:textSize="11sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -196,7 +191,6 @@
             android:focusable="true"
             android:fontFamily="@font/dm_sans"
             android:maxLines="3"
-            android:text="@string/default_caption"
             android:textColor="@color/black"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -209,10 +203,4 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/caption_tv" />
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!--    <View-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="0.5dp"-->
-    <!--        android:layout_marginTop="@dimen/padding_10"-->
-    <!--        app:layout_constraintTop_toBottomOf="@id/caption_view" />-->
 </androidx.constraintlayout.widget.ConstraintLayout>

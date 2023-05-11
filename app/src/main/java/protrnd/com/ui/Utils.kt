@@ -62,6 +62,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import protrnd.com.MainActivity
 import protrnd.com.R
 import protrnd.com.data.NetworkConnectionLiveData
 import protrnd.com.data.models.*
@@ -85,6 +86,7 @@ import protrnd.com.ui.adapter.listener.ImagePostItemClickListener
 import protrnd.com.ui.adapter.listener.PromoteSupportListener
 import protrnd.com.ui.auth.AuthenticationActivity
 import protrnd.com.ui.auth.LoginFragment
+import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.home.HomeActivity
 import protrnd.com.ui.post.ForwardPostBottomSheetDialog
 import protrnd.com.ui.post.PostActivity
@@ -350,19 +352,15 @@ private suspend fun likePost(
     val profileResult = getOtherProfile(postData.profileid, viewModel, lifecycleOwner)
     if (profileResult != null) {
         val liked = holder.view.likeToggle.isChecked
-        if (activity != null && activity.isNetworkAvailable())
+        if (activity != null)
             likePost(
                 holder.view.likeToggle,
                 holder.view.likesCount,
-                lifecycleScope,
                 viewModel,
-                lifecycleOwner,
                 postData.identifier,
                 profileResult,
                 currentProfile
             )
-        else
-            holder.view.likeToggle.isChecked = !liked
     }
 }
 
@@ -442,13 +440,24 @@ suspend fun setupPosts(
     }
 }
 
-fun <A : Activity> Activity.startNewActivityFromAuth(activity: Class<A>) {
+fun <A : Activity> Activity.startNewActivityWithNoBackstack(activity: Class<A>) {
     Intent(
         this,
         activity
     ).also {
         it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(it)
+        startAnimation()
+    }
+}
+
+fun BaseActivity<*, *, *>.logout() {
+    CoroutineScope(Dispatchers.IO).launch {
+        profilePreferences.logoutProfile()
+    }
+    Intent(this, MainActivity::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(this)
         startAnimation()
     }
 }
@@ -515,14 +524,14 @@ fun saveAndStartHomeFragment(
                 scope.launch {
                     preferences.saveAuthToken(token)
                     preferences.saveProfile(profileResponse.value.data)
-                    activity.startNewActivityFromAuth(HomeActivity::class.java)
+                    activity.startNewActivityWithNoBackstack(HomeActivity::class.java)
                 }
             }
             is Resource.Failure -> {
                 if (profileResponse.isNetworkError)
                     Toast.makeText(
                         activity.applicationContext,
-                        "Network error occured",
+                        "Network error occurred",
                         Toast.LENGTH_SHORT
                     ).show()
             }
@@ -673,17 +682,6 @@ fun sendFollowNotification(otherProfile: Profile, currentProfile: Profile) {
     sendNotification(otherProfile, title, notificationData)
 }
 
-inline fun <reified T : Parcelable> Intent.getParcelableArrayList(key: String): ArrayList<T>? =
-    when {
-        SDK_INT >= 33 -> getParcelableArrayListExtra(key, T::class.java)
-        else -> @Suppress("DEPRECATION") getParcelableArrayListExtra(key)
-    }
-
-inline fun <reified T : Parcelable> Intent.getParcelable(key: String): T? = when {
-    SDK_INT >= 33 -> getParcelableExtra(key, T::class.java)
-    else -> @Suppress("DEPRECATION") getParcelableExtra(key) as? T
-}
-
 fun sendNotification(
     profile: Profile,
     title: String,
@@ -710,20 +708,35 @@ fun sendNotification(
 fun likePost(
     likeToggle: AppCompatToggleButton,
     likesCount: TextView,
-    scope: CoroutineScope,
     viewModel: HomeViewModel,
-    lifecycleOwner: LifecycleOwner,
     postId: String,
     otherProfile: Profile,
     currentUserProfile: Profile
 ) {
     val liked = likeToggle.isChecked
-    scope.launch {
+    val likesText = likesCount.text.toString().split(" ")
+    val count = likesText[0].toIntOrNull()
+    val text: String = if (liked) {
+        if (count != null) {
+            val number = count + 1
+            "${number.formatAmount()} trndrs like this post"
+        } else {
+            "1 trndr likes this post"
+        }
+    } else {
+        if (count != null && count > 1) {
+            val number = count - 1
+            "${number.formatAmount()} ${if (number == 1) "trndr" else "trndrs"} like this post"
+        } else {
+            "Be the first trndr to like this post"
+        }
+    }
+    likesCount.text = text
+    CoroutineScope(Dispatchers.IO).launch {
         if (liked) {
             when (viewModel.likePost(postId)) {
                 is Resource.Success -> {
                     withContext(Dispatchers.Main) {
-                        viewModel.setupLikes(postId, likesCount, likeToggle, lifecycleOwner)
                         if (otherProfile != currentUserProfile)
                             sendLikeNotification(
                                 otherProfile,
@@ -738,7 +751,7 @@ fun likePost(
         } else {
             when (viewModel.unlikePost(postId)) {
                 is Resource.Success -> {
-                    viewModel.setupLikes(postId, likesCount, likeToggle, lifecycleOwner)
+
                 }
                 else -> {}
             }
@@ -922,7 +935,6 @@ fun showTransactionDetails(
     if (transaction.purpose.startsWith(TOP_UP))
         bottomSheet.fromToLayout.visible(false)
 
-
     sender.observe(lifecycleOwner) { senderProfile ->
         val profileName = "@${senderProfile.username}"
         bottomSheet.fromLocation.text = senderProfile.location
@@ -958,21 +970,22 @@ fun showTransactionDetails(
     }
 
     if (transaction.purpose.startsWith(RECEIVE) || transaction.purpose.contains(FROM)) {
+        val split = transaction.purpose.replace("@","").split(" ")
+        val profileName = split[split.size-1]
         var senderProfile: Profile
-        val cachedSenderProfile = MemoryCache.profiles[transaction.profileid]
+        val cachedSenderProfile = MemoryCache.profilesByName[profileName]
         mutableReceiver.postValue(currentUserProfile)
         if (cachedSenderProfile != null) {
             senderProfile = cachedSenderProfile
             mutableSender.postValue(senderProfile)
         }
-
-        CoroutineScope(Dispatchers.Main).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             when (val profileResult =
-                viewModel.getProfileById(transaction.profileid)) {
+                viewModel.getProfileByName(profileName)) {
                 is Resource.Success -> {
-                    val profile = profileResult.value.data
+                    val profile = profileResult.value.data[0]
                     senderProfile = profile
-                    MemoryCache.profiles[transaction.profileid] = senderProfile
+                    MemoryCache.profilesByName[profileName] = senderProfile
                     mutableSender.postValue(senderProfile)
                 }
                 else -> {}
@@ -986,7 +999,7 @@ fun showTransactionDetails(
             receiverProfile = cachedReceiverProfile
             mutableReceiver.postValue(receiverProfile)
         }
-        CoroutineScope(Dispatchers.Main).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             when (val profileResult =
                 viewModel.getProfileById(transaction.receiverid)) {
                 is Resource.Success -> {
@@ -998,9 +1011,6 @@ fun showTransactionDetails(
                 else -> {}
             }
         }
-    }
-
-    CoroutineScope(Dispatchers.IO).launch {
     }
     bottomSheetDialog.show()
     bottomSheetDialog.setOnDismissListener {
@@ -1095,11 +1105,6 @@ fun Int.formatAmount(): String {
 fun Double.formatAmount(): String {
     return NumberFormat.getNumberInstance(Locale.US).format(this)
 }
-
-fun String.formatInt(): String {
-    return NumberFormat.getNumberInstance(Locale.US).format(this)
-}
-
 fun String.formatAmount(): String {
     val amount = this.toDouble()
     val formatter = DecimalFormat("#,###.00")
@@ -1192,38 +1197,6 @@ fun showConfirmationDialog(
     val window: Window = dialog.window!!
     window.setLayout(MATCH_PARENT, WRAP_CONTENT)
 }
-//
-//suspend fun RecyclerView.showUserPostsInGrid(
-//    context: Context,
-//    viewModel: HomeViewModel,
-//    profile: Profile
-//): List<Post> {
-//    var postResults: List<Post> = listOf()
-//    when (val posts = viewModel.getProfilePosts(profile.identifier)) {
-//        is Resource.Success -> {
-//            addThumbnailGrid3(context, posts.value.data)
-//            postResults = posts.value.data
-//        }
-//        else -> {}
-//    }
-//    return postResults
-//}
-
-fun getUserPosts(
-    lifecycleOwner: LifecycleOwner,
-    viewModel: HomeViewModel,
-    profile: Profile
-): List<Post> {
-    var postResults: List<Post> = listOf()
-    viewModel.getProfilePosts(profile.identifier)
-    viewModel.thumbnails.observe(lifecycleOwner) { posts ->
-        when (posts) {
-            is Resource.Success -> postResults = posts.value.data
-            else -> {}
-        }
-    }
-    return postResults
-}
 
 fun RecyclerView.addThumbnailGrid4(context: Context, thumbnails: List<Post>) {
     val gridlayout = GridLayoutManager(context, 4)
@@ -1255,31 +1228,6 @@ fun RecyclerView.addThumbnailGrid3(context: Context, thumbnails: ArrayList<Strin
         }
     })
     this.adapter = thumbnailsAdapter
-}
-
-suspend fun TextView.showFollowersCount(viewModel: HomeViewModel, profile: Profile) {
-    when (val followersCount =
-        viewModel.getFollowersCount(profile.identifier)) {
-        is Resource.Success -> {
-            val count = followersCount.value.data.toString().formatNumber()
-            val followersResult = "$count Followers"
-            this.text = followersResult.setSpannableColor(count)
-            this.visible(true)
-        }
-        else -> {}
-    }
-}
-
-suspend fun TextView.showFollowingCount(viewModel: HomeViewModel, profile: Profile) {
-    when (val f = viewModel.getFollowingsCount(profile.identifier)) {
-        is Resource.Success -> {
-            val count = f.value.data.toString().formatNumber()
-            val followersResult = "$count Following"
-            this.text = followersResult.setSpannableBold(count)
-            this.visible(true)
-        }
-        else -> {}
-    }
 }
 
 fun View.errorSnackBar(message: String, action: (() -> Unit)? = null) {
@@ -1372,29 +1320,6 @@ fun Fragment.handleAPIError(failure: Resource.Failure, retry: (() -> Unit)? = nu
     }
 }
 
-fun handleAPIError(view: View, failure: Resource.Failure, retry: (() -> Unit)? = null) {
-    when {
-        failure.isNetworkError -> view.errorSnackBar("Please check your internet connection", retry)
-        failure.errorCode == 401 -> {
-            Intent(view.context, AuthenticationActivity::class.java).also {
-                it.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                view.context.startActivity(it)
-            }
-        }
-        else -> {
-            view.errorSnackBar("Server error occurred")
-        }
-    }
-}
-
-fun AppCompatActivity.setupHomeIndicator(toolbar: Toolbar) {
-    setSupportActionBar(toolbar)
-    toolbar.contentInsetStartWithNavigation = 0
-    val ab = supportActionBar!!
-    ab.setHomeAsUpIndicator(R.drawable.arrow_back_ic)
-    ab.setDisplayHomeAsUpEnabled(true)
-}
-
 fun Activity.checkStoragePermissions() {
     if (ActivityCompat.checkSelfPermission(
             this,
@@ -1440,18 +1365,6 @@ fun String.formatNumber(): String {
     } else {
         this.toInt().toString()
     }
-}
-
-fun repeatedDecimal(g: String): Boolean {
-    var count = 0
-    for (j in g) {
-        if (j == '.') {
-            count++
-            if (count > 1)
-                return true
-        }
-    }
-    return false
 }
 
 fun String.getAgo(): CharSequence {

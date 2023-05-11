@@ -39,6 +39,12 @@
                         android:background="@drawable/texture_img"
                         android:contentDescription="@string/background_image" />
 
+                    <ImageView
+                        android:id="@+id/bgimg"
+                        android:scaleType="centerCrop"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"/>
+
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/image_container"
                         android:layout_width="100dp"

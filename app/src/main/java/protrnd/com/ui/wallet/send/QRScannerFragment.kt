@@ -36,8 +36,8 @@ class QRScannerFragment :
     private val scanResultLive = MutableLiveData<QrCodeContent>()
     private val liveData: LiveData<QrCodeContent> = scanResultLive
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onViewReady(savedInstanceState: Bundle?) {
+        super.onViewReady(savedInstanceState)
         val hostFragment = parentFragment as NavHostFragment
 
         codeScanner = CodeScanner(requireContext(), binding.scannerView)

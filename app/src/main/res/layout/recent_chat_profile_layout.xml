@@ -25,7 +25,6 @@
         android:layout_marginStart="12dp"
         android:layout_marginEnd="8dp"
         android:fontFamily="@font/dmsans_bold"
-        android:text="@string/protrnd"
         android:textColor="#111C16"
         android:textSize="@dimen/body"
         app:layout_constraintEnd_toStartOf="@+id/time_ago"
@@ -39,7 +38,6 @@
         android:layout_marginTop="4dp"
         android:fontFamily="@font/dm_sans"
         android:maxLines="1"
-        android:text="@string/default_chat_message"
         android:textColor="#111C16"
         android:textSize="@dimen/label"
         app:layout_constraintEnd_toEndOf="@+id/chat_profile_full_name"
@@ -51,20 +49,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:text="@string/time_ago"
         android:textColor="@color/main_grey"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/chat_profile_full_name" />
 
-    <TextView
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:background="@drawable/button_pink_dark_50"
-        android:fontFamily="@font/dm_sans"
-        android:gravity="center"
-        android:text="@string/_2"
-        android:textColor="@color/white"
-        android:textSize="@dimen/label"
-        app:layout_constraintBottom_toBottomOf="@+id/recent_chat_message"
-        app:layout_constraintEnd_toEndOf="@+id/time_ago" />
 </androidx.constraintlayout.widget.ConstraintLayout>

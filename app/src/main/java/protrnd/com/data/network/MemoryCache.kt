@@ -5,6 +5,7 @@ import protrnd.com.data.models.*
 object MemoryCache {
     var transactionsMap = mutableListOf<Transaction>()
     val profiles = mutableMapOf<String, Profile>()
+    val profilesByName = mutableMapOf<String, Profile>()
     val posts = mutableListOf<Post>()
     var chats = mutableMapOf<String, MutableList<Chat>>()
     val postLikes = mutableMapOf<String, Int>()

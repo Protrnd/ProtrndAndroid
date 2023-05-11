@@ -6,21 +6,21 @@ import com.google.gson.annotations.SerializedName
 
 data class ProfileDTO(
     @SerializedName("accountType")
-    val accountType: String,
+    val accountType: String = "",
     @SerializedName("backgroundImageUrl")
-    val backgroundImageUrl: String,
+    val backgroundImageUrl: String = "",
     @SerializedName("email")
-    val email: String,
+    val email: String = "",
     @SerializedName("fullName")
-    val fullName: String,
+    val fullName: String = "",
     @SerializedName("location")
-    val location: String,
+    val location: String = "",
     @SerializedName("about")
-    val about: String,
+    val about: String = "",
     @SerializedName("profileImage")
-    val profileImage: String,
+    val profileImage: String = "",
     @SerializedName("userName")
-    val userName: String
+    val userName: String = ""
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,

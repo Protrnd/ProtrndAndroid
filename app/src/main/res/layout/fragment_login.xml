@@ -112,7 +112,7 @@
                 android:layout_centerInParent="true"
                 android:fontFamily="@font/dm_sans_medium"
                 android:text="@string/forgot_password"
-                android:textColor="#E02A45"
+                android:textColor="@color/main_pink"
                 android:textSize="14sp" />
         </RelativeLayout>
 
