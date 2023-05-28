@@ -22,14 +22,4 @@ class PostViewModel(
     private val _profiles: MutableLiveData<Resource<ProfileListResponseBody>> = MutableLiveData()
     val profiles: LiveData<Resource<ProfileListResponseBody>>
         get() = _profiles
-
-    suspend fun uploadImage(uri: List<Uri>, username: String, filetype: List<String>) =
-        repository.addImageToFirebase(uri, username, filetype)
-
-    fun getProfilesByUsername(name: String) = viewModelScope.launch {
-        _profiles.value = Resource.Loading()
-        _profiles.value = repository.getProfilesByUsername(name)
-    }
-
-    suspend fun addPost(postDTO: PostDTO) = repository.addPost(postDTO)
 }

@@ -56,7 +56,6 @@ class SupportAmountFragment :
 
     override fun getFragmentRepository(): PaymentRepository {
         val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java)
-        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
         return PaymentRepository(paymentApi)
     }
 }

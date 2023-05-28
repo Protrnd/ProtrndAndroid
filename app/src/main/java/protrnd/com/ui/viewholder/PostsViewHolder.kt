@@ -7,12 +7,13 @@ import protrnd.com.data.models.Post
 import protrnd.com.data.models.Profile
 import protrnd.com.databinding.PostItemBinding
 import protrnd.com.ui.*
+import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.viewmodels.HomeViewModel
 
 class PostsViewHolder(val view: PostItemBinding) : RecyclerView.ViewHolder(view.root) {
     @SuppressLint("SetTextI18n")
     fun bind(
-        activity: AppCompatActivity,
+        activity: BaseActivity<*, *, *>,
         item: Post,
         postOwnerProfile: Profile? = null,
         currentProfile: Profile,
@@ -31,7 +32,8 @@ class PostsViewHolder(val view: PostItemBinding) : RecyclerView.ViewHolder(view.
             timeText = view.time,
             activity = activity,
             viewModel = viewModel,
-            currentProfile = currentProfile
+            currentProfile = currentProfile,
+            moreInfoBtn = view.moreInfo
         )
 
         view.shareBtn.setOnClickListener {

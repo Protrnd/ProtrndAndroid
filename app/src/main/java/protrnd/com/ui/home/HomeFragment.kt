@@ -17,6 +17,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.*
+import com.google.gson.Gson
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.DexterBuilder
 import com.karumi.dexter.PermissionToken
@@ -24,17 +26,18 @@ import com.karumi.dexter.listener.PermissionDeniedResponse
 import com.karumi.dexter.listener.PermissionGrantedResponse
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.single.PermissionListener
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import protrnd.com.R
 import protrnd.com.data.NetworkConnectionLiveData
 import protrnd.com.data.models.ProfileDTO
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
+import protrnd.com.data.network.backgroundtask.SavePostsService
+import protrnd.com.data.network.backgroundtask.SaveProfileService
+import protrnd.com.data.network.backgroundtask.SaveTransactionsService
+import protrnd.com.data.network.backgroundtask.SendMessageRequestService
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.FragmentHomeBinding
 import protrnd.com.databinding.LocationPickerBinding
@@ -86,6 +89,11 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
         checkNotifications()
     }
 
+    fun removeLoader() {
+        if (binding.root.isRefreshing)
+            binding.root.isRefreshing = false
+    }
+
     override fun onViewReady(savedInstanceState: Bundle?) {
         super.onViewReady(savedInstanceState)
         thisActivity = activity as HomeActivity
@@ -120,6 +128,65 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
         if (currentUserProfile.location == null || currentUserProfile.location!!.isEmpty()) {
             dialog.show()
         } else {
+            NetworkConnectionLiveData(requireContext()).observe(viewLifecycleOwner) {
+                binding.postsRv.loadPageData(
+                    childFragmentManager,
+                    thisActivity,
+                    viewModel,
+                    lifecycleScope,
+                    requireContext(),
+                    viewLifecycleOwner,
+                    currentUserProfile,
+                    this,
+                    { removeAlphaVisibility() },
+                    { showAlpha() },
+                    token
+                )
+            }
+        }
+
+        binding.floatingActionButtonUpload.setOnClickListener {
+            startActivity(Intent(requireContext(), NewPostActivity::class.java))
+        }
+
+        binding.root.setOnRefreshListener {
+            if (thisActivity.isNetworkAvailable()) {
+                adapter.submitData(lifecycle, PagingData.empty())
+                requestPageLoaded()
+                try {
+                    setupData()
+                }catch (_: Throwable) {
+                    Toast.makeText(requireContext(), "An error occurred!", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                binding.root.errorSnackBar("Please check your network connection")
+                binding.root.isRefreshing = false
+            }
+        }
+
+        var state = "Abia"
+        var city = "Aba"
+
+        locationPickerBinding.statePicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
+            city = ""
+            locationPickerBinding.cityPicker.clearSelectedItem()
+            state = newItem
+            locationPickerBinding.selectState(state)
+            locationPickerBinding.saveBtn.enable(false)
+        }
+
+        locationPickerBinding.cityPicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
+            city = newItem
+            locationPickerBinding.saveBtn.enable(true)
+        }
+
+        locationPickerBinding.statePicker.selectItemByIndex(0)
+        locationPickerBinding.cityPicker.selectItemByIndex(0)
+
+        locationPickerBinding.saveBtn.setOnClickListener {
+            currentUserProfile.location = "$state,$city"
+            updateProfile("$state,$city")
+            dialog.dismiss()
             binding.postsRv.loadPageData(
                 childFragmentManager,
                 thisActivity,
@@ -135,96 +202,40 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
             )
         }
 
-        binding.floatingActionButtonUpload.setOnClickListener {
-            startActivity(Intent(requireContext(), NewPostActivity::class.java))
-        }
-
-        binding.root.setOnRefreshListener {
-            if (thisActivity.isNetworkAvailable()) {
-                adapter.submitData(lifecycle, PagingData.empty())
-                loadPage()
-                binding.postsRv.loadPageData(
-                    childFragmentManager,
-                    thisActivity,
-                    viewModel,
-                    lifecycleScope,
-                    requireContext(),
-                    viewLifecycleOwner,
-                    currentUserProfile,
-                    this,
-                    { removeAlphaVisibility() },
-                    { showAlpha() },
-                    token
-                )
-            } else {
-                binding.root.errorSnackBar("Please check your network connection")
-            }
-        }
-
-        var state = "Abia"
-        var city = "Aba"
-
-        locationPickerBinding.statePicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
-            city = ""
-            locationPickerBinding.cityPicker.clearSelectedItem()
-            state = newItem
-            when (state.lowercase()) {
-                "abia" -> locationPickerBinding.cityPicker.setItems(R.array.abia)
-                "adamawa" -> locationPickerBinding.cityPicker.setItems(R.array.adamawa)
-                "akwa ibom" -> locationPickerBinding.cityPicker.setItems(R.array.akwa_ibom)
-                "anambra" -> locationPickerBinding.cityPicker.setItems(R.array.anambra)
-            }
-            locationPickerBinding.saveBtn.enable(false)
-        }
-
-        locationPickerBinding.cityPicker.setOnSpinnerItemSelectedListener<String> { _, _, _, newItem ->
-            city = newItem
-            locationPickerBinding.saveBtn.enable(true)
-        }
-
-        locationPickerBinding.statePicker.selectItemByIndex(0)
-        locationPickerBinding.cityPicker.selectItemByIndex(0)
-
-        locationPickerBinding.saveBtn.setOnClickListener {
-            thisActivity.currentUserProfile.location = "$state,$city"
-            updateProfile()
-            dialog.dismiss()
-            if (adapter.snapshot().isEmpty())
-                binding.postsRv.loadPageData(
-                    childFragmentManager,
-                    thisActivity,
-                    viewModel,
-                    lifecycleScope,
-                    requireContext(),
-                    viewLifecycleOwner,
-                    currentUserProfile,
-                    this,
-                    { removeAlphaVisibility() },
-                    { showAlpha() },
-                    token
-                )
-        }
-
         NetworkConnectionLiveData(requireContext()).observe(viewLifecycleOwner) {
-            setupData()
-            if (binding.root.isRefreshing)
-                binding.root.isRefreshing = false
+            requestPosts()
         }
     }
 
-    private fun updateProfile() {
-        viewModel.updateProfile(
-            ProfileDTO(
-                profileImage = thisActivity.currentUserProfile.profileimg,
-                backgroundImageUrl = thisActivity.currentUserProfile.bgimg,
-                accountType = thisActivity.currentUserProfile.acctype,
-                location = thisActivity.currentUserProfile.location!!,
-                email = thisActivity.currentUserProfile.email,
-                about = thisActivity.currentUserProfile.about.toString(),
-                fullName = thisActivity.currentUserProfile.fullname,
-                userName = thisActivity.currentUserProfile.username
-            )
+    private fun updateProfile(location: String) {
+        val profile = currentUserProfile
+        profile.location = location
+        val dto = ProfileDTO(
+            profileImage = currentUserProfile.profileimg,
+            backgroundImageUrl = currentUserProfile.bgimg,
+            accountType = currentUserProfile.acctype,
+            location = location,
+            email = currentUserProfile.email,
+            about = currentUserProfile.about.toString(),
+            fullName = currentUserProfile.fullname,
+            userName = currentUserProfile.username
         )
+
+        val data = Data.Builder()
+            .putString("authToken",token)
+            .putString("profile",Gson().toJson(dto))
+            .build()
+
+        val worker = OneTimeWorkRequest.Builder(SaveProfileService::class.java)
+            .setInputData(data)
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+            .build()
+        WorkManager.getInstance(requireContext()).enqueue(worker)
+
+        lifecycleScope.launch {
+            profilePreferences.saveProfile(profile)
+        }
     }
 
     private fun loadPage() {
@@ -238,15 +249,11 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
                 withContext(Dispatchers.Main) {
                     adapter.loadStateFlow.collectLatest { loadStates ->
                         if (loadStates.refresh is LoadState.Loading) {
-                            binding.shimmer.visible(true)
                             binding.root.isRefreshing = true
                         } else {
-                            binding.shimmer.visible(false)
                             binding.root.isRefreshing = false
                             if (adapter.itemCount < 1) {
                                 binding.root.errorSnackBar("Error loading posts") { loadPage() }
-                            } else {
-                                // TODO: Network error
                             }
                         }
                     }
@@ -258,20 +265,9 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
 
     override fun onResume() {
         super.onResume()
-        if (adapter.snapshot().isEmpty())
-            binding.postsRv.loadPageData(
-                childFragmentManager,
-                thisActivity,
-                viewModel,
-                lifecycleScope,
-                requireContext(),
-                viewLifecycleOwner,
-                currentUserProfile,
-                this,
-                { removeAlphaVisibility() },
-                { showAlpha() },
-                token
-            )
+        if (adapter.snapshot().isEmpty()) {
+            setupData()
+        }
     }
 
     private fun setupData() {
@@ -300,6 +296,22 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
         if (dialog.isShowing) {
             dialog.cancel()
         }
+    }
+
+    private fun requestPageLoaded() {
+        binding.postsRv.loadPageData(
+            childFragmentManager,
+            thisActivity,
+            viewModel,
+            lifecycleScope,
+            requireContext(),
+            viewLifecycleOwner,
+            currentUserProfile,
+            this,
+            { removeAlphaVisibility() },
+            { showAlpha() },
+            token
+        )
     }
 
     private fun onAddButtonClicked() {
@@ -337,7 +349,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, HomeReposi
         binding.alphaBg.visible(false)
     }
 
-    private fun showAlpha() {
+    fun showAlpha() {
         binding.alphaBg.visible(true)
     }
 

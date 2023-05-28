@@ -35,7 +35,6 @@ class SendSuccessFragment :
     override fun getFragmentRepository(): PaymentRepository {
         val token = runBlocking { profilePreferences.authToken.first() }
         val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java, token)
-        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
         return PaymentRepository(paymentApi)
     }
 
@@ -80,9 +79,9 @@ class SendSuccessFragment :
                     } catch (e: Throwable) {
                         Toast.makeText(
                             requireContext(),
-                            "Error occurred: ${e.localizedMessage}",
+                            "Error occurred!",
                             Toast.LENGTH_LONG
-                        ).show() //TODO: Fix error
+                        ).show()
                     }
                 }
                 is Resource.Failure -> {

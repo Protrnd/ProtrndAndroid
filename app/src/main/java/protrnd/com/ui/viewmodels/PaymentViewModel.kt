@@ -47,6 +47,14 @@ class PaymentViewModel @Inject constructor(val repository: PaymentRepository) : 
         _profiles.value = repository.searchProfilesByName(name)
     }
 
+    fun getAllTransactions() = repository.getAllTransactions()
+
+    suspend fun saveProfile(profile: Profile) = repository.saveProfile(profile)
+
+    fun getSavedProfileByName(name: String) = repository.getSavedProfileByName(name)
+
+    fun getSavedProfile(id: String) = repository.getProfile(id)
+
     suspend fun getProfileByName(name: String) = repository.searchProfilesByName(name)
 
     suspend fun getProfileById(id: String) =
@@ -68,6 +76,8 @@ class PaymentViewModel @Inject constructor(val repository: PaymentRepository) : 
     fun sendPaymentChat(chatDTO: ChatDTO) = repository.sendChat(chatDTO)
 
     suspend fun setPaymentPin(pin: String) = repository.setPaymentPin(pin)
+
+    suspend fun setResetOTPForPin() = repository.setResetPinOTP()
 
     suspend fun isPaymentPinCorrect(pin: String) = repository.isPinCorrect(pin)
 

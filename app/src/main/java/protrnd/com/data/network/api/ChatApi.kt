@@ -18,6 +18,9 @@ interface ChatApi {
     @GET("chat/{id}")
     fun getChatData(@Path("id") id: String): Call<ChatConversationResponseBody>
 
+    @GET("chat/conversation/{id}")
+    fun getConversationId(@Path("id") id: String): Call<BasicResponseBody>
+
     @GET("profile/{id}")
     suspend fun getProfileById(@Path("id") id: String): ProfileResponseBody
 

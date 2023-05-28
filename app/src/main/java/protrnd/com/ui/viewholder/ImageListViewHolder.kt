@@ -13,30 +13,10 @@ class ImageListViewHolder(val view: PostImageItemBinding) : RecyclerView.ViewHol
     fun bind(imageUrls: List<String>, position: Int) {
         Glide.with(view.postImage)
             .load(imageUrls[position])
-            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .diskCacheStrategy(DiskCacheStrategy.DATA)
             .into(view.postImage)
 
-        if (imageUrls[position].contains(".mp4")) {
-//            CoroutineScope(Dispatchers.IO).launch {
-//                val retriever = MediaMetadataRetriever()
-//                retriever.setDataSource(imageUrls[position], HashMap<String, String>())
-//                val image =
-//                    retriever.getFrameAtTime(1000000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
-//                withContext(Dispatchers.Main) {
-//                    Glide.with(view.postImage)
-//                        .load(image)
-//                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                        .placeholder(R.drawable.texture_img)
-//                        .into(view.postImage)
-//                }
-//            }
-            view.playBtn.visible(true)
-        } else {
-//            Glide.with(view.postImage)
-//                .load(imageUrls[position])
-//                .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                .into(view.postImage)
-        }
+        view.playBtn.visible(imageUrls[position].contains(".mp4"))
     }
 
     fun bind(activity: NewPostActivity?, imageUri: Uri) {

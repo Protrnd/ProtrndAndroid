@@ -14,6 +14,7 @@ import protrnd.com.data.repository.PaymentRepository
 import protrnd.com.databinding.FragmentProfileResultBinding
 import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.formatAmount
+import protrnd.com.ui.getParcelableBundle
 import protrnd.com.ui.viewmodels.PaymentViewModel
 
 class ProfileResultFragment :
@@ -22,10 +23,7 @@ class ProfileResultFragment :
         super.onViewCreated(view, savedInstanceState)
 
         val hostFragment = parentFragment as NavHostFragment
-        val bundle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requireArguments().getParcelable("content", QrCodeContent::class.java)
-        } else
-            requireArguments().getParcelable("content")
+        val bundle = requireArguments().getParcelableBundle<QrCodeContent>("content")
 
         val sendResult = bundle!!
         val username = "@${sendResult.profile.username}"
@@ -36,9 +34,9 @@ class ProfileResultFragment :
         binding.profileName.text = sendResult.profile.fullname
         binding.username.text = username
         binding.location.text = sendResult.profile.location
-
+        requireArguments().putString("from","profileid")
         binding.continueBtn.setOnClickListener {
-            hostFragment.navController.navigate(R.id.confirmSendFragment, requireArguments())
+            hostFragment.navController.navigate(R.id.chooseSupportPaymentMethodFragment, requireArguments())
         }
     }
 
@@ -51,7 +49,6 @@ class ProfileResultFragment :
 
     override fun getFragmentRepository(): PaymentRepository {
         val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java)
-        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
         return PaymentRepository(paymentApi)
     }
 }

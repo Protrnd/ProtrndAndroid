@@ -147,7 +147,8 @@ class ForwardPostBottomSheetDialog(
         savedInstanceState: Bundle?
     ): View {
         forwardPostLayoutBinding = ForwardPostLayoutBinding.inflate(layoutInflater)
-        val api = ProtrndAPIDataSource().buildAPI(ChatApi::class.java, token)
+        val datasource = ProtrndAPIDataSource()
+        val api = datasource.buildAPI(ChatApi::class.java, token)
         val sr = ChatRepository(api)
         val factory = ViewModelFactory(sr)
         chatViewModel = ViewModelProvider(this, factory)[ChatViewModel::class.java]

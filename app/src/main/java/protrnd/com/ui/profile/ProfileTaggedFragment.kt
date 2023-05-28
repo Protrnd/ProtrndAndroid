@@ -18,6 +18,7 @@ import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.FragmentProfileTaggedBinding
 import protrnd.com.ui.adapter.PostsPagingAdapter
+import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.errorSnackBar
 import protrnd.com.ui.loadPageData
@@ -39,7 +40,7 @@ class ProfileTaggedFragment :
                 userId = parent.profileId
                 binding.taggedRv.loadPageData(
                     childFragmentManager,
-                    activity,
+                    activity as BaseActivity<*, *, *>,
                     viewModel,
                     lifecycleScope,
                     requireContext(),
@@ -56,7 +57,7 @@ class ProfileTaggedFragment :
                 val pf = parentFragment as ProfileFragment
                 binding.taggedRv.loadPageData(
                     childFragmentManager,
-                    activity,
+                    activity as BaseActivity<*, *, *>,
                     viewModel,
                     lifecycleScope,
                     requireContext(),

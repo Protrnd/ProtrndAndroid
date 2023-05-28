@@ -116,6 +116,18 @@
                         android:contentDescription="@string/profile_image"
                         android:scaleType="centerCrop"
                         app:shapeAppearanceOverlay="@style/Style.App.circleImageView" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="16dp"
+                        android:src="@drawable/edit_background_ic"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:tint="@color/main_pink" />
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </RelativeLayout>
 

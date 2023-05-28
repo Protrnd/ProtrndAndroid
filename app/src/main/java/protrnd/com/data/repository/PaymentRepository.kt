@@ -9,16 +9,34 @@ import com.google.firebase.storage.StorageReference
 import kotlinx.coroutines.tasks.await
 import protrnd.com.data.models.*
 import protrnd.com.data.network.api.PaymentApi
+import protrnd.com.data.network.database.ProfileDatabase
+import protrnd.com.data.network.database.TransactionsDatabase
 import protrnd.com.data.pagingsource.TransactionsPagingSource
 import javax.inject.Inject
 
 class PaymentRepository @Inject constructor(
-    private val api: PaymentApi
+    private val api: PaymentApi,
+    db: TransactionsDatabase? = null,
+    profiledb: ProfileDatabase? = null
 ) : BaseRepository() {
 
-//    private val transactionDao = db.transactionDao()
+    private val transactionDao = db?.transactionDao()
+
+    private val profileDao = profiledb?.profileDao()
+
+    fun getAllTransactions() = transactionDao?.getAllTransactions()
+
+    fun getProfile(id: String) = profileDao?.getProfile(id)
+
+    fun getSavedProfileByName(name: String) = profileDao?.getSavedProfileByName(name)
+
+    suspend fun saveProfile(profile: Profile) = profileDao?.insertProfile(profile)
+
+    fun getTransaction(id: String) = transactionDao?.getTransaction(id)
 
     suspend fun setPaymentPin(pin: String) = safeApiCall { api.setProtrndPin(pin) }
+
+    suspend fun setResetPinOTP() = safeApiCall { api.sendResetOTPForPin() }
 
     suspend fun isPinCorrect(pin: String) = safeApiCall { api.isProtrndPinCorrect(pin) }
 

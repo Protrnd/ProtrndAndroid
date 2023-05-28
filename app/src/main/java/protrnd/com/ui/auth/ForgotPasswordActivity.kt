@@ -13,13 +13,10 @@ import protrnd.com.data.network.api.AuthApi
 import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.AuthRepository
 import protrnd.com.databinding.ActivityForgotPasswordBinding
+import protrnd.com.ui.*
 import protrnd.com.ui.base.BaseActivity
-import protrnd.com.ui.enable
-import protrnd.com.ui.errorSnackBar
-import protrnd.com.ui.finishActivity
 import protrnd.com.ui.otp.BaseBottomSheetFragment
 import protrnd.com.ui.viewmodels.AuthViewModel
-import protrnd.com.ui.visible
 import java.util.regex.Pattern
 
 class ForgotPasswordActivity :
@@ -101,13 +98,6 @@ class ForgotPasswordActivity :
 
     override fun getActivityRepository() =
         AuthRepository(protrndAPIDataSource.buildAPI(AuthApi::class.java), profilePreferences)
-
-    fun String.isEmailValid(): Boolean {
-        val expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$"
-        val pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE)
-        val matcher = pattern.matcher(this)
-        return matcher.matches()
-    }
 
     fun removeAlphaVisibility() {
         binding.alphaBg.visible(false)

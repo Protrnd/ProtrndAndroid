@@ -21,8 +21,10 @@ import protrnd.com.ui.wallet.WalletFragment
 class SendMoneyBottomSheetFragment(
     val fragment: Fragment = Fragment(),
     val profile: Profile = Profile(),
-    val activity: Activity? = null
+    val activity: Activity? = null,
+    val convoid: String = ""
 ) : BottomSheetDialogFragment() {
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         dialog.setOnShowListener {

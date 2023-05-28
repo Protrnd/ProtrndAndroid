@@ -36,7 +36,7 @@ class NotificationAdapter(
     override fun onBindViewHolder(holder: NotificationsViewHolder, position: Int) {
         val item = getItem(position)
         if (item != null) {
-            holder.bind(item, viewModel, lifecycleOwner)
+            holder.bind(item, viewModel)
 //            holder.itemView.setOnClickListener {
 //                if (activity.isNetworkAvailable()) {
 //                    holder.itemView.autoDisposeScope.launch {

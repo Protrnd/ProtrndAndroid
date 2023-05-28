@@ -85,42 +85,47 @@ class ChatMessagesViewHolder(val view: ChatMessageLayoutBinding) :
                     view.sentMessageTime.visible(false)
                     view.postSent.visible(false)
                     view.sentMoney.visible(true)
-                    view.sentMoneyTime.text = getTimeWithCenterDot(chat.time)
+                    try {
 
-                    val transactionLiveData = MutableLiveData<Transaction>()
-                    val transactionData: LiveData<Transaction> = transactionLiveData
+                        view.sentMoneyTime.text = getTimeWithCenterDot(chat.time)
 
-                    transactionData.observe(lifecycleOwner) { transaction ->
-                        val amount = "₦${transaction.amount.formatAmount()}"
-                        view.sentAmount.text = amount
-                    }
+                        val transactionLiveData = MutableLiveData<Transaction>()
+                        val transactionData: LiveData<Transaction> = transactionLiveData
 
-                    val transaction =
-                        MemoryCache.transactionsMap.firstOrNull { transaction -> transaction.id == chat.itemid }
-                    if (transaction != null) {
-                        val transactionItem: Transaction = transaction
-                        transactionLiveData.postValue(transactionItem)
-                    } else {
-                        viewModel.getTransactionById(chat.itemid)
-                            .enqueue(object : Callback<TransactionResponseBody> {
-                                override fun onResponse(
-                                    call: Call<TransactionResponseBody>,
-                                    response: Response<TransactionResponseBody>
-                                ) {
-                                    val body = response.body()!!
-                                    val transactionItem: Transaction = body.data
-                                    transactionLiveData.postValue(transactionItem)
-                                    val result = MemoryCache.transactionsMap
-                                    result.add(transactionItem)
-                                    MemoryCache.transactionsMap = result
-                                }
+                        transactionData.observe(lifecycleOwner) { transaction ->
+                            val amount = try {"₦${transaction.amount.formatAmount()}"} catch (_:Throwable) {"Data Error"}
+                            view.sentAmount.text = amount
+                        }
 
-                                override fun onFailure(
-                                    call: Call<TransactionResponseBody>,
-                                    t: Throwable
-                                ) {
-                                }
-                            })
+                        val transaction =
+                            MemoryCache.transactionsMap.firstOrNull { transaction -> transaction.id == chat.itemid }
+                        if (transaction != null) {
+                            val transactionItem: Transaction = transaction
+                            transactionLiveData.postValue(transactionItem)
+                        } else {
+                            viewModel.getTransactionById(chat.itemid)
+                                .enqueue(object : Callback<TransactionResponseBody> {
+                                    override fun onResponse(
+                                        call: Call<TransactionResponseBody>,
+                                        response: Response<TransactionResponseBody>
+                                    ) {
+                                        val body = response.body()!!
+                                        val transactionItem: Transaction = body.data
+                                        transactionLiveData.postValue(transactionItem)
+                                        val result = MemoryCache.transactionsMap
+                                        result.add(transactionItem)
+                                        MemoryCache.transactionsMap = result
+                                    }
+
+                                    override fun onFailure(
+                                        call: Call<TransactionResponseBody>,
+                                        t: Throwable
+                                    ) {
+                                    }
+                                })
+                        }
+                    } catch (_: Throwable) {
+
                     }
                 }
             }
@@ -177,40 +182,44 @@ class ChatMessagesViewHolder(val view: ChatMessageLayoutBinding) :
                     view.receivedMessageTime.visible(false)
                     view.postReceived.visible(false)
                     view.receivedMoney.visible(true)
-                    val transactionLiveData = MutableLiveData<Transaction>()
-                    val transactionData: LiveData<Transaction> = transactionLiveData
+                    try {
+                        val transactionLiveData = MutableLiveData<Transaction>()
+                        val transactionData: LiveData<Transaction> = transactionLiveData
 
-                    transactionData.observe(lifecycleOwner) { transaction ->
-                        val amount = "₦${transaction.amount.formatAmount()}"
-                        view.receivedAmount.text = amount
-                    }
+                        transactionData.observe(lifecycleOwner) { transaction ->
+                            val amount = try {"₦${transaction.amount.formatAmount()}"} catch (_:Throwable) {"Data Error"}
+                            view.receivedAmount.text = amount
+                        }
 
-                    val transaction =
-                        MemoryCache.transactionsMap.firstOrNull { transaction -> transaction.id == chat.itemid }
-                    if (transaction != null) {
-                        val transactionItem: Transaction = transaction
-                        transactionLiveData.postValue(transactionItem)
-                    } else {
-                        viewModel.getTransactionById(chat.itemid)
-                            .enqueue(object : Callback<TransactionResponseBody> {
-                                override fun onResponse(
-                                    call: Call<TransactionResponseBody>,
-                                    response: Response<TransactionResponseBody>
-                                ) {
-                                    val body = response.body()!!
-                                    val transactionItem: Transaction = body.data
-                                    transactionLiveData.postValue(transactionItem)
-                                    val result = MemoryCache.transactionsMap
-                                    result.add(transactionItem)
-                                    MemoryCache.transactionsMap = result
-                                }
+                        val transaction =
+                            MemoryCache.transactionsMap.firstOrNull { transaction -> transaction.id == chat.itemid }
+                        if (transaction != null) {
+                            val transactionItem: Transaction = transaction
+                            transactionLiveData.postValue(transactionItem)
+                        } else {
+                            viewModel.getTransactionById(chat.itemid)
+                                .enqueue(object : Callback<TransactionResponseBody> {
+                                    override fun onResponse(
+                                        call: Call<TransactionResponseBody>,
+                                        response: Response<TransactionResponseBody>
+                                    ) {
+                                        val body = response.body()!!
+                                        val transactionItem: Transaction = body.data
+                                        transactionLiveData.postValue(transactionItem)
+                                        val result = MemoryCache.transactionsMap
+                                        result.add(transactionItem)
+                                        MemoryCache.transactionsMap = result
+                                    }
 
-                                override fun onFailure(
-                                    call: Call<TransactionResponseBody>,
-                                    t: Throwable
-                                ) {
-                                }
-                            })
+                                    override fun onFailure(
+                                        call: Call<TransactionResponseBody>,
+                                        t: Throwable
+                                    ) {
+                                    }
+                                })
+                        }
+                    } catch (_: Exception) {
+
                     }
                 }
             }

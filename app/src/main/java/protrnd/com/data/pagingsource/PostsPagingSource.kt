@@ -17,8 +17,7 @@ class PostsPagingSource(private val api: PostApi) : PagingSource<Int, Post>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Post> {
         val position = params.key ?: STARTING_PAGE_INDEX
         return try {
-            val response = api.getPosts(position)
-            val posts = response.data
+            val posts = api.getPosts(position).data
             LoadResult.Page(
                 data = posts,
                 prevKey = if (position == STARTING_PAGE_INDEX) null else position - 1,

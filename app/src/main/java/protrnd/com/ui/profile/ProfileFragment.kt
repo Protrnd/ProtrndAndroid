@@ -2,6 +2,7 @@ package protrnd.com.ui.profile
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,12 +10,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayoutMediator
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import com.google.gson.Gson
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import protrnd.com.data.models.Post
+import protrnd.com.data.models.Profile
 import protrnd.com.data.network.MemoryCache
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
@@ -43,8 +43,8 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
     private val followingsLive: LiveData<String> = followingsCachedMutable
     private val profilePostsMutableCache = MutableLiveData<MutableList<Post>>()
     val profilePostsLive: LiveData<MutableList<Post>> = profilePostsMutableCache
-    private var flw = ""
-    private var flwng = ""
+    private val profileMutable = MutableLiveData<Profile>()
+    private val profileLive: LiveData<Profile> = profileMutable
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -52,7 +52,6 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
 
         binding.root.setOnRefreshListener {
             loadData()
-            binding.root.isRefreshing = false
         }
 
         binding.settingsBtn.setOnClickListener {
@@ -61,7 +60,41 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
             })
         }
 
+        followersLive.observe(viewLifecycleOwner) {
+            val followersResult = "$it Followers"
+            binding.followersCount.text = followersResult.setSpannableColor(it)
+        }
+
+        followersCachedMutable.postValue(followers)
+
+        followingsLive.observe(viewLifecycleOwner) {
+            val followingsResult = "$it Following"
+            binding.followingCount.text = followingsResult.setSpannableColor(it)
+        }
+
+        followingsCachedMutable.postValue(followings)
+
         loadData()
+
+        profileLive.observe(viewLifecycleOwner) {
+            val username = "@${it.username}"
+            binding.profileFullName.text = it.fullname
+            binding.profileUsername.text = username
+
+            binding.about.visible(it.about != null && it.about!!.isNotEmpty())
+            binding.about.text = it.about
+            binding.location.text = it.location
+            if (it.profileimg.isNotEmpty())
+                Glide.with(requireContext())
+                    .load(it.profileimg)
+                    .circleCrop()
+                    .into(binding.profileImage)
+
+            if (it.bgimg.isNotEmpty())
+                Glide.with(requireContext())
+                    .load(it.bgimg)
+                    .into(binding.bgimg)
+        }
 
         val profileTabsAdapter = ProfileTabsAdapter(childFragmentManager, lifecycle)
         binding.profileTabsPager.adapter = profileTabsAdapter
@@ -93,43 +126,11 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
             }
         }
 
-        val username = "@${currentUserProfile.username}"
-        binding.profileFullName.text = currentUserProfile.fullname
-        binding.profileUsername.text = username
-
-        binding.about.visible(currentUserProfile.about != null && currentUserProfile.about!!.isNotEmpty())
-        binding.about.text = currentUserProfile.about
-        binding.location.text = currentUserProfile.location
-
         binding.sendMoneyBtn.setOnClickListener {
             binding.alphaBg.visible(true)
             val bottomSheet = SendMoneyBottomSheetFragment(this)
             bottomSheet.show(childFragmentManager, bottomSheet.tag)
         }
-
-        followersLive.observe(viewLifecycleOwner) {
-            val followersResult = "$it Followers"
-            binding.followersCount.text = followersResult.setSpannableColor(it)
-        }
-
-        val followers = MemoryCache.profileFollowers[currentUserProfile.id]
-        if (followers != null) {
-            flw = followers
-            followersCachedMutable.postValue(flw)
-        }
-
-
-        followingsLive.observe(viewLifecycleOwner) {
-            val followingsResult = "$it Following"
-            binding.followingCount.text = followingsResult.setSpannableColor(it)
-        }
-
-        val followings = MemoryCache.profileFollowings[currentUserProfile.id]
-        if (followings != null) {
-            flwng = followings
-            followingsCachedMutable.postValue(flwng)
-        }
-
     }
 
     override fun getViewModel() = HomeViewModel::class.java
@@ -140,6 +141,8 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
 
     override fun getFragmentRepository(): HomeRepository {
         val token = runBlocking { profilePreferences.authToken.first() }
+        val profile = runBlocking { profilePreferences.profile.first() }
+        currentUserProfile = Gson().fromJson(profile, Profile::class.java)
         val api = protrndAPIDataSource.buildAPI(ProfileApi::class.java, token)
         val postsApi = protrndAPIDataSource.buildAPI(PostApi::class.java, token)
         return HomeRepository(api, postsApi)
@@ -153,17 +156,14 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
         binding.alphaBg.visible(true)
     }
 
-    fun loadData() {
-        if (currentUserProfile.profileimg.isNotEmpty())
-            Glide.with(requireView())
-                .load(currentUserProfile.profileimg)
-                .circleCrop()
-                .into(binding.profileImage)
-
-        if (currentUserProfile.bgimg.isNotEmpty())
-            Glide.with(requireView())
-                .load(currentUserProfile.bgimg)
-                .into(binding.bgimg)
+    private fun loadData() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val prof = profilePreferences.profile.first()
+            if (prof != null) {
+                currentUserProfile = Gson().fromJson(prof, Profile::class.java)
+                profileMutable.postValue(currentUserProfile)
+            }
+        }
 
         viewModel.getProfilePosts(currentUserProfile.identifier)
 
@@ -172,9 +172,10 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
                 is Resource.Success -> {
                     if (fc.value.successful) {
                         val count = "${fc.value.data}".formatNumber()
-                        if (flwng != count) {
+                        if (followings != count) {
                             followingsCachedMutable.postValue(count)
-                            MemoryCache.profileFollowings[currentUserProfile.id] = count
+                            followings = count
+                            profilePreferences.saveFollowings(followings)
                         }
                     }
                 }
@@ -187,14 +188,18 @@ class ProfileFragment : BaseFragment<HomeViewModel, FragmentProfileBinding, Home
                 is Resource.Success -> {
                     if (fc.value.successful) {
                         val count = "${fc.value.data}".formatNumber()
-                        if (flw != count) {
+                        if (followers != count) {
                             followersCachedMutable.postValue(count)
-                            MemoryCache.profileFollowers[currentUserProfile.id] = count
+                            followers = count
+                            profilePreferences.saveFollowers(followers)
                         }
                     }
                 }
                 else -> {}
             }
         }
+
+        if (binding.root.isRefreshing)
+            binding.root.isRefreshing = false
     }
 }

@@ -48,6 +48,8 @@ class InputProfileDetailsFragment :
         viewModel.registerResponse.observe(viewLifecycleOwner) {
             when (it) {
                 is Resource.Success -> {
+                    binding.continueBtn.enable(true)
+                    binding.progressBar.visible(false)
                     if (it.value.successful) {
                         registerFragment.verifyOTP.otpHash = it.value.data.toString()
                         Navigation.findNavController(requireView())
@@ -57,7 +59,6 @@ class InputProfileDetailsFragment :
                             binding.root.errorSnackBar(it.value.message)
                         }
                     }
-                    binding.continueBtn.enable(true)
                 }
                 is Resource.Loading -> {
                     binding.continueBtn.enable(false)
@@ -90,8 +91,12 @@ class InputProfileDetailsFragment :
         }
 
         binding.usernameEt.addTextChangedListener {
-            if (binding.emailEt.inputNotEmpty() && binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty()) {
+            if (binding.emailEt.inputNotEmpty() && binding.usernameEt.inputNotEmpty() && binding.nameEt.inputNotEmpty() && binding.passwordEt.inputNotEmpty() && !it.toString().isEmailValid()) {
                 binding.continueBtn.enable(true)
+            } else {
+                if (binding.usernameEt.text.toString().isEmailValid()) {
+                    binding.usernameEt.error = "username cannot be an email address"
+                }
             }
         }
 
@@ -101,6 +106,8 @@ class InputProfileDetailsFragment :
                     binding.emailEt.error = "Please input a valid email"
                 } else if (!binding.usernameEt.usernameNotEmpty()) {
                     binding.usernameEt.error = "This field cannot be left empty"
+                } else if (binding.usernameEt.text.toString().isEmailValid()){
+                    binding.usernameEt.error = "Username cannot be an email address"
                 } else {
                     if (binding.passwordEt.isPasswordLongEnough()) {
                         registerFragment.verifyOTP.registerDto?.fullName =

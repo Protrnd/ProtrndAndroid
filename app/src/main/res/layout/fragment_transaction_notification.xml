@@ -22,5 +22,9 @@
             android:background="#000000"
             android:clickable="true"
             android:visibility="gone" />
+
+        <include
+            android:id="@+id/transaction_empty"
+            layout="@layout/transactions_empty_layout"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

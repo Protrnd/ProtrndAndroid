@@ -2,8 +2,10 @@ package protrnd.com.data.models
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.google.errorprone.annotations.Keep
 import com.google.gson.annotations.SerializedName
 
+@Keep
 data class ChatDTO(
     @SerializedName("itemid")
     val itemid: String = "",
@@ -11,10 +13,13 @@ data class ChatDTO(
     val message: String = "",
     @SerializedName("receiverid")
     val receiverid: String = "",
+    @SerializedName("convoid")
+    val convoid: String = "",
     @SerializedName("type")
     val type: String = ""
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
+        parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
@@ -25,6 +30,7 @@ data class ChatDTO(
         parcel.writeString(itemid)
         parcel.writeString(message)
         parcel.writeString(receiverid)
+        parcel.writeString(convoid)
         parcel.writeString(type)
     }
 

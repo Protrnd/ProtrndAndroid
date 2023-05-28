@@ -75,7 +75,6 @@ class TopUpSuccessFragment :
     override fun getFragmentRepository(): PaymentRepository {
         val token = runBlocking { profilePreferences.authToken.first() }
         val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java, token)
-        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
         return PaymentRepository(paymentApi)
     }
 }

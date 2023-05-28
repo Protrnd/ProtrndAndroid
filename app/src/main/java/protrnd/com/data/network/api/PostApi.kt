@@ -10,11 +10,15 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import protrnd.com.data.models.*
 import protrnd.com.data.responses.*
+import retrofit2.Call
 import retrofit2.http.*
 
 interface PostApi {
     @GET("post/fetch/{page}")
     suspend fun getPosts(@Path("page") page: Int): GetPostsResponseBody
+
+    @DELETE("post/delete/{id}")
+    fun deletePost(@Path("id") id: String): Call<BasicResponseBody>
 
     @GET("search/get/posts/{name}")
     suspend fun getPostsByName(@Path("name") name: String): GetPostsResponseBody
@@ -50,7 +54,7 @@ interface PostApi {
     suspend fun getLikesCount(@Path("id") id: String): BasicResponseBody
 
     @POST("post/add")
-    suspend fun addPost(@Body postDTO: PostDTO): PostResponseBody
+    fun addPost(@Body postDTO: PostDTO): Call<PostResponseBody>
 
     @POST("post/comment")
     suspend fun addComment(@Body commentDTO: CommentDTO): CommentResponseBody

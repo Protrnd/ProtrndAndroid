@@ -22,22 +22,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
-                <!--                <androidx.viewpager2.widget.ViewPager2-->
-                <!--                    android:id="@+id/promotions_pager"-->
-                <!--                    android:layout_width="match_parent"-->
-                <!--                    android:visibility="gone"-->
-                <!--                    android:layout_height="230dp"/>-->
-                <!--                <com.google.android.material.tabs.TabLayout-->
-                <!--                    android:id="@+id/tab_layout"-->
-                <!--                    android:visibility="gone"-->
-                <!--                    android:layout_width="match_parent"-->
-                <!--                    android:layout_height="wrap_content"-->
-                <!--                    android:layout_alignParentBottom="true"-->
-                <!--                    android:background="@android:color/transparent"-->
-                <!--                    app:tabBackground="@drawable/tab_selector"-->
-                <!--                    app:tabGravity="center"-->
-                <!--                    app:tabIndicatorHeight="0dp"-->
-                <!--                    app:tabMaxWidth="15dp" />-->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -55,24 +39,6 @@
                     android:focusableInTouchMode="true"
                     android:nestedScrollingEnabled="false"
                     android:orientation="vertical" />
-
-                <com.facebook.shimmer.ShimmerFrameLayout
-                    android:id="@+id/shimmer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:auto_start="true">
-
-                    <androidx.appcompat.widget.LinearLayoutCompat
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <include layout="@layout/shimmer_layout_view" />
-
-                        <include layout="@layout/shimmer_layout_view" />
-                    </androidx.appcompat.widget.LinearLayoutCompat>
-                </com.facebook.shimmer.ShimmerFrameLayout>
-
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="100dp" />

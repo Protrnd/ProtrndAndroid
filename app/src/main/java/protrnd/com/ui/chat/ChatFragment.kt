@@ -2,15 +2,19 @@ package protrnd.com.ui.chat
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.gson.Gson
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import protrnd.com.data.models.Conversation
+import protrnd.com.data.models.ConversationId
 import protrnd.com.data.network.MemoryCache
 import protrnd.com.data.network.api.ChatApi
 import protrnd.com.data.repository.ChatRepository
@@ -38,11 +42,20 @@ class ChatFragment : BaseFragment<ChatViewModel, FragmentChatBinding, ChatReposi
         binding.lastMessagesRv.layoutManager = LinearLayoutManager(requireContext())
         binding.lastMessagesRv.adapter = adapter
 
+        CoroutineScope(Dispatchers.IO).launch {
+            val convos = viewModel.getConvos()?.first()
+            if (convos != null) {
+                val conversations: List<Conversation> = convos
+                chatconversations.postValue(conversations)
+            }
+        }
+
         updateConversations()
 
         adapter.clickListener(object : ChatProfileListener {
             override fun click(conversation: Conversation) {
                 startActivity(Intent(requireContext(), ChatContentActivity::class.java).apply {
+                    putExtra("convoid",conversation.id)
                     if (conversation.senderid == currentUserProfile.id)
                         putExtra("profileid", conversation.receiverId)
                     else
@@ -65,29 +78,33 @@ class ChatFragment : BaseFragment<ChatViewModel, FragmentChatBinding, ChatReposi
     }
 
     private fun updateConversations() {
-        viewModel.getConversations().enqueue(object : Callback<ConversationsResponseBody> {
-            override fun onResponse(
-                call: Call<ConversationsResponseBody>,
-                response: Response<ConversationsResponseBody>
-            ) {
-                if (response.isSuccessful) {
-                    val data = response.body()!!.data
-                    chatconversations.postValue(data)
-                    MemoryCache.conversations = data.toMutableList()
+        CoroutineScope(Dispatchers.IO).launch {
+            delay(2000)
+            viewModel.getConversations().enqueue(object : Callback<ConversationsResponseBody> {
+                override fun onResponse(
+                    call: Call<ConversationsResponseBody>,
+                    response: Response<ConversationsResponseBody>
+                ) {
+                    if (response.isSuccessful) {
+                        val data = response.body()!!.data
+                        chatconversations.postValue(data)
+                    }
                 }
-            }
 
-            override fun onFailure(call: Call<ConversationsResponseBody>, t: Throwable) {
-                val convos = MemoryCache.conversations
-                if (convos.isNotEmpty())
-                    chatconversations.postValue(convos)
-            }
-        })
+                override fun onFailure(call: Call<ConversationsResponseBody>, t: Throwable) {
+                }
+            })
+        }
     }
 
     override fun onResume() {
         super.onResume()
         updateConversations()
+    }
+
+    override fun onStop() {
+        viewModel.saveConversations(adapter.conversations)
+        super.onStop()
     }
 
     override fun getViewModel() = ChatViewModel::class.java
@@ -100,6 +117,10 @@ class ChatFragment : BaseFragment<ChatViewModel, FragmentChatBinding, ChatReposi
     override fun getFragmentRepository(): ChatRepository {
         val token = runBlocking { profilePreferences.authToken.first() }
         val api = protrndAPIDataSource.buildAPI(ChatApi::class.java, token)
-        return ChatRepository(api)
+        val dao = protrndAPIDataSource.provideChatDatabase(requireActivity().application)
+        val idDao = protrndAPIDataSource.provideConversationIdDatabase(requireActivity().application)
+        val convoDb = protrndAPIDataSource.provideConversationDatabase(requireActivity().application)
+        val profileDb = protrndAPIDataSource.provideProfileDatabase(requireActivity().application)
+        return ChatRepository(api, dao, conversationIdDb = idDao, conversationDb = convoDb, profileDb = profileDb)
     }
 }

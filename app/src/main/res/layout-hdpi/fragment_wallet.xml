@@ -177,26 +177,9 @@
                     android:layout_height="wrap_content"
                     android:visibility="gone" />
 
-                <androidx.appcompat.widget.LinearLayoutCompat
+                <include
                     android:id="@+id/transaction_empty"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/no_transactions_ic" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/dmsans_medium"
-                        android:padding="8dp"
-                        android:text="@string/your_transactions_will_be_displayed_here"
-                        android:textSize="@dimen/body" />
-                </androidx.appcompat.widget.LinearLayoutCompat>
+                    layout="@layout/transactions_empty_layout" />
             </androidx.appcompat.widget.LinearLayoutCompat>
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

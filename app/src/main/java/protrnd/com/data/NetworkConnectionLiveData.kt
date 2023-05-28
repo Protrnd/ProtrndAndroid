@@ -18,9 +18,13 @@ class NetworkConnectionLiveData(val context: Context) : LiveData<Boolean>() {
     override fun onActive() {
         super.onActive()
         updateConnection()
-        connectivityManager.registerDefaultNetworkCallback(
-            getConnectivityManagerCallback()
-        )
+        try {
+            connectivityManager.registerDefaultNetworkCallback(
+                getConnectivityManagerCallback()
+            )
+        } catch (_: Exception) {
+
+        }
     }
 
     override fun onInactive() {

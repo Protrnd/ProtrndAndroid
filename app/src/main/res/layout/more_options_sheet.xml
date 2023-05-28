@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp">
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/rect_12"
+        android:backgroundTint="@color/bright_pink"
+        android:padding="12dp">
+        <TextView
+            android:id="@+id/about_profile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:drawablePadding="8dp"
+            android:textColor="@color/black"
+            android:textSize="@dimen/body"
+            android:fontFamily="@font/dm_sans"
+            app:drawableStartCompat="@drawable/info_ic_large"
+            app:drawableTint="@color/main_pink" />
+
+        <TextView
+            android:id="@+id/time_upload"
+            android:layout_marginTop="4dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:drawablePadding="8dp"
+            android:textColor="@color/black"
+            android:fontFamily="@font/dmsans_italic"
+            android:textSize="@dimen/body"
+            app:drawableStartCompat="@drawable/time_ic"
+            app:drawableTint="@color/main_pink" />
+
+        <TextView
+            android:id="@+id/delete_post_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/delete_this_post"
+            android:gravity="center"
+            android:visibility="gone"
+            android:background="@drawable/button_ripple"
+            android:textColor="@color/white"
+            android:fontFamily="@font/dmsans_medium"
+            android:padding="16dp"
+            android:layout_marginTop="16dp"/>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

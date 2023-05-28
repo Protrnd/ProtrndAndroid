@@ -131,7 +131,7 @@
     <string name="withdraw">Withdraw</string>
     <string name="transaction_history">Transaction History</string>
     <string name="view_all">View All</string>
-    <string name="secured_by_paystack">Secured by paystack</string>
+    <string name="secured_by_paystack">Secured by technoville</string>
     <string name="remember_card_details">Remember Card Details</string>
     <string name="send_money">Send Money</string>
     <string name="send_amount">Send Amount</string>
@@ -371,6 +371,883 @@
         <item>Eziowelle</item>
         <item>Ideani</item>
     </string-array>
+    <string-array name="bauchi">
+        <item>Alkaleri</item>
+        <item>Azare</item>
+        <item>Bauchi</item>
+        <item>Bogoro</item>
+        <item>Boi</item>
+        <item>Bununu</item>
+        <item>Dambam</item>
+        <item>Darazo</item>
+        <item>Dass</item>
+        <item>Dindima</item>
+        <item>Disina</item>
+        <item>Gabarin</item>
+        <item>Gamawa</item>
+        <item>Giade</item>
+        <item>Gwaram</item>
+        <item>Itas</item>
+        <item>Jama\'are</item>
+        <item>Kafin Madaki</item>
+        <item>Kari</item>
+        <item>Katagum</item>
+        <item>Kirfi</item>
+        <item>Lame</item>
+        <item>Lere</item>
+        <item>Madara</item>
+        <item>Misau</item>
+        <item>Ningi</item>
+        <item>Sade</item>
+        <item>Tafawa Balewa</item>
+        <item>Toro</item>
+        <item>Warji</item>
+        <item>Yamrat</item>
+        <item>Yana</item>
+        <item>Yanda Bayo</item>
+        <item>Yuli</item>
+        <item>Zadawa</item>
+        <item>Zalanga</item>
+    </string-array>
+    <string-array name="bayelsa">
+        <item>Amassoma</item>
+        <item>Ekeremor</item>
+        <item>Kaiama</item>
+        <item>Nembe</item>
+        <item>Ogbia</item>
+        <item>Oporoma</item>
+        <item>Sagbama</item>
+        <item>Twon-Brass</item>
+        <item>Yenagoa</item>
+    </string-array>
+    <string-array name="benue">
+        <item>Adikpo</item>
+        <item>Aliade</item>
+        <item>Boju</item>
+        <item>Buruku</item>
+        <item>Gbajimba</item>
+        <item>Gboko</item>
+        <item>Igbor</item>
+        <item>Igumale</item>
+        <item>Katsina-Ala</item>
+        <item>Lessel</item>
+        <item>Makurdi</item>
+        <item>Naka</item>
+        <item>Obagaji</item>
+        <item>Obarike-Ito</item>
+        <item>Ochobo</item>
+        <item>Oju</item>
+        <item>Okpoga</item>
+        <item>Otukpa</item>
+        <item>Sankera</item>
+        <item>Takum</item>
+        <item>Tse-Agberagba</item>
+        <item>Ugba</item>
+        <item>Ugbokpo</item>
+        <item>Vandeikya</item>
+        <item>Wannune</item>
+        <item>Yandev</item>
+        <item>Zaki Biam</item>
+    </string-array>
+    <string-array name="borno">
+        <item>Askira</item>
+        <item>Azare</item>
+        <item>Bama</item>
+        <item>Benisheikh</item>
+        <item>Biu</item>
+        <item>Bornu Yassu</item>
+        <item>Briyel</item>
+        <item>Chibok</item>
+        <item>Damasak</item>
+        <item>Damboa</item>
+        <item>Dikwa</item>
+        <item>Gajiram</item>
+        <item>Gamboru</item>
+        <item>Gubio</item>
+        <item>Gudumbali</item>
+        <item>Gwoza</item>
+        <item>Khaddamari</item>
+        <item>Konduga</item>
+        <item>Kukawa</item>
+        <item>Kwaya Kusar</item>
+        <item>Mafa</item>
+        <item>Magumeri</item>
+        <item>Maiduguri</item>
+        <item>Mallam Fatori</item>
+        <item>Marte</item>
+        <item>Miringa</item>
+        <item>Monguno</item>
+        <item>Ngala</item>
+        <item>Rann</item>
+        <item>Shaffa</item>
+        <item>Shani</item>
+        <item>Tokombere</item>
+        <item>Uba</item>
+        <item>Wuyo</item>
+        <item>Yajiwa</item>
+    </string-array>
+    <string-array name="cross_river">
+        <item>Abuochiche</item>
+        <item>Akamkpa</item>
+        <item>Akankpa</item>
+        <item>Akpet Central</item>
+        <item>Boje</item>
+        <item>Calabar</item>
+        <item>Effraya</item>
+        <item>Gakem</item>
+        <item>Ikang</item>
+        <item>Ikom</item>
+        <item>Ikot Nakanda</item>
+        <item>Itigidi</item>
+        <item>Obubra</item>
+        <item>Obudu</item>
+        <item>Odukpani</item>
+        <item>Ogoja</item>
+        <item>Okpoma</item>
+        <item>Sankwala</item>
+        <item>Ugep</item>
+    </string-array>
+    <string-array name="delta">
+        <item>Aboh</item>
+        <item>Abraka</item>
+        <item>Agbor</item>
+        <item>Akwukwu-Igbo</item>
+        <item>Asaba</item>
+        <item>Bomadi</item>
+        <item>Burutu</item>
+        <item>Effurun</item>
+        <item>Isiokolo</item>
+        <item>Issele-Uku</item>
+        <item>Koko</item>
+        <item>Kwale</item>
+        <item>Obiaruku</item>
+        <item>Oghara</item>
+        <item>Ogwashi-Uku</item>
+        <item>Oleh</item>
+        <item>Orerokpe</item>
+        <item>Otor-Udu</item>
+        <item>Otu-Jeremi</item>
+        <item>Owa-Oyibu</item>
+        <item>Ozoro</item>
+        <item>Patani</item>
+        <item>Sapele</item>
+        <item>Ughelli</item>
+        <item>Umunede</item>
+        <item>Warri</item>
+    </string-array>
+    <string-array name="ebonyi">
+        <item>Abakaliki</item>
+        <item>Afikpo</item>
+        <item>Effium</item>
+        <item>Ezillo</item>
+        <item>Ezza-Ohu</item>
+        <item>Ezzamgbo</item>
+        <item>Iboko</item>
+        <item>Isiaka</item>
+        <item>Isieke</item>
+        <item>Isu</item>
+        <item>Nguzu Edda</item>
+        <item>Obiozara</item>
+        <item>Onuebonyi Echara</item>
+        <item>Onueke</item>
+        <item>Ugbodo</item>
+    </string-array>
+    <string-array name="edo">
+        <item>Abudu</item>
+        <item>Afuze</item>
+        <item>Agenebode</item>
+        <item>Auchi</item>
+        <item>Benin</item>
+        <item>Ehor</item>
+        <item>Ekpoma</item>
+        <item>Fugar</item>
+        <item>Idogbo</item>
+        <item>Igarra</item>
+        <item>Igueben</item>
+        <item>Iguobazuwa</item>
+        <item>Illushi</item>
+        <item>Irrua</item>
+        <item>Okada</item>
+        <item>Sabongida-Ora</item>
+        <item>Siluko</item>
+        <item>Ubiaja</item>
+        <item>Uromi</item>
+        <item>Uromi</item>
+        <item>Uselu</item>
+    </string-array>
+    <string-array name="ekiti">
+        <item>Ado-Ekiti</item>
+        <item>Aramoko-Ekiti</item>
+        <item>Efon-Alaaye</item>
+        <item>Emure-Ekiti</item>
+        <item>Ido-Ekiti</item>
+        <item>Ifaki</item>
+        <item>Igbara-Odo</item>
+        <item>Igede-Ekiti</item>
+        <item>Ijero-Ekiti</item>
+        <item>Ikere-Ekiti</item>
+        <item>Ikole-Ekiti</item>
+        <item>Ilawe-Ekiti</item>
+        <item>Ipoti</item>
+        <item>Ise-Ekiti</item>
+        <item>Iye-Ekiti</item>
+        <item>Ode-Ekiti</item>
+        <item>Oke Ila</item>
+        <item>Omuo-Ekiti</item>
+        <item>Otun-Ekiti</item>
+        <item>Oye-Ekiti</item>
+    </string-array>
+    <string-array name="enugu">
+        <item>Adani</item>
+        <item>Agbani</item>
+        <item>Aguobu-Owa</item>
+        <item>Ake-Eze</item>
+        <item>Aku</item>
+        <item>Amagunze</item>
+        <item>Awgu</item>
+        <item>Eha Amufu</item>
+        <item>Enugu</item>
+        <item>Enugu-Ezike</item>
+        <item>Ete</item>
+        <item>Ibagwa-Aka</item>
+        <item>Ikem</item>
+        <item>Mberubu</item>
+        <item>Ndeaboh</item>
+        <item>Nkwo Nike</item>
+        <item>Nsukka</item>
+        <item>Obollo-Afor</item>
+        <item>Obolo-Eke (1)</item>
+        <item>Ogbede</item>
+        <item>Oji River</item>
+        <item>Opi</item>
+        <item>Udi</item>
+        <item>Umulona</item>
+    </string-array>
+    <string-array name="fct">
+        <item>Abaji</item>
+        <item>Abuja</item>
+        <item>Bwari</item>
+        <item>Gwagwalada</item>
+        <item>Kuje</item>
+        <item>Kwali</item>
+        <item>Madala</item>
+    </string-array>
+    <string-array name="gombe">
+        <item>Akko</item>
+        <item>Bajoga</item>
+        <item>Bara</item>
+        <item>Billiri</item>
+        <item>Billiri</item>
+        <item>Boh</item>
+        <item>Dadiya</item>
+        <item>Deba</item>
+        <item>Dukku</item>
+        <item>Garko</item>
+        <item>Gombe</item>
+        <item>Hinna</item>
+        <item>Kafarati</item>
+        <item>Kaltungo</item>
+        <item>Kumo</item>
+        <item>Mallam Sidi</item>
+        <item>Nafada</item>
+        <item>Pindiga</item>
+        <item>Talasse</item>
+    </string-array>
+    <string-array name="imo">
+        <item>Aboh</item>
+        <item>Afor-Oru</item>
+        <item>Amaigbo</item>
+        <item>Awo-Idemili</item>
+        <item>Dikenafai</item>
+        <item>Egbema</item>
+        <item>Iho</item>
+        <item>Isinweke</item>
+        <item>Itu</item>
+        <item>Mgbidi</item>
+        <item>Nkwerre</item>
+        <item>Nnenasa</item>
+        <item>Nwaorieubi</item>
+        <item>Oguta</item>
+        <item>Okigwe</item>
+        <item>Okwe</item>
+        <item>Orlu</item>
+        <item>Orodo</item>
+        <item>Owerri</item>
+        <item>Umuelemai</item>
+        <item>Umuguma</item>
+        <item>Umumma</item>
+        <item>Umundugba</item>
+        <item>Umuneke-Ngor</item>
+        <item>Urualla</item>
+    </string-array>
+    <string-array name="jigawa">
+        <item>Auyo</item>
+        <item>Babura</item>
+        <item>Birnin Kudu</item>
+        <item>Birniwa</item>
+        <item>Dutse</item>
+        <item>Gagarawa</item>
+        <item>Gantsa</item>
+        <item>Garki</item>
+        <item>Gumel</item>
+        <item>Guri</item>
+        <item>Gwaram</item>
+        <item>Gwiwa</item>
+        <item>Hadejia</item>
+        <item>Jahun</item>
+        <item>Kafin Hausa</item>
+        <item>Karkarna</item>
+        <item>Kaugama</item>
+        <item>Kazaure</item>
+        <item>Kiri Kasamma</item>
+        <item>Kiyawa</item>
+        <item>Maigatari</item>
+        <item>Malam Madori</item>
+        <item>Mallammaduri</item>
+        <item>Miga</item>
+        <item>Ringim</item>
+        <item>Roni</item>
+        <item>Samamiya</item>
+        <item>Sule Tankarkar</item>
+        <item>Taura</item>
+    </string-array>
+    <string-array name="kaduna">
+        <item>Anchau</item>
+        <item>Birnin Gwari</item>
+        <item>Burumburum</item>
+        <item>Dutsen Wai</item>
+        <item>Giwa</item>
+        <item>Gwantu</item>
+        <item>Hunkuyi</item>
+        <item>Igabi</item>
+        <item>Ikara</item>
+        <item>Kachia</item>
+        <item>Kaduna</item>
+        <item>Kafanchan</item>
+        <item>Kagarko</item>
+        <item>Kagoro</item>
+        <item>Kajuru</item>
+        <item>Kaura</item>
+        <item>Kauru</item>
+        <item>Kujama</item>
+        <item>Kwoi</item>
+        <item>Lere</item>
+        <item>Maigana</item>
+        <item>Makarfi</item>
+        <item>Makera</item>
+        <item>Mando</item>
+        <item>Saminaka</item>
+        <item>Soba</item>
+        <item>Sofo-Birnin-Gwari</item>
+        <item>Zaria</item>
+        <item>Zonkwa</item>
+    </string-array>
+    <string-array name="kano">
+        <item>Ajingi</item>
+        <item>Albasu</item>
+        <item>Bagwai</item>
+        <item>Bebeji</item>
+        <item>Bichi</item>
+        <item>Bunkure</item>
+        <item>Dambatta</item>
+        <item>Dan Gora</item>
+        <item>Dawakin Kudu</item>
+        <item>Dawakin Tofa</item>
+        <item>Garko</item>
+        <item>Garun Malam</item>
+        <item>Gaya</item>
+        <item>Gezawa</item>
+        <item>Gwarzo</item>
+        <item>Kabo</item>
+        <item>Kano</item>
+        <item>Karaye</item>
+        <item>Kibiya</item>
+        <item>Kiru</item>
+        <item>Koguna</item>
+        <item>Kumbotso</item>
+        <item>Kunchi</item>
+        <item>Kura</item>
+        <item>Madobi</item>
+        <item>Minjibir</item>
+        <item>Rano</item>
+        <item>Rimin Gado</item>
+        <item>Ririwai</item>
+        <item>Rogo</item>
+        <item>Shanono</item>
+        <item>Sumaila</item>
+        <item>Takai</item>
+        <item>Tofa</item>
+        <item>Tsanyawa</item>
+        <item>Tudun Wada</item>
+        <item>Ungogo</item>
+        <item>Warawa</item>
+        <item>Wudil</item>
+        <item>Zakirai</item>
+    </string-array>
+    <string-array name="katsina">
+        <item>Bakori</item>
+        <item>Batagarawa</item>
+        <item>Batsari</item>
+        <item>Baure</item>
+        <item>Bindawa</item>
+        <item>Charanchi</item>
+        <item>Dan Musa</item>
+        <item>Dandume</item>
+        <item>Danja</item>
+        <item>Dankama</item>
+        <item>Daura</item>
+        <item>Dutsi</item>
+        <item>Dutsin-Ma</item>
+        <item>Faskari</item>
+        <item>Funtua</item>
+        <item>Gora</item>
+        <item>Ingawa</item>
+        <item>Jibia</item>
+        <item>Jikamshi</item>
+        <item>Kafur</item>
+        <item>Kaita</item>
+        <item>Kankara</item>
+        <item>Kankia</item>
+        <item>Katsina</item>
+        <item>Kurfi</item>
+        <item>Kusada</item>
+        <item>Mai\'Adua</item>
+        <item>Malumfashi</item>
+        <item>Mani</item>
+        <item>Mashi</item>
+        <item>Matazu</item>
+        <item>Musawa</item>
+        <item>Rimi</item>
+        <item>Ruma</item>
+        <item>Runka</item>
+        <item>Sabuwa</item>
+        <item>Safana</item>
+        <item>Sandamu</item>
+        <item>Wagini</item>
+        <item>Zango</item>
+    </string-array>
+    <string-array name="kebbi">
+        <item>Aliero</item>
+        <item>Argungu</item>
+        <item>Augie</item>
+        <item>Bagudo</item>
+        <item>Bena</item>
+        <item>Besse</item>
+        <item>Bin Yauri</item>
+        <item>Birnin Kebbi</item>
+        <item>Bunza</item>
+        <item>Bunza</item>
+        <item>Dabai</item>
+        <item>Dakingari</item>
+        <item>Gulma</item>
+        <item>Gwandu</item>
+        <item>Jega</item>
+        <item>Kalgo</item>
+        <item>Kamba</item>
+        <item>Kangiwa</item>
+        <item>Kende</item>
+        <item>Mahuta</item>
+        <item>Maiyama</item>
+        <item>Ribah</item>
+        <item>Sakaba</item>
+        <item>Shanga</item>
+        <item>Wara</item>
+        <item>Wasagu</item>
+        <item>Yelwa</item>
+        <item>Zuru</item>
+    </string-array>
+    <string-array name="kogi">
+        <item>Abejukolo</item>
+        <item>Abocho</item>
+        <item>Adogo</item>
+        <item>Adoru</item>
+        <item>Ajaka</item>
+        <item>Ajaokuta</item>
+        <item>Akpafa</item>
+        <item>Ankpa</item>
+        <item>Bugana</item>
+        <item>Dekina</item>
+        <item>Egbe</item>
+        <item>Icheu</item>
+        <item>Idah</item>
+        <item>Isanlu</item>
+        <item>Isanlu-Itedoijowa</item>
+        <item>Iyara</item>
+        <item>Kabba</item>
+        <item>Koton-Karfe</item>
+        <item>Lokoja</item>
+        <item>Mopa</item>
+        <item>Obangede</item>
+        <item>Odo-Ere</item>
+        <item>Ogaminana</item>
+        <item>Oguma</item>
+        <item>Ogurugu</item>
+        <item>Okene</item>
+        <item>Okpo</item>
+        <item>Onyedega</item>
+        <item>Ugwolawo</item>
+    </string-array>
+    <string-array name="kwara">
+        <item>Afon</item>
+        <item>Ajasse Ipo</item>
+        <item>Araromi-Opin</item>
+        <item>Bode Saadu</item>
+        <item>Fufu</item>
+        <item>Gwasero</item>
+        <item>Ilemona</item>
+        <item>Iloffa</item>
+        <item>Ilorin</item>
+        <item>Jebba</item>
+        <item>Kaiama</item>
+        <item>Kosubosu</item>
+        <item>Lafiagi</item>
+        <item>Offa</item>
+        <item>Oke-Oyi</item>
+        <item>Okuta</item>
+        <item>Omu-Aran</item>
+        <item>Owu-Isin</item>
+        <item>Patigi</item>
+        <item>Share</item>
+        <item>Suya</item>
+        <item>Yashikera</item>
+    </string-array>
+    <string-array name="lagos">
+        <item>Agege</item>
+        <item>Ajegunle</item>
+        <item>Akodo</item>
+        <item>Apapa</item>
+        <item>Badagry</item>
+        <item>Ebute Ikorodu</item>
+        <item>Ebute-Metta</item>
+        <item>Ejirin</item>
+        <item>Epe</item>
+        <item>Festac Town</item>
+        <item>Ifako</item>
+        <item>Ikeja</item>
+        <item>Ikorodu</item>
+        <item>Ikotun</item>
+        <item>Ikoyi</item>
+        <item>Lagos</item>
+        <item>Makoko</item>
+        <item>Mushin</item>
+        <item>Ojota</item>
+        <item>Oshodi</item>
+        <item>Somolu</item>
+        <item>Surulere</item>
+    </string-array>
+    <string-array name="nassarawa">
+        <item>Akwanga</item>
+        <item>Awe</item>
+        <item>Buga</item>
+        <item>Doma</item>
+        <item>Garaku</item>
+        <item>Karu</item>
+        <item>Keana</item>
+        <item>Keffi</item>
+        <item>Lafia</item>
+        <item>Nasarawa</item>
+        <item>Nasarawa Egon</item>
+        <item>Obi</item>
+        <item>Toto</item>
+        <item>Wamba</item>
+    </string-array>
+    <string-array name="niger">
+        <item>Agaie</item>
+        <item>Agwara</item>
+        <item>Auna</item>
+        <item>Babana</item>
+        <item>Badeggi</item>
+        <item>Bangi</item>
+        <item>Baro</item>
+        <item>Bida</item>
+        <item>Bokani</item>
+        <item>Duku</item>
+        <item>Enagi</item>
+        <item>Gawu Babangida</item>
+        <item>Ibeto</item>
+        <item>Kagara</item>
+        <item>Katcha</item>
+        <item>Konkwesso</item>
+        <item>Kontagora</item>
+        <item>Kusheriki</item>
+        <item>Kuta</item>
+        <item>Kutigi</item>
+        <item>Lapai</item>
+        <item>Lemu</item>
+        <item>Maikunkele</item>
+        <item>Mashegu</item>
+        <item>Minna</item>
+        <item>Mokwa</item>
+        <item>Nasko</item>
+        <item>New Bussa</item>
+        <item>New Shagunnu</item>
+        <item>Paiko</item>
+        <item>Rijau</item>
+        <item>Sabon Wuse</item>
+        <item>Sarkin Pawa</item>
+        <item>Suleja</item>
+        <item>Tegina</item>
+        <item>Ukata</item>
+        <item>Wawa</item>
+        <item>Wushishi</item>
+        <item>Zungeru</item>
+    </string-array>
+    <string-array name="ogun">
+        <item>Abeokuta</item>
+        <item>Abigi</item>
+        <item>Ado Odo</item>
+        <item>Atan</item>
+        <item>Ayetoro</item>
+        <item>Idi Iroko</item>
+        <item>Ifo</item>
+        <item>Ijebu-Ife</item>
+        <item>Ijebu-Igbo</item>
+        <item>Ijebu-Ode</item>
+        <item>Ikenne</item>
+        <item>Ilaro</item>
+        <item>Imeko</item>
+        <item>Iperu</item>
+        <item>Ipokia</item>
+        <item>Isara</item>
+        <item>Itori</item>
+        <item>Odeda</item>
+        <item>Odogbolu</item>
+        <item>Ogbere</item>
+        <item>Ota</item>
+        <item>Owode</item>
+        <item>Shagamu</item>
+    </string-array>
+    <string-array name="ondo">
+        <item>Agbabu</item>
+        <item>Akure</item>
+        <item>Bolorunduro</item>
+        <item>Idanre</item>
+        <item>Ifon</item>
+        <item>Igbara-Oke</item>
+        <item>Igbekebo</item>
+        <item>Igbokoda</item>
+        <item>Iju</item>
+        <item>Ikare</item>
+        <item>Ilare</item>
+        <item>Ile-Oluji</item>
+        <item>Isua</item>
+        <item>Ita-Ogbolu</item>
+        <item>Ode</item>
+        <item>Ode-Irele</item>
+        <item>Oka</item>
+        <item>Oke-Agbe</item>
+        <item>Ondo</item>
+        <item>Ore</item>
+        <item>Owena</item>
+        <item>Owo</item>
+    </string-array>
+    <string-array name="osun">
+        <item>Apomu</item>
+        <item>Awo</item>
+        <item>Bode Osi</item>
+        <item>Ede</item>
+        <item>Ejigbo</item>
+        <item>Gbongan</item>
+        <item>Ibokun</item>
+        <item>Ifetedo</item>
+        <item>Ifon</item>
+        <item>Ijebu-Jesa</item>
+        <item>Ikire</item>
+        <item>Ikirun</item>
+        <item>Ila Orangun</item>
+        <item>Ile-Ife</item>
+        <item>Ile-Ogbo</item>
+        <item>Ilesa</item>
+        <item>Ilobu</item>
+        <item>Inisa</item>
+        <item>Iperindo</item>
+        <item>Ipetumodu</item>
+        <item>Iragbiji</item>
+        <item>Iwo</item>
+        <item>Modakeke</item>
+        <item>Oke Mesi</item>
+        <item>Okuku</item>
+        <item>Olupona</item>
+        <item>Osogbo</item>
+        <item>Osu</item>
+        <item>Otan Ayegbaju</item>
+        <item>Oyan</item>
+    </string-array>
+    <string-array name="oyo">
+        <item>Ago Are</item>
+        <item>Ago-Amodu</item>
+        <item>Ajaawa</item>
+        <item>Akanran</item>
+        <item>Alapa</item>
+        <item>Ayete</item>
+        <item>Egbeda</item>
+        <item>Eruwa</item>
+        <item>Fiditi</item>
+        <item>Ibadan</item>
+        <item>Idi-Ayunre</item>
+        <item>Ido</item>
+        <item>Igbeti</item>
+        <item>Igbo-Ora</item>
+        <item>Igboho</item>
+        <item>Ikoyi-Ile</item>
+        <item>Iresa-Adu</item>
+        <item>Iseyin</item>
+        <item>Iwere-Ile</item>
+        <item>Iyana-Ofa</item>
+        <item>Jobele</item>
+        <item>Kisi</item>
+        <item>Lalupon</item>
+        <item>Moniya</item>
+        <item>Ogbomoso</item>
+        <item>Okeho</item>
+        <item>Orita Eruwa</item>
+        <item>Otu</item>
+        <item>Oyo</item>
+        <item>Saki</item>
+        <item>Tede</item>
+    </string-array>
+    <string-array name="plateau">
+        <item>Amper</item>
+        <item>Angware</item>
+        <item>Baap</item>
+        <item>Barkin Ladi</item>
+        <item>Bassa</item>
+        <item>Bokkos</item>
+        <item>Bukuru</item>
+        <item>Dengi</item>
+        <item>Jos</item>
+        <item>Kwal</item>
+        <item>Kwolla</item>
+        <item>Langtang</item>
+        <item>Mabudi</item>
+        <item>Mangu</item>
+        <item>Pankshin</item>
+        <item>Panyam</item>
+        <item>Riyom</item>
+        <item>Shendam</item>
+        <item>Tunkus</item>
+        <item>Vom</item>
+        <item>Wase</item>
+        <item>Yelwa</item>
+    </string-array>
+    <string-array name="rivers">
+        <item>Abonnema</item>
+        <item>Abua</item>
+        <item>Afam</item>
+        <item>Ahoada</item>
+        <item>Akinima</item>
+        <item>Bonny</item>
+        <item>Bori</item>
+        <item>Buguma</item>
+        <item>Degema</item>
+        <item>Degema Hulk</item>
+        <item>Eberi</item>
+        <item>Elele</item>
+        <item>Emuoha</item>
+        <item>Isiokpo</item>
+        <item>Kpor</item>
+        <item>Nchia</item>
+        <item>Ngo</item>
+        <item>Obonoma</item>
+        <item>Ogu</item>
+        <item>Okehi</item>
+        <item>Okrika</item>
+        <item>Omoku</item>
+        <item>Opobo</item>
+        <item>Port Harcourt</item>
+        <item>Rumuodomaya</item>
+        <item>Saakpenwa</item>
+    </string-array>
+    <string-array name="sokoto">
+        <item>Balle</item>
+        <item>Binji</item>
+        <item>Bodinga</item>
+        <item>Dange</item>
+        <item>Gada</item>
+        <item>Gandi</item>
+        <item>Gidan Madi</item>
+        <item>Goronyo</item>
+        <item>Gwadabawa</item>
+        <item>Illela</item>
+        <item>Isa</item>
+        <item>Kebbe</item>
+        <item>Kware</item>
+        <item>Rabah</item>
+        <item>Sabon Birni</item>
+        <item>Shagari</item>
+        <item>Silame</item>
+        <item>Sokoto</item>
+        <item>Tambuwal</item>
+        <item>Tureta</item>
+        <item>Wamako</item>
+        <item>Wurno</item>
+        <item>Yabo</item>
+    </string-array>
+    <string-array name="taraba">
+        <item>Baissa</item>
+        <item>Beli</item>
+        <item>Donga</item>
+        <item>Gassol</item>
+        <item>Gembu</item>
+        <item>Ibi</item>
+        <item>Jalingo</item>
+        <item>Karim Lamido</item>
+        <item>Lau</item>
+        <item>Lissam</item>
+        <item>Mutum Biyu</item>
+        <item>Pantisawa</item>
+        <item>Riti</item>
+        <item>Serti</item>
+        <item>Sunkani</item>
+        <item>Wukari</item>
+        <item>Zing</item>
+    </string-array>
+    <string-array name="yobe">
+        <item>Babban Gida</item>
+        <item>Bara</item>
+        <item>Buni Yadi</item>
+        <item>Damagum</item>
+        <item>Damaturu</item>
+        <item>Dankalwa</item>
+        <item>Dapchi</item>
+        <item>Daura</item>
+        <item>Fika</item>
+        <item>Gashua</item>
+        <item>Geidam</item>
+        <item>Goniri</item>
+        <item>Gorgoram</item>
+        <item>Gujba</item>
+        <item>Gwio Kura</item>
+        <item>Jajimaji</item>
+        <item>Jakusko</item>
+        <item>Kanamma</item>
+        <item>Kumagunnam</item>
+        <item>Lajere</item>
+        <item>Machina</item>
+        <item>Nguru</item>
+        <item>Potiskum</item>
+        <item>Sabon Garin Nangere</item>
+    </string-array>
+    <string-array name="zamfara">
+        <item>Anka</item>
+        <item>Bakura</item>
+        <item>Birnin Magaji</item>
+        <item>Bukkuyum</item>
+        <item>Bungudu</item>
+        <item>Dan Sadau</item>
+        <item>Gummi</item>
+        <item>Gusau</item>
+        <item>Kaura Namoda</item>
+        <item>Kwatarkwashi</item>
+        <item>Maradun</item>
+        <item>Maru</item>
+        <item>Moriki</item>
+        <item>Sauri</item>
+        <item>Shinkafi</item>
+        <item>Talata Mafara</item>
+        <item>Tsafe</item>
+        <item>Zurmi</item>
+    </string-array>
     <string-array name="states">
         <item>Abia</item>
         <item>Adamawa</item>
@@ -386,6 +1263,7 @@
         <item>Edo</item>
         <item>Ekiti</item>
         <item>Enugu</item>
+        <item>FCT</item>
         <item>Gombe</item>
         <item>Imo</item>
         <item>Jigawa</item>
@@ -396,7 +1274,7 @@
         <item>Kogi</item>
         <item>Kwara</item>
         <item>Lagos</item>
-        <item>Nasarawa</item>
+        <item>Nassarawa</item>
         <item>Niger</item>
         <item>Ogun</item>
         <item>Ondo</item>
@@ -506,6 +1384,15 @@
     <string name="new_password">New Password</string>
     <string name="search_results">Your search results will show here</string>
     <string name="your_conversations_will_display_here">Your conversations will display here</string>
+    <string name="delete_this_post">Delete this post</string>
+    <string name="notification_title">Upload</string>
+    <string name="notification_subtitle">Please wait while your post is being uploaded</string>
+    <string name="notification_failed">Your upload was unsuccessful....</string>
+    <string name="notification_success">Your upload was successful</string>
+    <string name="your_notifications_will_be_displayed_here">All received notifications will be displayed here</string>
+    <string name="start_exploring">Start Exploring</string>
+    <string name="ready_to_explore">Ready to explore new possibilities? Join us today and discover a world of inspiration!</string>
+    <string name="insufficient_funds">Insufficient Funds</string>
     <string-array name="image_video">
         <item>Images Only</item>
         <item>Videos Only</item>

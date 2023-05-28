@@ -39,6 +39,9 @@ interface PaymentApi {
     @POST("payment/set/{pin}")
     suspend fun setProtrndPin(@Path("pin") pin: String): BasicResponseBody
 
+    @POST("payment/forgot/pin")
+    suspend fun sendResetOTPForPin(): BasicResponseBody
+
     @GET("payment/correct/{pin}")
     suspend fun isProtrndPinCorrect(@Path("pin") pin: String): BooleanResponseBody
 

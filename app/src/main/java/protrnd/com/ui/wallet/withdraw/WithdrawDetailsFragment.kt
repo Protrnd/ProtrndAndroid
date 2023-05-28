@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import protrnd.com.R
+import protrnd.com.data.NetworkConnectionLiveData
 import protrnd.com.data.models.AccountDTO
 import protrnd.com.data.models.WithdrawDTO
 import protrnd.com.data.network.ProtrndAPIDataSource
@@ -21,11 +22,8 @@ import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.PaymentRepository
 import protrnd.com.databinding.FragmentPaymentPinBinding
 import protrnd.com.databinding.FragmentWithdrawDetailsBinding
+import protrnd.com.ui.*
 import protrnd.com.ui.base.BaseFragment
-import protrnd.com.ui.enable
-import protrnd.com.ui.errorSnackBar
-import protrnd.com.ui.formatAmount
-import protrnd.com.ui.requestForFocus
 import protrnd.com.ui.viewmodels.PaymentViewModel
 import protrnd.com.ui.wallet.WalletFragment
 
@@ -39,11 +37,17 @@ class WithdrawDetailsFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        var buttonClicked = false
         val hostFragment = parentFragment as NavHostFragment
         val amount = requireArguments().getString("amount").toString().toInt()
         val withdrawText = "Withdraw ₦${amount.formatAmount()}"
         binding.continueBtn.text = withdrawText
 
+        NetworkConnectionLiveData(requireContext()).observe(viewLifecycleOwner) { networkAvailable ->
+            if (!buttonClicked)
+                binding.continueBtn.enable(networkAvailable)
+            Toast.makeText(requireContext(), if (networkAvailable) "Network available" else "You are disconnected!", Toast.LENGTH_SHORT).show()
+        }
 
         binding.accountNumber.transformationMethod = null
 
@@ -76,72 +80,80 @@ class WithdrawDetailsFragment :
         pinBottomSheet.setContentView(pinFrag.root)
         pinBottomSheet.setCancelable(false)
         pinBottomSheet.setCanceledOnTouchOutside(false)
+        pinBottomSheet.setOnDismissListener {
+            binding.root.enable(true)
+            pinFrag.progressBar.visible(false)
+            pinFrag.continueBtn.enable(true)
+        }
         pinFrag.input1.requestForFocus(pinFrag.input2)
         pinFrag.input2.requestForFocus(pinFrag.input3, pinFrag.input1)
         pinFrag.input3.requestForFocus(pinFrag.input4, pinFrag.input2)
         pinFrag.input4.requestForFocus(prev = pinFrag.input3)
         binding.continueBtn.setOnClickListener {
-            binding.continueBtn.enable(false)
-            binding.root.enable(false)
-            pinBottomSheet.show()
-            pinFrag.continueBtn.setOnClickListener {
-                otp1 = pinFrag.input1.text.toString()
-                otp2 = pinFrag.input2.text.toString()
-                otp3 = pinFrag.input3.text.toString()
-                otp4 = pinFrag.input4.text.toString()
-                pinFrag.continueBtn.enable(false)
-                if (otp1.isNotEmpty() && otp2.isNotEmpty() && otp3.isNotEmpty() && otp4.isNotEmpty()) {
-                    val pin = "$otp1$otp2$otp3$otp4"
-                    lifecycleScope.launch {
-                        when (val pinRequest = viewModel.isPaymentPinCorrect(pin)) {
-                            is Resource.Success -> {
-                                if (pinRequest.value.data) {
-                                    pinBottomSheet.dismiss()
-                                    viewModel.withdrawFunds(
-                                        WithdrawDTO(
-                                            amount = amount, account = AccountDTO(
-                                                accountName = binding.accountName.text.toString()
-                                                    .trim(),
-                                                accountNumber = binding.accountNumber.text.toString()
-                                                    .trim(),
-                                                bankName = bankName,
-                                                profileId = currentUserProfile.id
+            if (requireActivity().isNetworkAvailable()) {
+                buttonClicked = true
+                binding.continueBtn.enable(false)
+                binding.root.enable(false)
+                pinBottomSheet.show()
+                pinFrag.continueBtn.setOnClickListener {
+                    otp1 = pinFrag.input1.text.toString()
+                    otp2 = pinFrag.input2.text.toString()
+                    otp3 = pinFrag.input3.text.toString()
+                    otp4 = pinFrag.input4.text.toString()
+                    pinFrag.continueBtn.enable(false)
+                    if (otp1.isNotEmpty() && otp2.isNotEmpty() && otp3.isNotEmpty() && otp4.isNotEmpty()) {
+                        val pin = "$otp1$otp2$otp3$otp4"
+                        lifecycleScope.launch {
+                            when (val pinRequest = viewModel.isPaymentPinCorrect(pin)) {
+                                is Resource.Success -> {
+                                    if (pinRequest.value.data) {
+                                        pinBottomSheet.dismiss()
+                                        viewModel.withdrawFunds(
+                                            WithdrawDTO(
+                                                amount = amount, account = AccountDTO(
+                                                    accountName = binding.accountName.text.toString()
+                                                        .trim(),
+                                                    accountNumber = binding.accountNumber.text.toString()
+                                                        .trim(),
+                                                    bankName = bankName,
+                                                    profileId = currentUserProfile.id
+                                                )
                                             )
                                         )
-                                    )
-                                    viewModel._withdraw.observe(viewLifecycleOwner) {
-                                        when (it) {
-                                            is Resource.Success -> {
-                                                val wallet =
-                                                    hostFragment.requireParentFragment().parentFragment as WalletFragment
-                                                wallet.updateBalance()
-                                                requireArguments().putInt("amount", amount)
-                                                hostFragment.navController.navigate(
-                                                    R.id.withdrawSuccessFragment,
-                                                    requireArguments()
+                                        viewModel._withdraw.observe(viewLifecycleOwner) {
+                                            when (it) {
+                                                is Resource.Success -> {
+                                                    val wallet =
+                                                        hostFragment.requireParentFragment().parentFragment as WalletFragment
+                                                    wallet.updateBalance()
+                                                    requireArguments().putInt("amount", amount)
+                                                    hostFragment.navController.navigate(
+                                                        R.id.withdrawSuccessFragment,
+                                                        requireArguments()
+                                                    )
+                                                }
+                                                is Resource.Loading -> binding.continueBtn.enable(
+                                                    false
                                                 )
+                                                else -> binding.continueBtn.enable(true)
                                             }
-                                            is Resource.Loading -> binding.continueBtn.enable(false)
-                                            else -> binding.continueBtn.enable(true)
                                         }
+                                    } else {
+                                        pinBottomSheet.dismiss()
                                     }
-                                } else {
-                                    pinBottomSheet.dismiss()
-                                    binding.root.enable(true)
-                                    binding.root.errorSnackBar("Invalid payment pin")
                                 }
-                            }
-                            is Resource.Failure -> {
-                                binding.root.enable(true)
-                                pinFrag.continueBtn.enable(true)
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Invalid payment pin",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                            is Resource.Loading -> {
-
+                                is Resource.Failure -> {
+                                    binding.root.enable(true)
+                                    pinFrag.continueBtn.enable(true)
+                                    Toast.makeText(
+                                        requireContext(),
+                                        "Invalid payment pin",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                                is Resource.Loading -> {
+                                    pinFrag.progressBar.visible(true)
+                                }
                             }
                         }
                     }
@@ -160,7 +172,6 @@ class WithdrawDetailsFragment :
     override fun getFragmentRepository(): PaymentRepository {
         val token = runBlocking { profilePreferences.authToken.first() }
         val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java, token)
-        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
         return PaymentRepository(paymentApi)
     }
 }

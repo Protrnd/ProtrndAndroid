@@ -2,11 +2,16 @@ package protrnd.com.data.models
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.google.errorprone.annotations.Keep
 import com.google.gson.annotations.SerializedName
 
+@Keep
+@Entity(tableName = "Conversations")
 data class Conversation(
     @SerializedName("id")
-    val id: String,
+    @PrimaryKey val id: String,
     @SerializedName("receiverId")
     val receiverId: String,
     @SerializedName("senderid")

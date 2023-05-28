@@ -1,145 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
-    android:fillViewport="true"
     tools:context=".ui.auth.LoginFragment">
-
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:paddingBottom="100dp">
-
-        <TextView
-            android:id="@+id/login_tv"
+        android:fillViewport="true"
+        android:scrollbars="vertical">
+        <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="30dp"
-            android:layout_marginEnd="20dp"
-            android:fontFamily="@font/dmsans_bold"
-            android:text="@string/welcome_back"
-            android:textColor="#2D264B"
-            android:textSize="30sp" />
-
-        <TextView
-            android:id="@+id/signup_here_tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="20dp"
-            android:text="@string/sign_up_here"
-            android:textColor="#2D264B"
-            android:textSize="16sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="20dp"
-            android:fontFamily="@font/dm_sans_medium"
-            android:text="@string/email_address"
-            android:textColor="#2D264B" />
-
-        <EditText
-            android:id="@+id/email_et"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="20dp"
-            android:autofillHints="emailAddress"
-            android:background="@drawable/edittext_state_listener"
-            android:importantForAutofill="yes"
-            android:inputType="textEmailAddress"
-            android:labelFor="@+id/email_et"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:textColor="#2D264B"
-            android:textColorHint="@color/dark_grey"
-            android:textSize="14sp"
-            tools:ignore="SpeakableTextPresentCheck" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="20dp"
-            android:fontFamily="@font/dm_sans_medium"
-            android:text="@string/password"
-            android:textColor="#2D264B" />
-
-        <EditText
-            android:id="@+id/password_et"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="20dp"
-            android:autofillHints="password"
-            android:background="@drawable/edittext_state_listener"
-            android:inputType="textPassword"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:textColor="#2D264B"
-            android:textSize="14sp"
-            tools:ignore="SpeakableTextPresentCheck" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp">
-
-            <CheckBox
-                android:id="@+id/keep_signed_in"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:buttonTint="#2D264B"
-                android:text="@string/keep_me_signed_in" />
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingBottom="100dp">
 
             <TextView
-                android:id="@+id/forgot_pass"
-                android:layout_width="wrap_content"
+                android:id="@+id/login_tv"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerInParent="true"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="20dp"
+                android:fontFamily="@font/dmsans_bold"
+                android:text="@string/welcome_back"
+                android:textColor="#2D264B"
+                android:textSize="30sp" />
+
+            <TextView
+                android:id="@+id/signup_here_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:text="@string/sign_up_here"
+                android:textColor="#2D264B"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
                 android:fontFamily="@font/dm_sans_medium"
-                android:text="@string/forgot_password"
-                android:textColor="@color/main_pink"
-                android:textSize="14sp" />
-        </RelativeLayout>
+                android:text="@string/email_address"
+                android:textColor="#2D264B" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/login_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="50dp"
-            android:layout_marginEnd="20dp"
-            android:background="@drawable/button_elevation"
-            android:fontFamily="@font/dmsans_medium"
-            android:text="@string/continue_text"
-            android:textColor="@color/white"
-            tools:ignore="DuplicateSpeakableTextCheck" />
+            <EditText
+                android:id="@+id/email_et"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="20dp"
+                android:autofillHints="emailAddress"
+                android:background="@drawable/edittext_state_listener"
+                android:importantForAutofill="yes"
+                android:inputType="textEmailAddress"
+                android:labelFor="@+id/email_et"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#2D264B"
+                android:textColorHint="@color/dark_grey"
+                android:textSize="14sp"
+                tools:ignore="SpeakableTextPresentCheck" />
 
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="30dp"
-            android:indeterminate="true"
-            android:indeterminateTint="#E02A45"
-            android:indeterminateTintMode="src_atop"
-            android:visibility="gone" />
-    </androidx.appcompat.widget.LinearLayoutCompat>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
+                android:fontFamily="@font/dm_sans_medium"
+                android:text="@string/password"
+                android:textColor="#2D264B" />
 
-</androidx.core.widget.NestedScrollView>
+            <EditText
+                android:id="@+id/password_et"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="20dp"
+                android:autofillHints="password"
+                android:background="@drawable/edittext_state_listener"
+                android:inputType="textPassword"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="#2D264B"
+                android:textSize="14sp"
+                tools:ignore="SpeakableTextPresentCheck" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp">
+
+                <CheckBox
+                    android:id="@+id/keep_signed_in"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:buttonTint="#2D264B"
+                    android:text="@string/keep_me_signed_in" />
+
+                <TextView
+                    android:id="@+id/forgot_pass"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerInParent="true"
+                    android:fontFamily="@font/dm_sans_medium"
+                    android:text="@string/forgot_password"
+                    android:textColor="@color/main_pink"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/login_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="50dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/button_elevation"
+                android:fontFamily="@font/dmsans_medium"
+                android:text="@string/continue_text"
+                android:textColor="@color/white"
+                tools:ignore="DuplicateSpeakableTextCheck" />
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="30dp"
+                android:indeterminate="true"
+                android:indeterminateTint="#E02A45"
+                android:indeterminateTintMode="src_atop"
+                android:visibility="gone" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

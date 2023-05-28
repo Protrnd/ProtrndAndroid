@@ -13,34 +13,4 @@ import protrnd.com.data.network.api.ProfileApi
 class PostRepository(private val api: ProfileApi, private val postsApi: PostApi) :
     BaseRepository() {
 
-    suspend fun addPost(postDTO: PostDTO) = safeApiCall { postsApi.addPost(postDTO) }
-
-    suspend fun getProfilesByUsername(name: String) =
-        safeApiCall { api.getProfilesByUsername(name) }
-
-    suspend fun addImageToFirebase(
-        uris: List<Uri>,
-        username: String,
-        fileType: List<String>
-    ): List<String> {
-        val urls = mutableListOf<String>()
-        for (position in uris.indices) {
-            withContext(Dispatchers.IO) {
-                try {
-                    val fileReference: StorageReference =
-                        FirebaseStorage.getInstance().reference.child(
-                            username +
-                                    System.currentTimeMillis()
-                                        .toString() + "." + fileType[position]
-                        )
-                    val downloadUrl =
-                        fileReference.putFile(uris[position]).await().storage.downloadUrl.await()
-                    urls.add(downloadUrl.toString())
-                } catch (e: Exception) {
-                    throw e
-                }
-            }
-        }
-        return urls
-    }
 }

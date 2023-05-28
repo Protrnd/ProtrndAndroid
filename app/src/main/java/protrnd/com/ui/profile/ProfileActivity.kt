@@ -38,9 +38,10 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
     val profilePostsLive: LiveData<MutableList<Post>> = profilePostsMutableCache
     private val profileMutable: MutableLiveData<Profile> = MutableLiveData()
     private val profileLive: LiveData<Profile> = profileMutable
-    var firstInstance = true
+    private var firstInstance = true
     var profileId = ""
-    var followersCount = 0
+    private var followersCount = 0
+    var result: Profile = Profile()
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)
@@ -65,9 +66,16 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
         binding.messageBtn.setOnClickListener {
             startActivity(Intent(this, ChatContentActivity::class.java).apply {
                 putExtra("profileid", profileId)
+                putExtra("convoid","")
             })
         }
 
+        if (currentUserProfile.profileimg.isNotEmpty()) {
+            Glide.with(binding.root)
+                .load(currentUserProfile.profileimg)
+                .circleCrop()
+                .into(binding.navImage)
+        }
         binding.navBackBtn.setOnClickListener {
             finishActivity()
         }
@@ -75,6 +83,8 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
         binding.followBtn.setOnCheckedChangeListener { _, isChecked ->
             if (!firstInstance) {
                 if (isChecked) {
+                    if (result != Profile() && result != currentUserProfile)
+                        sendFollowNotification(result, currentUserProfile)
                     CoroutineScope(Dispatchers.IO).launch {
                         viewModel.follow(profileId)
                     }
@@ -122,7 +132,7 @@ class ProfileActivity : BaseActivity<ActivityProfileBinding, HomeViewModel, Home
 
         val profile = MemoryCache.profiles[profileId]
         if (profile != null) {
-            val result: Profile = profile
+            result = profile
             profileMutable.postValue(result)
         }
 

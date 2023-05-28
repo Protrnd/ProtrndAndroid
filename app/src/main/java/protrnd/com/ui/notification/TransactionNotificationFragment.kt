@@ -5,20 +5,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.*
+import com.google.gson.Gson
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import protrnd.com.data.NetworkConnectionLiveData
 import protrnd.com.data.models.Transaction
 import protrnd.com.data.network.MemoryCache
 import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.network.api.PaymentApi
+import protrnd.com.data.network.backgroundtask.SaveTransactionsService
 import protrnd.com.data.repository.PaymentRepository
 import protrnd.com.databinding.FragmentTransactionNotificationBinding
 import protrnd.com.ui.adapter.TransactionsPagingAdapter
 import protrnd.com.ui.adapter.listener.TransactionItemListener
 import protrnd.com.ui.base.BaseFragment
+import protrnd.com.ui.errorSnackBar
+import protrnd.com.ui.isNetworkAvailable
 import protrnd.com.ui.showTransactionDetails
 import protrnd.com.ui.viewmodels.PaymentViewModel
 import protrnd.com.ui.visible
@@ -34,7 +41,12 @@ class TransactionNotificationFragment :
         adapter = TransactionsPagingAdapter(viewModel, viewLifecycleOwner, currentUserProfile)
 
         binding.root.setOnRefreshListener {
-            getTransactions()
+            if (requireActivity().isNetworkAvailable())
+                getTransactions()
+            else {
+                binding.root.errorSnackBar("Please check your network connection")
+                binding.root.isRefreshing = if (binding.root.isRefreshing) false else false
+            }
         }
 
         binding.transactionsRecycler.layoutManager = LinearLayoutManager(requireContext())
@@ -61,15 +73,35 @@ class TransactionNotificationFragment :
     }
 
     private fun getTransactions() {
-        val transactions = MemoryCache.transactionsList
-        if (transactions.isNotEmpty())
-            adapter.submitData(lifecycle, PagingData.from(transactions))
-
-        viewModel.getTransactionsPage().observe(viewLifecycleOwner) {
-            adapter.submitData(lifecycle, it)
+        CoroutineScope(Dispatchers.IO).launch {
+            val transactions = viewModel.getAllTransactions()?.first()
+            if (transactions != null && transactions.isNotEmpty()) {
+                adapter.submitData(lifecycle, PagingData.from(transactions))
+                binding.transactionEmpty.root.visible(false)
+            }
+            delay(2000)
+            withContext(Dispatchers.Main) {
+                NetworkConnectionLiveData(requireContext()).observe(viewLifecycleOwner) {
+                    viewModel.getTransactionsPage().observe(viewLifecycleOwner) {
+                        lifecycleScope.launch {
+                            adapter.loadStateFlow.collectLatest { loadStates ->
+                                binding.transactionEmpty.root.visible(adapter.itemCount > 0)
+                                if (loadStates.refresh is LoadState.Loading) {
+                                    binding.root.isRefreshing = true
+                                } else {
+                                    binding.root.isRefreshing = false
+                                    if (adapter.itemCount < 1) {
+                                        binding.transactionEmpty.root.visible(true)
+                                    }
+                                }
+                            }
+                        }
+                        adapter.submitData(lifecycle, it)
+                    }
+                }
+            }
         }
     }
-
 
     override fun getViewModel() = PaymentViewModel::class.java
 
@@ -80,14 +112,33 @@ class TransactionNotificationFragment :
 
     override fun getFragmentRepository(): PaymentRepository {
         val token = runBlocking { profilePreferences.authToken.first() }
-        val transactionsApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java, token)
-        return PaymentRepository(transactionsApi)
+        val datasource = ProtrndAPIDataSource()
+        val paymentApi = datasource.buildAPI(PaymentApi::class.java, token)
+        val db = datasource.provideTransactionDatabase(requireActivity().application)
+        val profileDb = datasource.provideProfileDatabase(requireActivity().application)
+        return PaymentRepository(paymentApi,db,profileDb)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        val snapshot = adapter.snapshot()
-        if (snapshot.isNotEmpty())
-            MemoryCache.transactionsList = snapshot.items.toMutableList()
+    override fun onStop() {
+        if (adapter.snapshot().items.isNotEmpty()) {
+            val snapshot = if (adapter.snapshot().items.size > 20) adapter.snapshot().items.subList(
+                0,
+                20
+            ) else adapter.snapshot().items
+            val data = Data.Builder()
+                .putString("transactions", Gson().toJson(snapshot))
+                .build()
+
+            SaveTransactionsService.setApplication(requireActivity().application)
+            val worker = OneTimeWorkRequest.Builder(SaveTransactionsService::class.java)
+                .setInputData(data)
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                .setConstraints(
+                    Constraints.Builder().setRequiredNetworkType(NetworkType.NOT_REQUIRED).build()
+                )
+                .build()
+            WorkManager.getInstance(requireContext()).enqueue(worker)
+        }
+        super.onStop()
     }
 }

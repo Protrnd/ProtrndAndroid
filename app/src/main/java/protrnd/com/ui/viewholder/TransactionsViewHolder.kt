@@ -5,6 +5,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,21 +37,26 @@ class TransactionsViewHolder(val view: TransactionInfoItemBinding) :
             amount = "₦$amount"
             view.transactionAmount.setTextColor(Color.parseColor("#13101F"))
         }
-        val mutable = MutableLiveData<String>()
-        val live: LiveData<String> = mutable
+        val mutable = MutableLiveData<Profile>()
+        val live: LiveData<Profile> = mutable
         view.transactionAmount.text = amount
-        live.observe(lifecycleOwner) {
-            view.profileId.text = it
+        live.observe(lifecycleOwner) {profile ->
+            val username = "@${profile.username}"
+            view.profileId.text = username
+            Glide.with(view.root)
+                .load(profile.profileimg)
+                .into(view.profileTrxImage)
         }
         if (currentProfile.id == transaction.profileid) {
             val profile = MemoryCache.profiles[transaction.receiverid]
             if (profile != null) {
-                mutable.postValue("@${profile.username}")
+                val p: Profile = profile
+                mutable.postValue(p)
             } else {
                 CoroutineScope(Dispatchers.IO).launch {
                     when (val profileResult = viewModel.getProfileById(transaction.receiverid)) {
                         is Resource.Success -> {
-                            mutable.postValue("@${profileResult.value.data.username}")
+                            mutable.postValue(profileResult.value.data)
                             MemoryCache.profiles[transaction.profileid] = profileResult.value.data
                         }
                         else -> {}
@@ -60,12 +66,13 @@ class TransactionsViewHolder(val view: TransactionInfoItemBinding) :
         } else {
             val profile = MemoryCache.profiles[transaction.profileid]
             if (profile != null) {
-                mutable.postValue("@${profile.username}")
+                val p: Profile = profile
+                mutable.postValue(p)
             } else {
                 CoroutineScope(Dispatchers.IO).launch {
                     when (val profileResult = viewModel.getProfileById(transaction.profileid)) {
                         is Resource.Success -> {
-                            mutable.postValue("@${profileResult.value.data.username}")
+                            mutable.postValue(profileResult.value.data)
                             MemoryCache.profiles[transaction.profileid] = profileResult.value.data
                         }
                         else -> {}

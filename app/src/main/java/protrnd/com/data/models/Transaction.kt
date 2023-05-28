@@ -4,8 +4,10 @@ import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.errorprone.annotations.Keep
 import com.google.gson.annotations.SerializedName
 
+@Keep
 @Entity(tableName = "Transactions")
 data class Transaction(
     @SerializedName("amount")

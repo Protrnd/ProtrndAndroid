@@ -7,7 +7,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.Window
@@ -24,6 +23,7 @@ import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import protrnd.com.R
+import protrnd.com.data.models.Profile
 import protrnd.com.data.models.ProfileDTO
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
@@ -32,12 +32,10 @@ import protrnd.com.data.repository.HomeRepository
 import protrnd.com.databinding.ActivityEditProfileBinding
 import protrnd.com.databinding.EditImageLayoutBinding
 import protrnd.com.databinding.LocationPickerBinding
+import protrnd.com.databinding.UploadProcessingBinding
+import protrnd.com.ui.*
 import protrnd.com.ui.base.BaseActivity
-import protrnd.com.ui.enable
-import protrnd.com.ui.finishActivity
-import protrnd.com.ui.getFileTypes
 import protrnd.com.ui.viewmodels.HomeViewModel
-import protrnd.com.ui.visible
 import java.io.File
 import java.util.*
 
@@ -147,7 +145,7 @@ class EditProfileActivity :
 
         binding.finish.enable(false)
 
-        var fullname = ""
+        var fullname = currentUserProfile.fullname
         binding.fullNameInput.addTextChangedListener {
             if (it.toString().isEmpty())
                 binding.fullNameInput.error = "Please fill"
@@ -155,6 +153,10 @@ class EditProfileActivity :
                 fullname = it.toString()
 
             binding.finish.enable(it.toString().isNotEmpty())
+        }
+
+        binding.aboutInput.addTextChangedListener {
+            binding.finish.enable(fullname.isNotEmpty())
         }
 
         val editorBinding = EditImageLayoutBinding.inflate(layoutInflater)
@@ -205,12 +207,7 @@ class EditProfileActivity :
                 city = ""
                 locationPickerBinding.cityPicker.clearSelectedItem()
                 state = newItem
-                when (state!!.lowercase()) {
-                    "abia" -> locationPickerBinding.cityPicker.setItems(R.array.abia)
-                    "adamawa" -> locationPickerBinding.cityPicker.setItems(R.array.adamawa)
-                    "akwa ibom" -> locationPickerBinding.cityPicker.setItems(R.array.akwa_ibom)
-                    "anambra" -> locationPickerBinding.cityPicker.setItems(R.array.anambra)
-                }
+                locationPickerBinding.selectState(state!!)
                 locationPickerBinding.saveBtn.enable(false)
             }
 
@@ -225,6 +222,7 @@ class EditProfileActivity :
             locationPickerBinding.saveBtn.setOnClickListener {
                 locationUpdate = "$state,$city"
                 binding.locationInput.text = locationUpdate
+                binding.finish.enable(state != null && city != null && state!!.isNotEmpty() && city!!.isNotEmpty())
                 locationDialog.dismiss()
             }
         }
@@ -263,22 +261,36 @@ class EditProfileActivity :
             }
         }
 
+        val finishDialog = Dialog(this, R.style.TransparentDialog)
         viewModel.profile.observe(this) {
             when (it) {
                 is Resource.Success -> {
                     lifecycleScope.launch {
                         profilePreferences.saveProfile(it.value.data)
+                        currentUserProfile = it.value.data
+                        delay(1000)
+                        withContext(Dispatchers.Main) {
+                            finishActivity()
+                        }
                     }
-                    finishActivity()
+                }
+                is Resource.Failure -> {
+                    binding.root.enable(true)
+                    binding.root.errorSnackBar("Error updating your profile")
+                    finishDialog.dismiss()
                 }
                 else -> {}
             }
         }
 
+        finishDialog.setCanceledOnTouchOutside(false)
+        val dialogProcessing = UploadProcessingBinding.inflate(layoutInflater)
+        finishDialog.setContentView(dialogProcessing.root)
         binding.finish.setOnClickListener {
             binding.finish.visible(false)
             binding.progressBar.visible(true)
             binding.root.enable(false)
+            finishDialog.show()
 
             if (profileUri != Uri.EMPTY)
                 uploadImage(profileUri, true)

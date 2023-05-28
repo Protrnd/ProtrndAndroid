@@ -13,13 +13,13 @@ interface TransactionsDao {
     fun getTransactionsDBSize(): Flow<Int>
 
     @Insert(onConflict = REPLACE)
-    suspend fun insertTransactions(transactions: List<Transaction>)
+    fun insertTransactions(transactions: List<Transaction>)
 
     @Query("SELECT * FROM Transactions")
     fun getAllTransactions(): Flow<List<Transaction>>
 
     @Query("SELECT * FROM Transactions WHERE id = :id")
-    fun getTransaction(id: String): Flow<Transaction>
+    fun getTransaction(id: String): Flow<Transaction?>
 
     @Query("DELETE FROM Transactions")
     suspend fun deleteAllTransactions()

@@ -53,6 +53,12 @@ class ChatMessagesAdapter(
         diffResult.dispatchUpdatesTo(this)
     }
 
+    fun sendMessage(chat: Chat) {
+        chatList.add(chat)
+        notifyItemInserted(chatList.size-1)
+        notifyItemChanged(chatList.size-1)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ChatMessagesViewHolder(
         ChatMessageLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
     )

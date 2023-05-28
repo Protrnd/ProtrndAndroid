@@ -54,6 +54,7 @@
             app:layout_constraintTop_toBottomOf="@+id/fullname" />
 
         <ImageView
+            android:id="@+id/more_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/more"
@@ -160,6 +161,7 @@
         android:fontFamily="@font/dm_sans_medium"
         android:textColor="@color/black"
         android:textSize="14sp"
+        android:text="Be the first trndr to like this post"
         app:layout_constraintTop_toBottomOf="@id/promote_support" />
 
     <TextView

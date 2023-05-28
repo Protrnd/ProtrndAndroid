@@ -2,17 +2,24 @@ package protrnd.com.data.models
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.google.errorprone.annotations.Keep
 import com.google.gson.annotations.SerializedName
 
+@Keep
+@Entity(tableName = "Chat")
 data class Chat(
     @SerializedName("id")
-    val id: String = "",
+    @PrimaryKey val id: String = "",
     @SerializedName("itemid")
     val itemid: String = "",
     @SerializedName("message")
     val message: String = "",
     @SerializedName("receiverid")
     val receiverid: String = "",
+    @SerializedName("convoid")
+    var convoid: String = "",
     @SerializedName("seen")
     val seen: Boolean = false,
     @SerializedName("senderid")
@@ -23,6 +30,7 @@ data class Chat(
     val type: String = "chat"
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
+        parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
@@ -38,6 +46,7 @@ data class Chat(
         parcel.writeString(itemid)
         parcel.writeString(message)
         parcel.writeString(receiverid)
+        parcel.writeString(convoid)
         parcel.writeByte(if (seen) 1 else 0)
         parcel.writeString(senderid)
         parcel.writeString(time)

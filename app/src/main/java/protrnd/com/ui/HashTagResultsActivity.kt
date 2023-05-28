@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import protrnd.com.R
 import protrnd.com.data.models.Post
 import protrnd.com.data.network.MemoryCache
 import protrnd.com.data.network.api.PostApi
@@ -41,6 +42,7 @@ class HashTagResultsActivity :
         setSupportActionBar(binding.toolbarResults)
         binding.toolbarResults.contentInsetStartWithNavigation = 0
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeAsUpIndicator(R.drawable.arrow_left_ic)
 
         postsLayoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         binding.hashTaggedResultsRv.layoutManager = postsLayoutManager
@@ -71,6 +73,8 @@ class HashTagResultsActivity :
         )
 
         postCountLive.observe(this) { postCount ->
+            binding.refreshLayout.isRefreshing = false
+            binding.progressBar.visible(false)
             binding.toolbarResults.title = hashtag
             binding.toolbarResults.subtitle =
                 if (postCount > 1) "${postCount.formatAmount()} posts" else "$postCount post"
@@ -78,21 +82,20 @@ class HashTagResultsActivity :
     }
 
     private fun loadPage() {
-        //Load first page
-//        setupRecyclerView()
         viewModel.getPostsQueried(hashtag).observe(this) {
             lifecycleScope.launch {
                 withContext(Dispatchers.Main) {
                     postsAdapter.loadStateFlow.collectLatest { loadStates ->
                         if (loadStates.refresh is LoadState.Loading) {
-//                            binding.shimmer.visible(true)
+                            binding.refreshLayout.isRefreshing = true
+                            binding.progressBar.visible(true)
                         } else {
-//                            binding.shimmer.visible(false)
                             binding.refreshLayout.isRefreshing = false
+                            binding.progressBar.visible(false)
                             if (postsAdapter.itemCount < 1) {
                                 binding.root.errorSnackBar("Error loading hashtags") { loadPage() }
                             } else {
-                                // TODO: Network error
+                                binding.root.errorSnackBar("Network error occurred!")
                             }
                         }
                     }
@@ -111,6 +114,10 @@ class HashTagResultsActivity :
                 else -> {}
             }
         }
+    }
+
+    fun showAlpha() {
+        binding.alphaBg.visible(true)
     }
 
     private fun setupStoredData() {

@@ -5,9 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import protrnd.com.data.NetworkConnectionLiveData
 import protrnd.com.data.network.MemoryCache
@@ -19,6 +23,7 @@ import protrnd.com.ui.RecyclerViewReadyCallback
 import protrnd.com.ui.adapter.NotificationAdapter
 import protrnd.com.ui.base.BaseFragment
 import protrnd.com.ui.viewmodels.NotificationViewModel
+import protrnd.com.ui.visible
 
 class AllNotificationFragment :
     BaseFragment<NotificationViewModel, FragmentAllNotificationBinding, NotificationRepository>() {
@@ -61,6 +66,20 @@ class AllNotificationFragment :
             notificationAdapter.submitData(lifecycle, PagingData.from(cacheNotifications))
 
         viewModel.getNotificationsPage().observe(viewLifecycleOwner) {
+            lifecycleScope.launch {
+                notificationAdapter.loadStateFlow.collectLatest { loadStates ->
+                    if (loadStates.refresh is LoadState.Loading) {
+                        binding.root.isRefreshing = true
+                    } else {
+                        binding.root.isRefreshing = false
+                        if (notificationAdapter.itemCount < 1) {
+                            binding.notificationsExist.visible(true)
+                        } else {
+                            binding.notificationsExist.visible(false)
+                        }
+                    }
+                }
+            }
             notificationAdapter.submitData(lifecycle, it)
         }
     }

@@ -29,6 +29,10 @@
     @retrofit2.http.* <methods>;
 }
 
+-dontnote okhttp3.**, okio.**, retrofit2.**
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
+-keep public class com.your.packages.model.** {*;}
 #GSON Annotations
 -keepclassmembers,allowobfuscation class * {
     @com.google.gson.annotations.SerializedName <fields>;
@@ -37,5 +41,14 @@
 -keep class com.google.api.** { *; }
 
 -dontwarn com.gowtham.library**
+#-dontwarn org.bouncycastle.jsse.BCSSLParameters.**
+#-dontwarn org.bouncycastle.jsse.BCSSLSocket.**
+#-dontwarn org.bouncycastle.jsse.provider.BouncyCastleJsseProvider.**
+#-dontwarn org.conscrypt.Conscrypt$Version.**
+#-dontwarn org.conscrypt.Conscrypt.**
+#-dontwarn org.conscrypt.ConscryptHostnameVerifier.**
+#-dontwarn org.openjsse.javax.net.ssl.SSLParameters.**
+#-dontwarn org.openjsse.javax.net.ssl.SSLSocket.**
+#-dontwarn org.openjsse.net.ssl.OpenJSSE.**
 -keep class com.gowtham.library** { *; }
 -keep interface com.gowtham.library** { *; }

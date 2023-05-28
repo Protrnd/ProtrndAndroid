@@ -2,8 +2,10 @@ package protrnd.com.data.models
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.google.errorprone.annotations.Keep
 import com.google.gson.annotations.SerializedName
 
+@Keep
 data class ProfileTagsQuery(
     @SerializedName("page")
     var page: Int = 1,

@@ -5,6 +5,7 @@ import protrnd.com.data.responses.BasicResponseBody
 import protrnd.com.data.responses.GetLocationResponseBody
 import protrnd.com.data.responses.ProfileListResponseBody
 import protrnd.com.data.responses.ProfileResponseBody
+import retrofit2.Call
 import retrofit2.http.*
 
 interface ProfileApi {
@@ -28,6 +29,9 @@ interface ProfileApi {
 
     @PUT("profile/update")
     suspend fun updateProfile(@Body profileDTO: ProfileDTO): ProfileResponseBody
+
+    @PUT("profile/update")
+    fun updateProfileSynchronous(@Body profileDTO: ProfileDTO): Call<ProfileResponseBody>
 
     @GET("profile/followers/{id}/count")
     suspend fun getFollowersCount(@Path("id") id: String): BasicResponseBody

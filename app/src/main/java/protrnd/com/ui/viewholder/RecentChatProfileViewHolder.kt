@@ -1,8 +1,12 @@
 package protrnd.com.ui.viewholder
 
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import protrnd.com.data.models.Conversation
 import protrnd.com.data.models.Profile
 import protrnd.com.data.network.resource.Resource
@@ -19,22 +23,48 @@ class RecentChatProfileViewHolder(val view: RecentChatProfileLayoutBinding) :
         if (conversation.recentMessage == "Support")
             view.recentChatMessage.text = conversation.recentMessage.setSpannableColor("Support")
         if (profile.id == conversation.senderid) {
-            viewModel.viewModelScope.launch {
-                when (val profileResult = viewModel.getProfileById(conversation.receiverId)) {
+            CoroutineScope(Dispatchers.IO).launch {
+                val profileResult = viewModel.getStoredProfile(conversation.receiverId)?.first()
+                if (profileResult != null) {
+                    withContext(Dispatchers.Main) {
+                        view.chatProfileFullName.text = profileResult.fullname
+                        if (profileResult.profileimg.isNotEmpty())
+                            Glide.with(view.root).load(profileResult.profileimg).circleCrop().into(view.imageView7)
+                    }
+                }
+                when (val result = viewModel.getProfileById(conversation.receiverId)) {
                     is Resource.Success -> {
-                        if (profileResult.value.successful) {
-                            view.chatProfileFullName.text = profileResult.value.data.fullname
+                        if (result.value.successful) {
+                            withContext(Dispatchers.Main) {
+                                if (view.chatProfileFullName.text.toString() != result.value.data.fullname)
+                                    view.chatProfileFullName.text = result.value.data.fullname
+                                if (result.value.data.profileimg.isNotEmpty())
+                                    Glide.with(view.root).load(result.value.data.profileimg).circleCrop().into(view.imageView7)
+                            }
                         }
                     }
                     else -> {}
                 }
             }
         } else {
-            viewModel.viewModelScope.launch {
-                when (val profileResult = viewModel.getProfileById(conversation.senderid)) {
+            CoroutineScope(Dispatchers.IO).launch {
+                val profileResult = viewModel.getStoredProfile(conversation.senderid)?.first()
+                if (profileResult != null) {
+                    withContext(Dispatchers.Main) {
+                        view.chatProfileFullName.text = profileResult.fullname
+                        if (profileResult.profileimg.isNotEmpty())
+                            Glide.with(view.root).load(profileResult.profileimg).circleCrop().into(view.imageView7)
+                    }
+                }
+                when (val result = viewModel.getProfileById(conversation.senderid)) {
                     is Resource.Success -> {
-                        if (profileResult.value.successful) {
-                            view.chatProfileFullName.text = profileResult.value.data.fullname
+                        if (result.value.successful) {
+                            withContext(Dispatchers.Main) {
+                                if (view.chatProfileFullName.text.toString() != result.value.data.fullname)
+                                    view.chatProfileFullName.text = result.value.data.fullname
+                                if (result.value.data.profileimg.isNotEmpty())
+                                    Glide.with(view.root).load(result.value.data.profileimg).circleCrop().into(view.imageView7)
+                            }
                         }
                     }
                     else -> {}

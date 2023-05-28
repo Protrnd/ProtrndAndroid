@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_deails"
+    app:startDestination="@id/paymentDetailsFragment2">
+
+    <fragment
+        android:id="@+id/paymentDetailsFragment2"
+        android:name="protrnd.com.ui.payment.PaymentDetailsFragment"
+        android:label="fragment_payment_details"
+        tools:layout="@layout/fragment_payment_details" />
+</navigation>

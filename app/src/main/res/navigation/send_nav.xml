@@ -4,6 +4,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/send_nav"
     app:startDestination="@id/sendAmountFragment">
+    <fragment
+        android:id="@+id/chooseSupportPaymentMethodFragment"
+        android:name="protrnd.com.ui.payment.ChoosePaymentMethodFragment"
+        android:label="fragment_choose_support_payment_method"
+        tools:layout="@layout/fragment_choose_payment_method">
+    </fragment>
+
+    <fragment
+        android:id="@+id/payFromWalletBalanceFragment"
+        android:name="protrnd.com.ui.payment.PayFromWalletBalanceFragment"
+        android:label="fragment_pay_from_wallet_balance"
+        tools:layout="@layout/fragment_pay_from_wallet_balance" />
 
     <fragment
         android:id="@+id/sendAmountFragment"

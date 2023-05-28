@@ -2,8 +2,10 @@ package protrnd.com.ui.wallet.receive
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,16 +17,16 @@ import com.google.gson.Gson
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
 import com.google.zxing.qrcode.QRCodeWriter
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import protrnd.com.R
 import protrnd.com.data.models.QrCodeContent
 import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.network.api.PaymentApi
 import protrnd.com.data.repository.PaymentRepository
 import protrnd.com.databinding.FragmentGenerateQrBinding
+import protrnd.com.ui.*
 import protrnd.com.ui.base.BaseFragment
-import protrnd.com.ui.setGradient
 import protrnd.com.ui.viewmodels.PaymentViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -50,7 +52,14 @@ class GenerateQRFragment :
                 null
             )
 
-        generateQR(0)
+        binding.saveBtn.enable(false)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            delay(2000)
+            withContext(Dispatchers.Main) {
+                generateQR(0)
+            }
+        }
 
         binding.receiveAmount.transformationMethod = null
         val imm =
@@ -73,16 +82,37 @@ class GenerateQRFragment :
                     generateQR(amount)
             }
         }
+
+        binding.saveBtn.setOnClickListener {
+            val photo = getBitmap()
+            val savedImageUrl = MediaStore.Images.Media.insertImage(requireActivity().contentResolver, photo, "${currentUserProfile.username}_qr_${System.currentTimeMillis()}", "QR Code Generated for @${currentUserProfile.username} from protrnd.com")
+            if (savedImageUrl.isNotEmpty())
+                Toast.makeText(requireContext(), "Qr Code saved to your gallery", Toast.LENGTH_SHORT).show()
+        }
     }
 
-    fun generateQR(amount: Int) {
+    private fun getBitmap(): Bitmap {
+        val layout = binding.qrToSave
+        val returnedBitmap = Bitmap.createBitmap(layout.width, layout.height, Bitmap.Config.ARGB_8888)
+        val canvas =  Canvas(returnedBitmap)
+        val bgDrawable = layout.background
+        if (bgDrawable != null)
+            bgDrawable.draw(canvas)
+        else
+            canvas.drawColor(Color.WHITE)
+        layout.draw(canvas)
+        return returnedBitmap
+    }
+
+    private fun generateQR(amount: Int) {
+        binding.progressbar.visible(true)
         val sdf = SimpleDateFormat("dd/MM/yyyy hh:mm:ss", Locale.getDefault())
         val profileQrCodeContent =
-            QrCodeContent(profile = currentUserProfile, time = sdf.format(Date()), amount = amount)
-        val qrCodeContent = Gson().toJson(profileQrCodeContent)
+            QrCodeContent(profile = currentUserProfile, time = sdf.format(Date()), amount = amount, isInDebugMode = false)
+        val qrCodeContent = (Gson().toJson(profileQrCodeContent)).encode()
         val writer = QRCodeWriter()
         try {
-            val bitMatrix = writer.encode(qrCodeContent, BarcodeFormat.QR_CODE, 400, 400)
+            val bitMatrix = writer.encode(qrCodeContent, BarcodeFormat.QR_CODE, binding.qrCode.width, binding.qrCode.width)
             val width = bitMatrix.width
             val height = bitMatrix.height
             val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
@@ -94,8 +124,14 @@ class GenerateQRFragment :
             Glide.with(requireView())
                 .load(bmp)
                 .into(binding.qrCode)
+            binding.progressbar.visible(false)
+            binding.qrCode.visible(true)
+            binding.saveBtn.enable(true)
         } catch (e: WriterException) {
             Toast.makeText(requireContext(), "Error occurred", Toast.LENGTH_SHORT).show()
+            binding.progressbar.visible(false)
+            binding.qrCode.visible(false)
+            binding.saveBtn.enable(false)
         }
     }
 
@@ -109,8 +145,6 @@ class GenerateQRFragment :
     override fun getFragmentRepository(): PaymentRepository {
         val token = runBlocking { profilePreferences.authToken.first() }
         val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java, token)
-        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
         return PaymentRepository(paymentApi)
     }
-
 }

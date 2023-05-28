@@ -2,6 +2,7 @@ package protrnd.com.ui.wallet
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,11 +13,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import protrnd.com.R
 import protrnd.com.data.NetworkConnectionLiveData
 import protrnd.com.data.models.Transaction
@@ -43,10 +41,10 @@ class WalletFragment : BaseFragment<PaymentViewModel, FragmentWalletBinding, Pay
     var balance = 0.0
     private val localBalance = MutableLiveData<Double>()
     private val localBalanceLive: LiveData<Double> = localBalance
-    private var otp1 = ""
-    private var otp2 = ""
-    private var otp3 = ""
-    private var otp4 = ""
+    private var pin1 = ""
+    private var pin2 = ""
+    private var pin3 = ""
+    private var pin4 = ""
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -111,28 +109,50 @@ class WalletFragment : BaseFragment<PaymentViewModel, FragmentWalletBinding, Pay
             startActivity(Intent(requireContext(), TransactionHistoryActivity::class.java))
             requireActivity().startAnimation()
         }
+        binding.transactionHistoryRv.adapter = adapter
+
+        adapter.click(object : TransactionItemListener {
+            override fun click(transaction: Transaction) {
+                binding.alphaBg.visible(true)
+                showTransactionDetails(
+                    requireContext(),
+                    layoutInflater,
+                    transaction,
+                    currentUserProfile,
+                    binding.alphaBg,
+                    viewModel, viewLifecycleOwner
+                )
+            }
+        })
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val transactions = viewModel.getAllTransactions()?.first()
+            if (transactions != null) {
+                var allTransaction: List<Transaction> = transactions
+                if (allTransaction.isNotEmpty()) {
+                    if (allTransaction.size > 20)
+                        allTransaction = allTransaction.subList(0, 20)
+                    withContext(Dispatchers.Main) {
+                        adapter.submitData(lifecycle, PagingData.from(allTransaction))
+                        showRecycler(true)
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        showRecycler(false)
+                    }
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    showRecycler(false)
+                }
+            }
+        }
 
         viewModel.transactions.observe(viewLifecycleOwner) { value ->
             adapter.submitData(
                 viewLifecycleOwner.lifecycle,
                 PagingData.from(value)
             )
-
-            binding.transactionHistoryRv.adapter = adapter
-
-            adapter.click(object : TransactionItemListener {
-                override fun click(transaction: Transaction) {
-                    binding.alphaBg.visible(true)
-                    showTransactionDetails(
-                        requireContext(),
-                        layoutInflater,
-                        transaction,
-                        currentUserProfile,
-                        binding.alphaBg,
-                        viewModel, viewLifecycleOwner
-                    )
-                }
-            })
 
             showRecycler(value.isNotEmpty())
         }
@@ -177,11 +197,9 @@ class WalletFragment : BaseFragment<PaymentViewModel, FragmentWalletBinding, Pay
             }
         }
 
-        if (!requireActivity().isNetworkAvailable()) {
-            NetworkConnectionLiveData(requireContext()).observe(viewLifecycleOwner) { available ->
-                if (available)
-                    loadTransactions()
-            }
+        NetworkConnectionLiveData(requireContext()).observe(viewLifecycleOwner) { available ->
+            if (available)
+                loadTransactions()
         }
     }
 
@@ -200,12 +218,12 @@ class WalletFragment : BaseFragment<PaymentViewModel, FragmentWalletBinding, Pay
             pinBottomSheet.show()
             pinFrag.continueBtn.setOnClickListener {
                 pinFrag.continueBtn.enable(false)
-                otp1 = pinFrag.input1.text.toString()
-                otp2 = pinFrag.input2.text.toString()
-                otp3 = pinFrag.input3.text.toString()
-                otp4 = pinFrag.input4.text.toString()
-                if (otp1.isNotEmpty() && otp2.isNotEmpty() && otp3.isNotEmpty() && otp4.isNotEmpty()) {
-                    val pin = "$otp1$otp2$otp3$otp4"
+                pin1 = pinFrag.input1.text.toString()
+                pin2 = pinFrag.input2.text.toString()
+                pin3 = pinFrag.input3.text.toString()
+                pin4 = pinFrag.input4.text.toString()
+                if (pin1.isNotEmpty() && pin2.isNotEmpty() && pin3.isNotEmpty() && pin4.isNotEmpty()) {
+                    val pin = "$pin1$pin2$pin3$pin4"
                     lifecycleScope.launch {
                         when (val pinRequest = viewModel.setPaymentPin(pin)) {
                             is Resource.Success -> {
@@ -238,18 +256,13 @@ class WalletFragment : BaseFragment<PaymentViewModel, FragmentWalletBinding, Pay
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        loadTransactions()
-    }
-
     fun updateBalance() {
         loadTransactions()
     }
 
     private fun showRecycler(state: Boolean) {
         binding.transactionHistoryRv.visible(state)
-        binding.transactionEmpty.visible(!state)
+        binding.transactionEmpty.root.visible(!state)
     }
 
     private fun loadTransactions() {
@@ -268,10 +281,12 @@ class WalletFragment : BaseFragment<PaymentViewModel, FragmentWalletBinding, Pay
     ) = FragmentWalletBinding.inflate(inflater, container, false)
 
     override fun getFragmentRepository(): PaymentRepository {
-        val token = runBlocking { profilePreferences.authToken.first() }
-        val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java, token)
-        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
-        return PaymentRepository(paymentApi)
+        val datasource = ProtrndAPIDataSource()
+        val t = runBlocking { profilePreferences.authToken.first() }
+        val paymentApi = datasource.buildAPI(PaymentApi::class.java, t!!)
+        val db = datasource.provideTransactionDatabase(requireActivity().application)
+        val profileDb = datasource.provideProfileDatabase(requireActivity().application)
+        return PaymentRepository(paymentApi,db,profileDb)
     }
 
     fun removeAlphaVisibility() {

@@ -2,9 +2,11 @@ package protrnd.com.data.models
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.google.errorprone.annotations.Keep
 import com.google.gson.annotations.SerializedName
 import java.util.*
 
+@Keep
 data class Location(
     @SerializedName("city")
     val city: String = "",

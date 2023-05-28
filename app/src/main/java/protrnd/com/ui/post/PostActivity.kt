@@ -175,6 +175,7 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
 
         otherProfile.observe(this) {
             otherProfileHash["otherProfile"] = it
+            binding.progressBar.visible(false)
             bindPostDetails(
                 tabLayout = binding.tabLayout,
                 fullnameTv = binding.fullname,
@@ -187,9 +188,14 @@ class PostActivity : BaseActivity<ActivityPostBinding, HomeViewModel, HomeReposi
                 timeText = binding.time,
                 activity = this,
                 viewModel = viewModel,
-                currentProfile = currentUserProfile
+                currentProfile = currentUserProfile,
+                moreInfoBtn = binding.moreInfoBtn
             )
         }
+    }
+
+    fun showAlpha() {
+        binding.alphaBg.visible(true)
     }
 
     override fun getActivityBinding(inflater: LayoutInflater) =

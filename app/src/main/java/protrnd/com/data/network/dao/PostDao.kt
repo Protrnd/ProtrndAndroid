@@ -13,7 +13,7 @@ interface PostDao {
     fun getAllPosts(): Flow<List<Post>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPosts(posts: List<Post>)
+    fun insertPosts(posts: List<Post>)
 
     @Query("DELETE FROM Posts")
     suspend fun deleteAllPosts()

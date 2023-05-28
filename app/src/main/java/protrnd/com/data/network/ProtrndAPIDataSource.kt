@@ -7,17 +7,15 @@ import okhttp3.logging.HttpLoggingInterceptor
 import protrnd.com.BuildConfig
 import protrnd.com.data.models.FCMValues
 import protrnd.com.data.network.api.FCMNotificationApi
-import protrnd.com.data.network.database.NotificationDatabase
-import protrnd.com.data.network.database.PostDatabase
-import protrnd.com.data.network.database.ProfileDatabase
-import protrnd.com.data.network.database.TransactionsDatabase
+import protrnd.com.data.network.database.*
+import protrnd.com.ui.isInDebugMode
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 
 class ProtrndAPIDataSource {
     companion object {
-        private const val BASE_URL = "https://protrndapi-x43bb3bjqa-uc.a.run.app/api/"
+        private val BASE_URL = "https://protrnd-api-live-x43bb3bjqa-uc.a.run.app/api/"
     }
 
     fun <API> buildAPI(
@@ -31,13 +29,6 @@ class ProtrndAPIDataSource {
                     chain.proceed(chain.request().newBuilder().also {
                         it.addHeader("Authorization", "Bearer $authToken")
                     }.build())
-                }
-                .also { client -> //Only needed during debugging
-                    if (BuildConfig.DEBUG) {
-                        val logging = HttpLoggingInterceptor()
-                        logging.setLevel(HttpLoggingInterceptor.Level.BODY)
-                        client.addInterceptor(logging)
-                    }
                 }.build()
             )
             .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
@@ -76,5 +67,17 @@ class ProtrndAPIDataSource {
 
     fun provideTransactionDatabase(application: Application): TransactionsDatabase =
         Room.databaseBuilder(application, TransactionsDatabase::class.java, "Transaction Database")
+            .build()
+
+    fun provideChatDatabase(application: Application): ChatDatabase =
+        Room.databaseBuilder(application, ChatDatabase::class.java, "Chat Database")
+            .build()
+
+    fun provideConversationDatabase(application: Application): ConversationDatabase =
+        Room.databaseBuilder(application, ConversationDatabase::class.java, "Conversations Database")
+            .build()
+
+    fun provideConversationIdDatabase(application: Application): ConversationIdDatabase =
+        Room.databaseBuilder(application, ConversationIdDatabase::class.java, "ConversationID Database")
             .build()
 }

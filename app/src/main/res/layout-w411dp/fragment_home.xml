@@ -59,22 +59,22 @@
                     android:nestedScrollingEnabled="false"
                     android:orientation="vertical" />
 
-                <com.facebook.shimmer.ShimmerFrameLayout
-                    android:id="@+id/shimmer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:auto_start="true">
+<!--                <com.facebook.shimmer.ShimmerFrameLayout-->
+<!--                    android:id="@+id/shimmer"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    app:auto_start="true">-->
 
-                    <androidx.appcompat.widget.LinearLayoutCompat
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
+<!--                    <androidx.appcompat.widget.LinearLayoutCompat-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:orientation="vertical">-->
 
-                        <include layout="@layout/shimmer_layout_view" />
+<!--                        <include layout="@layout/shimmer_layout_view" />-->
 
-                        <include layout="@layout/shimmer_layout_view" />
-                    </androidx.appcompat.widget.LinearLayoutCompat>
-                </com.facebook.shimmer.ShimmerFrameLayout>
+<!--                        <include layout="@layout/shimmer_layout_view" />-->
+<!--                    </androidx.appcompat.widget.LinearLayoutCompat>-->
+<!--                </com.facebook.shimmer.ShimmerFrameLayout>-->
 
                 <View
                     android:layout_width="match_parent"

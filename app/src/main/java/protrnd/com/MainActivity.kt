@@ -3,8 +3,6 @@ package protrnd.com
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
 import protrnd.com.data.repository.HomeRepository
@@ -23,7 +21,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel, HomeReposi
         super.onViewReady(savedInstanceState, intent)
         val bundle = intent!!.extras
         Thread.setDefaultUncaughtExceptionHandler { _, e ->
-            binding.root.handleUnCaughtException(e)
+            binding.root.handleUnCaughtException()
         }
         if (bundle != null && bundle.containsKey("post_id")) {
             bundle.putBoolean("isFromNotification", true)
@@ -39,9 +37,8 @@ class MainActivity : BaseActivity<ActivityMainBinding, HomeViewModel, HomeReposi
     override fun getViewModel() = HomeViewModel::class.java
 
     override fun getActivityRepository(): HomeRepository {
-        val token = runBlocking { profilePreferences.authToken.first() }
-        val api = protrndAPIDataSource.buildAPI(ProfileApi::class.java, token)
-        val postsApi = protrndAPIDataSource.buildAPI(PostApi::class.java, token)
+        val api = protrndAPIDataSource.buildAPI(ProfileApi::class.java)
+        val postsApi = protrndAPIDataSource.buildAPI(PostApi::class.java)
         return HomeRepository(api, postsApi)
     }
 }

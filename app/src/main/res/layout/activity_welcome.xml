@@ -1,27 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.onboarding.WelcomeActivity">
-
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/onboarding_fragments_pager"
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:id="@+id/main_view">
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/onboarding_fragments_pager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/get_started_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="20dp"
+            android:background="@drawable/button_ripple"
+            android:fontFamily="@font/dm_sans_medium"
+            android:text="@string/get_started"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            tools:ignore="DuplicateSpeakableTextCheck" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/get_started_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="20dp"
-        android:background="@drawable/button_ripple"
-        android:fontFamily="@font/dm_sans_medium"
-        android:text="@string/get_started"
-        android:textColor="@color/white"
-        android:textSize="20sp"
-        tools:ignore="DuplicateSpeakableTextCheck" />
-</androidx.appcompat.widget.LinearLayoutCompat>
+    <ImageView
+        android:id="@+id/progressbar"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:contentDescription="@string/background_image"
+        android:src="@drawable/launcher_outlined_ic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

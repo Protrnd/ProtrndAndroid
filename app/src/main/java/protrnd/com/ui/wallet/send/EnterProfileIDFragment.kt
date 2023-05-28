@@ -22,15 +22,12 @@ import protrnd.com.data.network.api.PaymentApi
 import protrnd.com.data.network.resource.Resource
 import protrnd.com.data.repository.PaymentRepository
 import protrnd.com.databinding.FragmentEnterProfileIDBinding
+import protrnd.com.ui.*
 import protrnd.com.ui.adapter.ProfileTagAdapter
 import protrnd.com.ui.adapter.listener.ProfileClickListener
 import protrnd.com.ui.base.BaseFragment
-import protrnd.com.ui.enable
-import protrnd.com.ui.errorSnackBar
-import protrnd.com.ui.formatAmount
 import protrnd.com.ui.viewholder.ProfileTagViewHolder
 import protrnd.com.ui.viewmodels.PaymentViewModel
-import protrnd.com.ui.visible
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -52,7 +49,8 @@ class EnterProfileIDFragment :
                 QrCodeContent(
                     requireArguments().getString("amount").toString().toInt(),
                     sendMoneyBottomSheetFragment.profile,
-                    sdf.format(Date())
+                    sdf.format(Date()),
+                    isInDebugMode = isInDebugMode()
                 )
             )
             bundle.putBoolean("isChat", true)
@@ -140,7 +138,8 @@ class EnterProfileIDFragment :
                     QrCodeContent(
                         requireArguments().getString("amount").toString().toInt(),
                         profileResult,
-                        sdf.format(Date())
+                        sdf.format(Date()),
+                        isInDebugMode = isInDebugMode()
                     )
                 )
                 navHost.navController.navigate(R.id.profileResultFragment, bundle)
@@ -158,7 +157,6 @@ class EnterProfileIDFragment :
     override fun getFragmentRepository(): PaymentRepository {
         val token = runBlocking { profilePreferences.authToken.first() }
         val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java, token)
-        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
         return PaymentRepository(paymentApi)
     }
 }

@@ -47,16 +47,26 @@ class LoginFragment : BaseFragment<AuthViewModel, FragmentLoginBinding, AuthRepo
                     binding.loginBtn.enable(false)
                 }
                 is Resource.Success -> {
-                    saveAndStartHomeFragment(
-                        it.value.data.toString(),
-                        lifecycleScope,
-                        requireActivity(),
-                        profilePreferences
-                    )
+                    binding.progressBar.visible(false)
+                    if(it.value.statusCode == SUCCESS_CODE) {
+                        saveAndStartHomeFragment(
+                            it.value.data.toString(),
+                            lifecycleScope,
+                            requireActivity(),
+                            profilePreferences
+                        )
+                    } else {
+                        binding.root.errorSnackBar("Invalid email or password, please try again")
+                    }
                 }
                 is Resource.Failure -> {
-                    binding.loginBtn.enable(true)
-                    binding.root.errorSnackBar("Error logging you in please try again") { login() }
+                    if (it.isNetworkError)
+                        binding.root.errorSnackBar("Please check your network connection")
+                    else {
+                        binding.progressBar.visible(false)
+                        binding.loginBtn.enable(true)
+                        binding.root.errorSnackBar("Invalid email or password")
+                    }
                 }
                 else -> {}
             }
@@ -84,7 +94,7 @@ class LoginFragment : BaseFragment<AuthViewModel, FragmentLoginBinding, AuthRepo
         binding.loginBtn.setOnClickListener {
             email = binding.emailEt.text.toString().trim()
             password = binding.passwordEt.text.toString().trim()
-            binding.loginBtn.enable(false)
+            binding.progressBar.visible(true)
             NetworkConnectionLiveData(requireContext()).observe(viewLifecycleOwner) {
                 login()
             }

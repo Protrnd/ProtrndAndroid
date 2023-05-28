@@ -14,17 +14,20 @@ import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.media.MediaMetadataRetriever
-import android.net.*
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.Uri
+import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
-import android.os.Parcelable
-import android.text.*
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.TextPaint
 import android.text.format.DateUtils
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
-import android.util.Log
 import android.view.*
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -32,10 +35,8 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatToggleButton
 import androidx.appcompat.widget.LinearLayoutCompat
-import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
@@ -58,18 +59,54 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.gson.Gson
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.first
+import protrnd.com.BuildConfig
 import protrnd.com.MainActivity
 import protrnd.com.R
 import protrnd.com.data.NetworkConnectionLiveData
 import protrnd.com.data.models.*
+import protrnd.com.data.models.Constants.ABIA
+import protrnd.com.data.models.Constants.ADAMAWA
+import protrnd.com.data.models.Constants.AKWA_IBOM
+import protrnd.com.data.models.Constants.ANAMBRA
+import protrnd.com.data.models.Constants.BAUCHI
+import protrnd.com.data.models.Constants.BAYELSA
+import protrnd.com.data.models.Constants.BENUE
+import protrnd.com.data.models.Constants.BORNO
+import protrnd.com.data.models.Constants.CROSS_RIVER
+import protrnd.com.data.models.Constants.DELTA
+import protrnd.com.data.models.Constants.EBONYI
+import protrnd.com.data.models.Constants.EDO
+import protrnd.com.data.models.Constants.EKITI
 import protrnd.com.data.models.Constants.EMPTY_GUID
+import protrnd.com.data.models.Constants.ENUGU
+import protrnd.com.data.models.Constants.FCT
 import protrnd.com.data.models.Constants.FROM
+import protrnd.com.data.models.Constants.GOMBE
+import protrnd.com.data.models.Constants.IMO
+import protrnd.com.data.models.Constants.JIGAWA
+import protrnd.com.data.models.Constants.KADUNA
+import protrnd.com.data.models.Constants.KANO
+import protrnd.com.data.models.Constants.KATSINA
+import protrnd.com.data.models.Constants.KEBBI
+import protrnd.com.data.models.Constants.KOGI
+import protrnd.com.data.models.Constants.KWARA
+import protrnd.com.data.models.Constants.LAGOS
+import protrnd.com.data.models.Constants.NASSARAWA
+import protrnd.com.data.models.Constants.NIGER
+import protrnd.com.data.models.Constants.OGUN
+import protrnd.com.data.models.Constants.ONDO
+import protrnd.com.data.models.Constants.OSUN
+import protrnd.com.data.models.Constants.OYO
+import protrnd.com.data.models.Constants.PLATEAU
 import protrnd.com.data.models.Constants.RECEIVE
+import protrnd.com.data.models.Constants.RIVERS
+import protrnd.com.data.models.Constants.SOKOTO
+import protrnd.com.data.models.Constants.TARABA
 import protrnd.com.data.models.Constants.TOP_UP
+import protrnd.com.data.models.Constants.YOBE
+import protrnd.com.data.models.Constants.ZAMFARA
 import protrnd.com.data.network.MemoryCache
 import protrnd.com.data.network.ProfilePreferences
 import protrnd.com.data.network.ProtrndAPIDataSource
@@ -80,6 +117,7 @@ import protrnd.com.data.repository.HomeRepository
 import protrnd.com.data.responses.BasicResponseBody
 import protrnd.com.databinding.BottomSheetCommentsBinding
 import protrnd.com.databinding.ConfirmationLayoutBinding
+import protrnd.com.databinding.LocationPickerBinding
 import protrnd.com.databinding.TransactionDetailsLayoutBinding
 import protrnd.com.ui.adapter.*
 import protrnd.com.ui.adapter.listener.ImagePostItemClickListener
@@ -88,7 +126,10 @@ import protrnd.com.ui.auth.AuthenticationActivity
 import protrnd.com.ui.auth.LoginFragment
 import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.home.HomeActivity
+import protrnd.com.ui.home.HomeFragment
+import protrnd.com.ui.onboarding.WelcomeActivity
 import protrnd.com.ui.post.ForwardPostBottomSheetDialog
+import protrnd.com.ui.post.MoreInfoBottomSheetDialogFragment
 import protrnd.com.ui.post.PostActivity
 import protrnd.com.ui.profile.ProfileActivity
 import protrnd.com.ui.support.SupportBottomSheet
@@ -103,25 +144,82 @@ import java.text.NumberFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.Executors
+import java.util.regex.Pattern
 import kotlin.math.abs
 
 const val REQUEST_PERMISSION_CODE = 7192
 
-fun View.handleUnCaughtException(e: Throwable) {
-    Log.e("Unknown Throwable Error", Gson().toJson(e))
-    this.errorSnackBar("An Error occurred!")
+const val SUCCESS_CODE = 200
+const val FAILURE_CODE = 400
+const val UNAUTHORIZED_CODE = 401
+const val HOUR_IN_MILLIS = 3_600_000L
+
+fun View.handleUnCaughtException() {
 }
 
 fun generateRef(): String {
     return UUID.randomUUID().toString()
 }
 
+inline fun<reified A> Bundle.getParcelableBundle(key: String): A? {
+    return if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        getParcelable(key, A::class.java)
+    } else
+        getParcelable(key)
+}
+
+fun LocationPickerBinding.selectState(state: String) {
+    val locationPickerBinding = this
+    when (state.lowercase()) {
+        ABIA -> locationPickerBinding.cityPicker.setItems(R.array.abia)
+        ADAMAWA -> locationPickerBinding.cityPicker.setItems(R.array.adamawa)
+        AKWA_IBOM -> locationPickerBinding.cityPicker.setItems(R.array.akwa_ibom)
+        ANAMBRA -> locationPickerBinding.cityPicker.setItems(R.array.anambra)
+        BAUCHI -> locationPickerBinding.cityPicker.setItems(R.array.bauchi)
+        BAYELSA -> locationPickerBinding.cityPicker.setItems(R.array.bayelsa)
+        BENUE -> locationPickerBinding.cityPicker.setItems(R.array.benue)
+        BORNO -> locationPickerBinding.cityPicker.setItems(R.array.borno)
+        CROSS_RIVER -> locationPickerBinding.cityPicker.setItems(R.array.cross_river)
+        DELTA -> locationPickerBinding.cityPicker.setItems(R.array.delta)
+        EBONYI -> locationPickerBinding.cityPicker.setItems(R.array.ebonyi)
+        EDO -> locationPickerBinding.cityPicker.setItems(R.array.edo)
+        EKITI -> locationPickerBinding.cityPicker.setItems(R.array.ekiti)
+        ENUGU -> locationPickerBinding.cityPicker.setItems(R.array.enugu)
+        FCT -> locationPickerBinding.cityPicker.setItems(R.array.fct)
+        GOMBE -> locationPickerBinding.cityPicker.setItems(R.array.gombe)
+        IMO -> locationPickerBinding.cityPicker.setItems(R.array.imo)
+        JIGAWA -> locationPickerBinding.cityPicker.setItems(R.array.jigawa)
+        KADUNA -> locationPickerBinding.cityPicker.setItems(R.array.kaduna)
+        KANO -> locationPickerBinding.cityPicker.setItems(R.array.kano)
+        KATSINA -> locationPickerBinding.cityPicker.setItems(R.array.katsina)
+        KEBBI -> locationPickerBinding.cityPicker.setItems(R.array.kebbi)
+        KOGI -> locationPickerBinding.cityPicker.setItems(R.array.kogi)
+        KWARA -> locationPickerBinding.cityPicker.setItems(R.array.kwara)
+        LAGOS -> locationPickerBinding.cityPicker.setItems(R.array.lagos)
+        NASSARAWA -> locationPickerBinding.cityPicker.setItems(R.array.nassarawa)
+        NIGER -> locationPickerBinding.cityPicker.setItems(R.array.niger)
+        OGUN -> locationPickerBinding.cityPicker.setItems(R.array.ogun)
+        ONDO -> locationPickerBinding.cityPicker.setItems(R.array.ondo)
+        OSUN -> locationPickerBinding.cityPicker.setItems(R.array.osun)
+        OYO -> locationPickerBinding.cityPicker.setItems(R.array.oyo)
+        PLATEAU -> locationPickerBinding.cityPicker.setItems(R.array.plateau)
+        RIVERS -> locationPickerBinding.cityPicker.setItems(R.array.rivers)
+        SOKOTO -> locationPickerBinding.cityPicker.setItems(R.array.sokoto)
+        TARABA -> locationPickerBinding.cityPicker.setItems(R.array.taraba)
+        YOBE -> locationPickerBinding.cityPicker.setItems(R.array.yobe)
+        ZAMFARA -> locationPickerBinding.cityPicker.setItems(R.array.zamfara)
+    }
+
+}
+
 fun RecyclerView.loadPageData(
     fm: FragmentManager,
-    activity: Activity?,
+    activity: BaseActivity<*,*,*>?,
     viewModel: HomeViewModel,
     lifecycleScope: CoroutineScope,
     context: Context,
@@ -134,21 +232,19 @@ fun RecyclerView.loadPageData(
 ) {
     val recyclerViewReadyCallback = object : RecyclerViewReadyCallback {
         override fun onLayoutReady() {
-            NetworkConnectionLiveData(context).observe(lifecycleOwner) {
-                (adapter as PostsPagingAdapter).setupRecyclerView(
-                    activity,
-                    viewModel,
-                    lifecycleOwner,
-                    lifecycleScope,
-                    currentProfile,
-                    context,
-                    fm,
-                    token,
-                    fragment,
-                    removeAlphaAction,
-                    showAlphaAction
-                )
-            }
+            (adapter as PostsPagingAdapter).setupRecyclerView(
+                activity,
+                viewModel,
+                lifecycleOwner,
+                lifecycleScope,
+                currentProfile,
+                context,
+                fm,
+                token,
+                fragment,
+                removeAlphaAction,
+                showAlphaAction
+            )
         }
     }
 
@@ -162,11 +258,7 @@ fun RecyclerView.loadPageData(
 
     (adapter as PostsPagingAdapter).promoteSupportPost(object : PromoteSupportListener {
         override fun click(post: Post) {
-            if (currentProfile.id == post.profileid) {
-//                    val bottomSheetPromote = PromotionBottomSheet(this@HomeFragment, post.id)
-//                    binding.alphaBg.visible(true)
-//                    bottomSheetPromote.show(childFragmentManager, bottomSheetPromote.tag)
-            } else {
+            if (currentProfile.id != post.profileid) {
                 val bottomSheetSupport =
                     SupportBottomSheet(fragment, post = post, activity = activity)
                 showAlphaAction.let {
@@ -179,7 +271,7 @@ fun RecyclerView.loadPageData(
 }
 
 private fun PostsPagingAdapter.setupRecyclerView(
-    activity: Activity?,
+    activity: BaseActivity<*,*,*>?,
     viewModel: HomeViewModel,
     lifecycleOwner: LifecycleOwner,
     lifecycleScope: CoroutineScope,
@@ -199,20 +291,29 @@ private fun PostsPagingAdapter.setupRecyclerView(
         }
 
         override fun setupData(holder: PostsViewHolder, postData: Post) {
-            lifecycleScope.launch {
-                setupPosts(
-                    holder,
-                    postData,
-                    activity,
-                    currentUserProfile,
-                    viewModel,
-                    lifecycleOwner
-                )
+            try {
+                lifecycleScope.launch {
+                    setupPosts(
+                        holder,
+                        postData,
+                        activity!!,
+                        currentUserProfile,
+                        viewModel,
+                        lifecycleOwner
+                    )
+                }
+            } catch (_: Exception) {
+                if (fragment is HomeFragment)
+                    fragment.removeLoader()
             }
 
             if (postData.profileid == currentUserProfile.id) {
                 holder.view.promoteSupport.visibility = View.INVISIBLE
                 holder.view.promoteSupport.isEnabled = false
+            }
+
+            NetworkConnectionLiveData(context).observe(lifecycleOwner) {
+                holder.view.promoteSupport.enable(it)
             }
 
             holder.view.sendTextBtn.setOnClickListener {
@@ -266,6 +367,7 @@ private fun PostsPagingAdapter.setupRecyclerView(
                     }
                 }
             }
+
             val profileFromComment = MutableLiveData<Profile>()
             val profileLive: LiveData<Profile> = profileFromComment
             var profileData = Profile()
@@ -330,7 +432,6 @@ private fun PostsPagingAdapter.setupRecyclerView(
                         holder,
                         postData,
                         activity,
-                        lifecycleScope,
                         viewModel,
                         lifecycleOwner
                     )
@@ -345,13 +446,11 @@ private suspend fun likePost(
     holder: PostsViewHolder,
     postData: Post,
     activity: Activity?,
-    lifecycleScope: CoroutineScope,
     viewModel: HomeViewModel,
     lifecycleOwner: LifecycleOwner
 ) {
     val profileResult = getOtherProfile(postData.profileid, viewModel, lifecycleOwner)
     if (profileResult != null) {
-        val liked = holder.view.likeToggle.isChecked
         if (activity != null)
             likePost(
                 holder.view.likeToggle,
@@ -423,20 +522,23 @@ suspend fun setupPostLikes(
 suspend fun setupPosts(
     holder: PostsViewHolder,
     postData: Post,
-    activity: Activity?,
+    activity: BaseActivity<*, *, *>?,
     currentProfile: Profile,
     viewModel: HomeViewModel,
     lifecycleOwner: LifecycleOwner
 ) {
     val profileResult = getOtherProfile(postData.profileid, viewModel, lifecycleOwner)
     if (profileResult != null) {
+        holder.view.root.visible(true)
         holder.bind(
-            activity as AppCompatActivity,
+            activity!!,
             postData,
             profileResult,
             currentProfile,
             viewModel
         )
+    } else {
+        holder.view.root.visible(false)
     }
 }
 
@@ -452,13 +554,49 @@ fun <A : Activity> Activity.startNewActivityWithNoBackstack(activity: Class<A>) 
 }
 
 fun BaseActivity<*, *, *>.logout() {
+    val source = ProtrndAPIDataSource()
+    val chatDb = source.provideChatDatabase(application).chatDao()
+    val convoDb = source.provideConversationDatabase(application).conversationDao()
+    val convoidDb = source.provideConversationIdDatabase(application).conversationIdDao()
+    val notiDb = source.provideNotificationDatabase(application).notificationDao()
+    val postDb = source.providePostDatabase(application).postDao()
+    val profileDb = source.provideProfileDatabase(application).profileDao()
+    val trxDb = source.provideTransactionDatabase(application).transactionDao()
     CoroutineScope(Dispatchers.IO).launch {
         profilePreferences.logoutProfile()
+        chatDb.deleteAllChat()
+        convoDb.deleteAllConversations()
+        convoidDb.deleteAllConversationId()
+        notiDb.deleteAllNotifications()
+        postDb.deleteAllPosts()
+        profileDb.deleteAllProfiles()
+        trxDb.deleteAllTransactions()
     }
     Intent(this, MainActivity::class.java).apply {
         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(this)
         startAnimation()
+    }
+}
+
+fun WelcomeActivity.logout() {
+    val source = ProtrndAPIDataSource()
+    val chatDb = source.provideChatDatabase(application).chatDao()
+    val convoDb = source.provideConversationDatabase(application).conversationDao()
+    val convoidDb = source.provideConversationIdDatabase(application).conversationIdDao()
+    val notiDb = source.provideNotificationDatabase(application).notificationDao()
+    val postDb = source.providePostDatabase(application).postDao()
+    val profileDb = source.provideProfileDatabase(application).profileDao()
+    val trxDb = source.provideTransactionDatabase(application).transactionDao()
+    CoroutineScope(Dispatchers.IO).launch {
+        profilePreferences.logoutProfile()
+        chatDb.deleteAllChat()
+        convoDb.deleteAllConversations()
+        convoidDb.deleteAllConversationId()
+        notiDb.deleteAllNotifications()
+        postDb.deleteAllPosts()
+        profileDb.deleteAllProfiles()
+        trxDb.deleteAllTransactions()
     }
 }
 
@@ -606,12 +744,16 @@ suspend fun HomeViewModel.setupLikes(
                 if (cachedValue < value) {
                     likesMutable.postValue(value)
                     MemoryCache.postLikes[postId] = value
+                } else {
+                    likesMutable.postValue(0)
                 }
             }
             is Resource.Loading -> {
 
             }
-            else -> {}
+            is Resource.Failure -> {
+                likesMutable.postValue(0)
+            }
         }
 
         when (val isLiked = this@setupLikes.postIsLiked(postId)) {
@@ -629,7 +771,9 @@ suspend fun HomeViewModel.setupLikes(
             }
             is Resource.Loading -> {
             }
-            else -> {}
+            is Resource.Failure -> {
+
+            }
         }
     }
 
@@ -647,8 +791,6 @@ suspend fun HomeViewModel.setupLikes(
             likeToggle.isChecked = isLiked
         }
     }
-
-
 }
 
 fun sendCommentNotification(otherProfile: Profile, currentProfile: Profile, id: String) {
@@ -888,8 +1030,28 @@ fun getTimeWithCenterDot(time: String): String {
         val am_pm = if (sdfHour > 12) "pm" else "am"
         "${time.getAgo()} \u2022 $hour:$minute $am_pm"
     } catch (t: Throwable) {
-        "Error getting date"
+        if (time == "Now") "Now" else "Error getting date"
     }
+}
+
+fun isInDebugMode(): Boolean {
+    return BuildConfig.DEBUG
+//    return 0 != applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
+}
+
+fun getDateTimeFormatted(): String {
+    val now = OffsetDateTime.now(ZoneOffset.UTC)
+    return now.format(
+        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    )
+}
+
+fun String.encode(): String {
+    return android.util.Base64.encodeToString(this.toByteArray(charset("UTF-8")),android.util.Base64.DEFAULT)
+}
+
+fun String.decode(): String {
+    return android.util.Base64.decode(this, android.util.Base64.DEFAULT).toString(charset("UTF-8"))
 }
 
 fun showTransactionDetails(
@@ -901,7 +1063,6 @@ fun showTransactionDetails(
     viewModel: PaymentViewModel,
     lifecycleOwner: LifecycleOwner
 ) {
-
     val mutableReceiver = MutableLiveData<Profile>()
     val receiver: LiveData<Profile> = mutableReceiver
 
@@ -940,6 +1101,12 @@ fun showTransactionDetails(
         bottomSheet.fromLocation.text = senderProfile.location
         bottomSheet.fromProfileName.text = senderProfile.fullname
         bottomSheet.fromProfileUsername.text = profileName
+        if (senderProfile.profileimg.isNotEmpty()) {
+            Glide.with(bottomSheet.view)
+                .load(senderProfile.profileimg)
+                .circleCrop()
+                .into(bottomSheet.fromProfileImg)
+        }
         if (transaction.profileid == EMPTY_GUID && senderProfile.id == transaction.profileid) {
             bottomSheet.fromProfileName.text = errorText
             bottomSheet.fromProfileUsername.visible(false)
@@ -957,6 +1124,12 @@ fun showTransactionDetails(
         bottomSheet.toLocation.text = receiverProfile.location
         bottomSheet.toProfileName.text = receiverProfile.fullname
         bottomSheet.toProfileUsername.text = profileName
+        if (receiverProfile.profileimg.isNotEmpty()) {
+            Glide.with(bottomSheet.view)
+                .load(receiverProfile.profileimg)
+                .circleCrop()
+                .into(bottomSheet.toProfileImg)
+        }
         if (transaction.receiverid == EMPTY_GUID && receiverProfile.id == transaction.receiverid) {
             bottomSheet.toProfileName.text = errorText
             bottomSheet.toProfileUsername.visible(false)
@@ -972,41 +1145,45 @@ fun showTransactionDetails(
     if (transaction.purpose.startsWith(RECEIVE) || transaction.purpose.contains(FROM)) {
         val split = transaction.purpose.replace("@","").split(" ")
         val profileName = split[split.size-1]
-        var senderProfile: Profile
-        val cachedSenderProfile = MemoryCache.profilesByName[profileName]
+        var senderProfile = Profile()
         mutableReceiver.postValue(currentUserProfile)
-        if (cachedSenderProfile != null) {
-            senderProfile = cachedSenderProfile
-            mutableSender.postValue(senderProfile)
-        }
         CoroutineScope(Dispatchers.IO).launch {
+            val cachedSenderProfile = viewModel.getSavedProfileByName(profileName)?.first()
+            if (cachedSenderProfile != null) {
+                senderProfile = cachedSenderProfile
+                mutableSender.postValue(senderProfile)
+            }
             when (val profileResult =
                 viewModel.getProfileByName(profileName)) {
                 is Resource.Success -> {
                     val profile = profileResult.value.data[0]
-                    senderProfile = profile
-                    MemoryCache.profilesByName[profileName] = senderProfile
-                    mutableSender.postValue(senderProfile)
+                    if (senderProfile != profile) {
+                        senderProfile = profile
+                        viewModel.saveProfile(senderProfile)
+                        mutableSender.postValue(senderProfile)
+                    }
                 }
                 else -> {}
             }
         }
     } else {
-        val cachedReceiverProfile = MemoryCache.profiles[transaction.receiverid]
-        var receiverProfile: Profile
+        var receiverProfile = Profile()
         mutableSender.postValue(currentUserProfile)
-        if (cachedReceiverProfile != null) {
-            receiverProfile = cachedReceiverProfile
-            mutableReceiver.postValue(receiverProfile)
-        }
         CoroutineScope(Dispatchers.IO).launch {
+            val cachedReceiverProfile = viewModel.getSavedProfile(transaction.receiverid)?.first()
+            if (cachedReceiverProfile != null) {
+                receiverProfile = cachedReceiverProfile
+                mutableReceiver.postValue(receiverProfile)
+            }
             when (val profileResult =
                 viewModel.getProfileById(transaction.receiverid)) {
                 is Resource.Success -> {
                     val profile = profileResult.value.data
-                    receiverProfile = profile
-                    MemoryCache.profiles[transaction.receiverid] = receiverProfile
-                    mutableReceiver.postValue(receiverProfile)
+                    if (receiverProfile != profile) {
+                        receiverProfile = profile
+                        viewModel.saveProfile(receiverProfile)
+                        mutableReceiver.postValue(receiverProfile)
+                    }
                 }
                 else -> {}
             }
@@ -1029,8 +1206,9 @@ fun bindPostDetails(
     postOwnerProfile: Profile?,
     currentProfile: Profile,
     timeText: TextView,
-    activity: AppCompatActivity,
-    viewModel: ViewModel? = null
+    activity: BaseActivity<*,*,*>,
+    viewModel: ViewModel? = null,
+    moreInfoBtn: ImageView
 ) {
     if (postOwnerProfile != null) {
         fullnameTv.text = postOwnerProfile.fullname
@@ -1070,6 +1248,11 @@ fun bindPostDetails(
                 putExtra("post_id", post.id)
             })
             activity.startAnimation()
+        }
+
+        moreInfoBtn.setOnClickListener {
+            val infoBottomSheet = MoreInfoBottomSheetDialogFragment(post.id,post.time,postOwnerProfile,currentProfile.id,activity.authToken!!)
+            infoBottomSheet.show(activity.supportFragmentManager, infoBottomSheet.tag)
         }
     }
 
@@ -1435,3 +1618,11 @@ fun Context.showFeatureComingSoonDialog() {
         WRAP_CONTENT
     )
 }
+
+fun String.isEmailValid(): Boolean {
+    val expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$"
+    val pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE)
+    val matcher = pattern.matcher(this)
+    return matcher.matches()
+}
+

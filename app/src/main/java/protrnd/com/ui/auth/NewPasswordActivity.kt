@@ -75,17 +75,18 @@ class NewPasswordActivity : BaseActivity<ActivityNewPasswordBinding, AuthViewMod
                             }
                         }
                     }
+                    is Resource.Loading -> {
+                        binding.progressBar.visible(true)
+                        binding.resetBtn.enable(false)
+                        binding.passwordEt.enable(false)
+                    }
                     is Resource.Failure -> {
                         binding.progressBar.visible(false)
                         binding.resetBtn.enable(true)
                         binding.passwordEt.enable(true)
                         binding.root.errorSnackBar("An Error occurred!")
                     }
-                    is Resource.Loading -> {
-                        binding.progressBar.visible(true)
-                        binding.resetBtn.enable(false)
-                        binding.passwordEt.enable(false)
-                    }
+                    else -> {}
                 }
             }
         }

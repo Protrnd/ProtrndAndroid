@@ -10,7 +10,10 @@ import protrnd.com.data.models.Profile
 @Dao
 interface ProfileDao {
     @Query("SELECT * FROM Profiles WHERE id = :id")
-    fun getProfile(id: String): Flow<Profile>
+    fun getProfile(id: String): Flow<Profile?>
+
+    @Query("SELECT * FROM Profiles WHERE username = :username")
+    fun getSavedProfileByName(username: String): Flow<Profile?>
 
     @Query("SELECT COUNT(*) FROM Profiles")
     fun getDBSize(): Flow<Int>
@@ -23,4 +26,7 @@ interface ProfileDao {
 
     @Query("DELETE FROM Profiles WHERE id = :id")
     suspend fun deleteProfile(id: String)
+
+    @Query("DELETE FROM Profiles")
+    suspend fun deleteAllProfiles()
 }

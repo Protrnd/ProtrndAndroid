@@ -2,7 +2,6 @@ package protrnd.com.ui.home
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -26,16 +25,15 @@ import protrnd.com.ui.wallet.WalletFragment
 
 class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel, HomeRepository>() {
 
-    var lmState: Parcelable? = null
-    var previousTag = "H"
-    var bottomNavPreviousId: Int = R.id.home
-    var previousFragment: Fragment? = null
-    lateinit var bottomNav: RadioGroup
-    var homeFragment: HomeFragment? = null
-    var profileFragment: ProfileFragment? = null
-    var walletFragment: WalletFragment? = null
-    var chatFragment: ChatFragment? = null
-    var searchFragment: SearchFragment? = null
+    private var previousTag = "H"
+    private var bottomNavPreviousId: Int = R.id.home
+    private var previousFragment: Fragment? = null
+    private lateinit var bottomNav: RadioGroup
+    private var homeFragment: HomeFragment? = null
+    private var profileFragment: ProfileFragment? = null
+    private var walletFragment: WalletFragment? = null
+    private var chatFragment: ChatFragment? = null
+    private var searchFragment: SearchFragment? = null
 
     override fun onViewReady(savedInstanceState: Bundle?, intent: Intent?) {
         super.onViewReady(savedInstanceState, intent)

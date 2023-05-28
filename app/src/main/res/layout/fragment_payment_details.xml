@@ -29,7 +29,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginTop="8dp"
-        android:autofillHints="name"
+        android:autofillHints="username"
         android:background="@drawable/card_details_input_selector"
         android:hint="@string/e_g_name"
         android:importantForAutofill="yes"
@@ -59,7 +59,6 @@
         android:hint="@string/e_g_card_no"
         android:importantForAutofill="yes"
         android:inputType="numberDecimal"
-        android:maxLength="16"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:textColor="@color/black"
@@ -148,17 +147,33 @@
         android:text="@string/remember_card_details"
         android:textColor="@color/black" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/continue_btn"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="24dp"
-        android:background="@drawable/button_elevation"
-        android:fontFamily="@font/dmsans_medium"
-        android:text="@string/continue_text"
-        android:textColor="@color/white"
-        tools:ignore="DuplicateSpeakableTextCheck" />
+        android:layout_marginTop="24dp">
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/continue_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/button_elevation"
+            android:fontFamily="@font/dmsans_medium"
+            android:text="@string/continue_text"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textColor="@color/white"
+            tools:ignore="DuplicateSpeakableTextCheck" />
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:visibility="gone"
+            android:indeterminateTint="@color/main_purple"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:layout_width="wrap_content"

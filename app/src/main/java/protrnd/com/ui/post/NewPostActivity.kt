@@ -10,7 +10,6 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View.OVER_SCROLL_NEVER
 import android.view.Window
@@ -19,30 +18,23 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toUri
-import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.CompositePageTransformer
 import androidx.viewpager2.widget.MarginPageTransformer
 import androidx.work.*
 import com.bumptech.glide.Glide
 import com.google.android.material.tabs.TabLayoutMediator
-import com.google.gson.Gson
 import com.gowtham.library.utils.TrimType
 import com.gowtham.library.utils.TrimVideo
 import com.yalantis.ucrop.UCrop
-import dagger.Provides
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
-import org.jetbrains.anko.doAsync
 import protrnd.com.R
-import protrnd.com.data.models.Actions
 import protrnd.com.data.models.Location
-import protrnd.com.data.models.PostDTO
 import protrnd.com.data.models.Profile
-import protrnd.com.data.network.ApiRequestService
 import protrnd.com.data.network.ProtrndAPIDataSource
 import protrnd.com.data.network.api.PostApi
 import protrnd.com.data.network.api.ProfileApi
-import protrnd.com.data.network.resource.Resource
+import protrnd.com.data.network.backgroundtask.UploadJobService
 import protrnd.com.data.repository.PostRepository
 import protrnd.com.databinding.ActivityNewPostBinding
 import protrnd.com.databinding.LocationPickerBinding
@@ -54,7 +46,6 @@ import protrnd.com.ui.base.BaseActivity
 import protrnd.com.ui.viewmodels.PostViewModel
 import java.io.File
 import java.util.*
-import javax.inject.Singleton
 
 class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, PostRepository>() {
     private var postUriList: ArrayList<Uri> = arrayListOf()
@@ -63,12 +54,10 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
     private var selectedUri = Uri.EMPTY
     var taggedProfiles = arrayListOf<Profile>()
     override var authToken: String? = ""
-    var imageList: ArrayList<String> = ArrayList()
-    var videoList: ArrayList<String> = ArrayList()
-//    val mutablePostUri = MutableLiveData<MutableList<Uri>>()
-//    val live: LiveData<MutableList<Uri>> = mutablePostUri
+    private var imageList: ArrayList<String> = ArrayList()
+    private var videoList: ArrayList<String> = ArrayList()
 
-    val getVideoCutResult =
+    private val getVideoCutResult =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK && result.data != null) {
                 postUriList[currentPosition] = Uri.parse(TrimVideo.getTrimmedVideoPath(result.data))
@@ -207,7 +196,7 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
         val location = currentUserProfile.location?.split(",")
         var state = location?.get(0)
         var city = location?.get(1)
-        var locationUpdate = currentUserProfile.location ?: ""
+        var locationUpdate: String
 
         binding.addLocationBtn.setOnClickListener {
             locationDialog.show()
@@ -215,12 +204,7 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
                 city = ""
                 locationPickerBinding.cityPicker.clearSelectedItem()
                 state = newItem
-                when (state!!.lowercase()) {
-                    "abia" -> locationPickerBinding.cityPicker.setItems(R.array.abia)
-                    "adamawa" -> locationPickerBinding.cityPicker.setItems(R.array.adamawa)
-                    "akwa ibom" -> locationPickerBinding.cityPicker.setItems(R.array.akwa_ibom)
-                    "anambra" -> locationPickerBinding.cityPicker.setItems(R.array.anambra)
-                }
+                locationPickerBinding.selectState(state!!)
                 locationPickerBinding.saveBtn.enable(false)
             }
 
@@ -245,27 +229,31 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
         dialog.setContentView(dialogProcessing.root)
 
         binding.postBtn.setOnClickListener {
-            binding.alphaBg.visible(true)
-            binding.postBtn.enable(false)
-            dialog.show()
-            binding.captionEt.clearFocus()
+            if (isNetworkAvailable()) {
+                binding.alphaBg.visible(true)
+                binding.postBtn.enable(false)
+                binding.captionEt.clearFocus()
+                dialog.show()
 
-            val tags = arrayListOf<String>()
-            for (profile in taggedProfiles) {
-                tags.add(profile.id)
+                val tags = arrayListOf<String>()
+                for (profile in taggedProfiles) {
+                    tags.add(profile.id)
+                }
+
+                upload(
+                    tags,
+                    Location(city = city!!, state = state!!),
+                    postUriList,
+                    currentUserProfile,
+                    binding.captionEt.text.toString().trim()
+                )
+            } else {
+                binding.root.errorSnackBar("Please check your network connection!")
             }
-
-            upload(
-                tags,
-                Location(city = city!!, state = state!!),
-                postUriList,
-                currentUserProfile,
-                binding.captionEt.text.toString().trim()
-            )
         }
     }
 
-    fun upload(
+    private fun upload(
         tags: List<String>,
         location: Location,
         postUriList: List<Uri>,
@@ -276,31 +264,26 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
         postUriList.forEach {
             uris.add(it.toString())
         }
-        val data = Data.Builder()
-            .putString("auth",authToken)
-            .putString("caption",caption)
-            .putStringArray("tags",tags.toTypedArray())
-            .putStringArray("uris",uris.toTypedArray())
-            .putString("name",currentUserProfile.username)
-            .putString("city",location.city)
-            .putString("state",location.state)
-            .build()
 
-        val worker = OneTimeWorkRequest.Builder(ApiRequestService::class.java)
-            .setInputData(data)
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-            .build()
-        WorkManager.getInstance().enqueue(worker)
+        val serviceUpload = Intent(this, UploadJobService::class.java).apply {
+            putExtra("auth",authToken)
+            putExtra("caption",caption)
+            putStringArrayListExtra("tags", ArrayList(tags))
+            putStringArrayListExtra("uris",uris)
+            putExtra("name",currentUserProfile.username)
+            putExtra("city",location.city)
+            putExtra("state",location.state)
+        }
+
+        startForegroundService(serviceUpload)
 
         CoroutineScope(Dispatchers.Main).launch {
-            delay(2000)
+            delay(1000)
             finishActivity()
         }
     }
 
-
-    fun launchGalleryPicker() {
+    private fun launchGalleryPicker() {
         getImagePickerResult.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
     }
 
@@ -352,7 +335,6 @@ class NewPostActivity : BaseActivity<ActivityNewPostBinding, PostViewModel, Post
             val dataColumnIndex =
                 imagecursor.getColumnIndex(MediaStore.Images.Media.DATA)
             imageList.add(imagecursor.getString(dataColumnIndex))
-            Log.i("IMAGEOP", imagecursor.getString(dataColumnIndex))
         }
         imagecursor.close()
         return imageList

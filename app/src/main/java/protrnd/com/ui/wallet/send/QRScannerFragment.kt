@@ -4,8 +4,8 @@ import android.content.pm.PackageManager
 import android.media.RingtoneManager
 import android.media.RingtoneManager.TYPE_NOTIFICATION
 import android.os.Bundle
+import android.os.Looper
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -23,6 +23,8 @@ import protrnd.com.data.network.api.PaymentApi
 import protrnd.com.data.repository.PaymentRepository
 import protrnd.com.databinding.FragmentQrScannerBinding
 import protrnd.com.ui.base.BaseFragment
+import protrnd.com.ui.decode
+import protrnd.com.ui.isInDebugMode
 import protrnd.com.ui.viewmodels.PaymentViewModel
 
 class QRScannerFragment :
@@ -54,6 +56,7 @@ class QRScannerFragment :
                         "Cannot send ₦0, please input a higher value",
                         Toast.LENGTH_SHORT
                     ).show()
+                    hostFragment.navController.navigate(R.id.sendAmountFragment)
                 } else {
                     mp.play()
                     content.amount = amount.toInt()
@@ -111,7 +114,7 @@ class QRScannerFragment :
         }
     }
 
-    fun applyCodeScanner() {
+    private fun applyCodeScanner() {
         codeScanner.apply {
             camera = CodeScanner.CAMERA_BACK
             formats = CodeScanner.ALL_FORMATS
@@ -122,7 +125,17 @@ class QRScannerFragment :
 
             decodeCallback = DecodeCallback {
                 try {
-                    scanResultLive.postValue(Gson().fromJson(it.text, QrCodeContent::class.java))
+                    Looper.prepare()
+                    val qrContent = Gson().fromJson((it.text).decode(), QrCodeContent::class.java)
+                    if (qrContent.isInDebugMode) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Your account is live and cannot send funds to debug accounts",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        scanResultLive.postValue(qrContent)
+                    }
                 } catch (e: Exception) {
                     requireContext().runOnUiThread {
                         Toast.makeText(
@@ -161,7 +174,6 @@ class QRScannerFragment :
 
     override fun getFragmentRepository(): PaymentRepository {
         val paymentApi = ProtrndAPIDataSource().buildAPI(PaymentApi::class.java)
-        val db = ProtrndAPIDataSource().provideTransactionDatabase(requireActivity().application)
         return PaymentRepository(paymentApi)
     }
 }
